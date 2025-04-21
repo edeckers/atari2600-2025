@@ -1,8 +1,11 @@
 <html>
 	<head>
 		<script type="text/javascript" src="rom.js"></script>
+		<script type="text/javascript" src="process.js"></script>
 		<script type="text/javascript">
-                   loadFromBase64(frogger);
+                   const froggerBytes = loadFromBase64(frogger);
+
+		   process(froggerBytes);
 		</script>
 	</head>
 	<body>
