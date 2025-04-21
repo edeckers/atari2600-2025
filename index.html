@@ -1,18 +1,24 @@
 <html>
 	<head>
+		<script type="text/javascript" src="shared.js"></script>
+		<script type="text/javascript" src="tia.js"></script>
 		<script type="text/javascript" src="rom.js"></script>
 		<script type="text/javascript" src="process.js"></script>
 		<script type="text/javascript" src="test.js"></script>
 		<script type="text/javascript">
-                   const froggerBytes = loadFromBase64(frogger);
+		   document.addEventListener("DOMContentLoaded", function(event) {
+                          // const romBytes = loadFromBase64(frogger);
+                          const romBytes = loadFromBase64(kernel01);
 
-		   process(froggerBytes, 2000);
+		          process(romBytes, 262 * 228);
 
-		   // testJsr();
-		   // testRts();
+		          // testJsr();
+		          // testRts();
+                   });
+
 		</script>
 	</head>
 	<body>
-		<canvas id="canvas" width="256" height="240"></canvas>
+		<canvas id="tehScreen" width="160" height="192"></canvas>
 	</body>
 </html>

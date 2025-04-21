@@ -63,6 +63,7 @@ const operators = {
   "INY": [0xc8, 0],
   "JMP nnnn": [0x4c, 2],
   "JSR nnnn": [0x20, 2],
+  "LAX nn": [0xa7, 1],
   "LDA #nn": [0xa9, 1],
   "LDA (nn), Y": [0xb1, 1],
   "LDA nn": [0xa5, 1],
@@ -155,12 +156,8 @@ function scan(input) {
       
 
       const operator = romread(ix, pc, 1);
-      // console.log(pc.toString(16));
-      // console.log(pc.toString(16), operator.toString(16).padStart(2, "0"));
       const [_, l] = operatorLookup[operator];
       const next = pc + l + 1
-
-      // console.log(pc.toString(16), formatASM(toASM(input, pc)));
 
       if (jumps.has(operator)) {
 	// console.log("JMP");
@@ -276,7 +273,6 @@ const decode = (input) => {
 
 function loadFromBase64(input) {
   const romInBytes = atob(input).split("").map(c => c.charCodeAt(0));
-
 
   if (printHex) {
     console.log(formatHex(romInBytes.map(b => b.toString(16))));
