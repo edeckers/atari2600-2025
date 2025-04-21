@@ -73,6 +73,7 @@ const operators = {
   "LDY #nn": [0xa0, 1],
   "LDY nn, X": [0xb4, 1],
   "LDY nn": [0xa4, 1],
+  "LDY nnnn": [0xac, 2],
   "LDX #nn": [0xa2, 1],
   "LDX nn": [0xa6, 1],
   "LSR A": [0x4a, 0],
@@ -166,15 +167,9 @@ function scan(input) {
         follow(ix, target);
         break;
       } else if (branches.has(operator)) {
-	// console.log("COND");
-
 	const relative = next + read(ix, pc + 1, l)
-        // const direction = (relative & 0x80) === 0x80 ? -1 : 1;
-	const direction = 1;
 
-	const target = pc + (relative * direction);
-
-	// console.log("T", target.toString(16).padStart(2, "0"));
+	const target = pc + relative;
 
         follow(ix, target);
       } else if (stops.has(operator)) {
@@ -291,4 +286,6 @@ function loadFromBase64(input) {
   if (printAsm) {
     console.log (lines.join("\n"));
   }
+
+  return romInBytes;
 }
