@@ -127,7 +127,7 @@ const code = (v)  => v.toString(16).padStart(2, "0");
 
 const offs = (a) => a - 0xf000;
 
-const read = (input, a, bc) => {
+const romread = (input, a, bc) => {
   const zs = [];
 
   for (var b=0; b<bc; b++) {
@@ -140,7 +140,7 @@ const read = (input, a, bc) => {
 }
 
 function scan(input) {
-  const entrypoint = read(input, 0xfffc, 2)
+  const entrypoint = romread(input, 0xfffc, 2)
 
   const reachable = new Set([]);
 
@@ -153,7 +153,7 @@ function scan(input) {
       reachable.add(pc);
       
 
-      const operator = read(ix, pc, 1);
+      const operator = romread(ix, pc, 1);
       // console.log(pc.toString(16));
       // console.log(pc.toString(16), operator.toString(16).padStart(2, "0"));
       const [_, l] = operatorLookup[operator];
@@ -163,11 +163,11 @@ function scan(input) {
 
       if (jumps.has(operator)) {
 	// console.log("JMP");
-	const target = read(ix, pc + 1, l);
+	const target = romread(ix, pc + 1, l);
         follow(ix, target);
         break;
       } else if (branches.has(operator)) {
-	const relative = next + read(ix, pc + 1, l)
+	const relative = next + romread(ix, pc + 1, l)
 
 	const target = pc + relative;
 
@@ -248,7 +248,7 @@ const decode = (input) => {
   let pc = 0xf000;
   while (pc <= 0xffff) {
     if (!(reachable.has(pc))) {
-       data.push(read(input, pc, 1));
+       data.push(romread(input, pc, 1));
        pc++;
        continue;
     }
@@ -258,7 +258,7 @@ const decode = (input) => {
       data = [];
     }
 
-    const operator = read(input, pc, 1);
+    const operator = romread(input, pc, 1);
     const [_, l] = operatorLookup[operator];
 
     lines.push([
