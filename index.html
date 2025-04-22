@@ -6,19 +6,32 @@
 		<script type="text/javascript" src="process.js"></script>
 		<script type="text/javascript" src="test.js"></script>
 		<script type="text/javascript">
-		   document.addEventListener("DOMContentLoaded", function(event) {
-                          // const romBytes = loadFromBase64(frogger);
-                          const romBytes = loadFromBase64(kernel01);
+		   document.addEventListener("DOMContentLoaded", (event) => {
+                     // const romBytes = loadFromBase64(frogger);
+                     const romBytes = loadFromBase64(kernel01);
 
-		          process(romBytes, 262 * 228);
+		     process(romBytes);
 
-		          // testJsr();
-		          // testRts();
+		     // testJsr();
+		     // testRts();
                    });
+
+		   var frc = 0; 
+		   
+		   const updateFr = () => {
+		     document.getElementById("fr").value = frc;
+
+		     frc = 0;
+		   }
+
+		   setTimeout(() => updateFr(), 1_000);
+
+		   document.addEventListener("draw", () => { frc++; });
 
 		</script>
 	</head>
 	<body>
 		<canvas id="tehScreen" width="160" height="192"></canvas>
+		<div><input type="text" id="fr"></div>
 	</body>
 </html>
