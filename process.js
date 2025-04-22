@@ -24,19 +24,17 @@ var rx = 0;
 
 var cc = 0;
 
-const pia = new Uint8Array(128);
 
-const lines = 262;
-const vs = 3;
-const ovr = 30;
-const cpl = 76;
+var isWsync = 0;
+
+const pia = new Uint8Array(128);
 
 const fl = (v) => v ? 1 : 0;
 
 const fzu = (v) => fz = fl(v === 0);
 const fnu = (v) => fn = fl(v & 0x80 === 0x80);
 
-const ramoffs = (addr) => (addr - 0x80) & 0xff;
+// const ramoffs = (addr) => (addr - 0x80) & 0xff;
 
 const printStates = () => {
   console.log("pc", pc.toString(16).padStart(4, "0"));
@@ -48,11 +46,11 @@ const printStates = () => {
 
 const rrom = (rom, addr) => rom[offs(addr)]
 
-const sram = (addr, value) => pia[ramoffs(addr)] = value;
-const rram = (addr) => {
-	return pia[ramoffs(addr)];
-	// return pia[addr];
-}
+// const sram = (addr, value) => pia[ramoffs(addr)] = value;
+// const rram = (addr) => {
+// 	return pia[ramoffs(addr)];
+// 	// return pia[addr];
+// }
 
 const pshsp = (write, value) => { write((sp & 0xff), value & 0xff); sp += 1; }
 const popsp = (read) => { sp -= 1; return read((sp & 0xff)) & 0xff; }
@@ -171,8 +169,9 @@ const processors = {
 //  0080-00FF  PIA RAM (128 bytes)
 //  0280-0297  PIA Ports and Timer
 //  F000-FFFF  Cartridge Memory (4 Kbytes area)
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-const process = (rom, numberOfSteps = undefined) => {
+const process = async (rom, numberOfSteps = undefined) => {
   const entrypoint = romread(rom, 0xfffc, 2)
 
   const mem = new Uint8Array(0x10000);
@@ -198,6 +197,7 @@ const process = (rom, numberOfSteps = undefined) => {
   const write = (addr, v) => {
      dbg("write", addr.toString(16), v);
      // sram(addr, v)
+     if (addr === 0x02) { isWsync = 1; }
 
      mem[addr] = v;
   }
@@ -211,8 +211,9 @@ const process = (rom, numberOfSteps = undefined) => {
   let i = 0;
   let s = 0;
   let w = 0;
+
+  let fs = new Date();
   while (numberOfSteps ? i < numberOfSteps : true) {
-    const isWsync = read(WSYNC) !== 0;
     const isWaiting = w !== 0;
 
     if (!isWsync && !isWaiting) {
@@ -232,17 +233,26 @@ const process = (rom, numberOfSteps = undefined) => {
 
     for (let a = 0; a < 3; a++) {
       updateScreen(read, s);
-      s++;
 
-      if (s % 228 === 0) { write(WSYNC, 0); }
+      if (s % 228 === 0) { isWsync = false; }
 
       if (s === (228 * 262)) {
-        draw();
+        requestAnimationFrame(draw);
+        
+	const diff = new Date() - fs;
+	const delay = Math.max((1_000 / FPS) - diff, 1);
+        await sleep(delay);
+
+	fs = new Date();
         s = 0;
+	clearScreen();
+	cc = 0;
       }
+
+      s++;
+      i++;
     }
 
     w = Math.max(w - 1, 0);
-    i++;
   }
 }
