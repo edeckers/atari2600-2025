@@ -99,7 +99,9 @@ const processors = {
   /* BCC dd      */ 0x90: (read) => { fc === 0 && (pc += tcd(read(pc + 1)) + 2, cc += 1); cc += 2;  },
   /* STA nn, X   */ 0x95: (read, write) => { write(read(pc + 1) + rx, ra & 0xff); pc += 2; cc += 4; },
   /* TXS         */ 0x9a: () => { sp = rx; pc += 1; cc += 2; },
+  /* LDY #nn     */ 0xa0: (read) => { ry = read(pc + 1); fnu(ry); fzu(ry); pc += 2; cc += 2; },
   /* LDX #nn     */ 0xa2: (read) => { rx = read(pc + 1); fnu(rx); fzu(rx); pc += 2; cc += 2; },
+  /* LDA nn      */ 0xa5: (read) => { const nn = read(pc + 1); ra = read(nn & 0xff); fnu(ra); fzu(ra); pc += 2; cc += 3; },
   /* LDX nn      */ 0xa6: (read) => { const nn = read(pc + 1); rx = read(nn & 0xff); fnu(rx); fzu(rx); pc += 2; cc += 3; },
   /* TAY         */ 0xa8: () => { ry = ra; fnu(ry); fzu(ry); pc += 1; cc += 2; },
   /* LDA #nn     */ 0xa9: (read) => { ra = read(pc + 1); fnu(ra); fzu(ra); pc += 2; cc += 2; },
@@ -137,6 +139,7 @@ const processors = {
 	  fzu(rx);
 	  pc += 3;
           cc += 4; },
+  /* CPY #nn     */ 0xc0: (read) => { const nn = read(pc + 1); const r = (ry - nn) & 0xff; fc = fl(nn > ry); fnu(r); fzu(r); pc += 2; cc += 2; },
   /* DEC nn      */ 0xc6: (read, write) => {
 	  addr = read(pc + 1);
 	  v = (read(addr) - 1) & 0xff;
@@ -146,9 +149,12 @@ const processors = {
 	  fzu(v);
 	  pc += 2;
           cc += 5; },
-  /* CMP #nn     */ 0xc9: (read) => { const nn = read(pc + 1); const r = ra + nn; fc = fl(r > 0xff); fnu(r); fzu(r); pc += 2; cc += 2; },
-  /* BNE dd      */ 0xd0: (read) => { fz === 0 && (pc += tcd(read(pc + 1)) + 2, cc += 1); cc += 2; },
+  /* INY         */ 0xc8: () => { ry = (ry + 1) & 0xff; fnu(ry); fzu(ry); pc += 1; cc += 2; },
+  /* CMP #nn     */ 0xc9: (read) => { const nn = read(pc + 1); const r = (ra - nn) & 0xff; fc = fl(nn > ra); fnu(r); fzu(r); pc += 2; cc += 2; },
+  /* BNE dd      */ 0xd0: (read) => { 
+	  fz === 0 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
   /* CLD         */ 0xd8: () => { fd = 0; pc += 1; cc += 2; },
+  /* CPX #nn     */ 0xe0: (read) => { const nn = read(pc + 1); const r = (rx - nn) & 0xff; fc = fl(nn > rx); fnu(r); fzu(r); pc += 2; cc += 2; },
   /* SBC (nn, X) */ 0xe1: (read) => {
 	  const addr = read(pc + 1) + rx;
 	  const v = ra + fc - 1 - read(addr);
@@ -159,6 +165,7 @@ const processors = {
 
 	  pc += 2;
           cc += 6; },
+  /* INC         */ 0xe6: (read, write) => { const nn = read(pc + 1) & 0xff; const r = read(nn) + 1;  write(nn, r); fnu(r); fzu(r); pc += 2; cc += 5; },
   /* INX         */ 0xe8: () => { rx = (rx + 1) & 0xff; fnu(rx); fzu(rx); pc += 1; cc += 2; },
 }
 
@@ -224,6 +231,8 @@ const process = async (rom, numberOfSteps = undefined) => {
 
       const cc0 = cc;
       const p = processors[o];
+
+      // console.log("o", o.toString(16));
       p(read, write);
 
       w = cc - cc0; // FIXME overflow

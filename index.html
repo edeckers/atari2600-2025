@@ -8,7 +8,8 @@
 		<script type="text/javascript">
 		   document.addEventListener("DOMContentLoaded", (event) => {
                      // const romBytes = loadFromBase64(frogger);
-                     const romBytes = loadFromBase64(kernel01);
+                     // const romBytes = loadFromBase64(kernel01);
+                     const romBytes = loadFromBase64(kernel13);
 
 		     process(romBytes);
 
@@ -24,7 +25,7 @@
 		     frc = 0;
 		   }
 
-		   setTimeout(() => updateFr(), 1_000);
+		   setInterval(() => updateFr(), 1_000);
 
 		   document.addEventListener("draw", () => { frc++; });
 
