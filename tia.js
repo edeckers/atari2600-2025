@@ -4,6 +4,13 @@ const vb = 228 * (3 + 37);
 const hb = 68;
 
 const COLUBK = 0x09;
+const COLUPF = 0x08;
+const CTRLPF = 0x0a;
+
+const PF0 = 0x0d;
+const PF1 = 0x0e;
+const PF2 = 0x0f;
+
 WSYNC = 0x02;
 VBLANK = 0x01;
 
@@ -25,21 +32,25 @@ function updateScreen(read, tt) {
 
  if (!inScreen) { return; }
 
-
  const d = tt - vb;
  const y = Math.floor(d / 228);
  const x = (d % 228) - hb;
-
-// if (x > 160) { console.error("X>160", x); debugger; }
-// if (x < 0) { console.error("X<0", x); debugger; }
-// if (y > 192) { console.error("Y>192", y);  debugger;}
-// if (y > 0) { console.error("Y<0", y);  debugger;}
 
  const p = (y * 160) + x;
 
  const o = p * 4;
 
- const v = read(VBLANK) !== 0 ? 0x00 : read(COLUBK);
+ let v = read(VBLANK) !== 0 ? 0x00 : read(COLUBK);
+
+ const isMirror = (read(CTRLPF) & 0x01) === 0x01;
+
+ const pfRaster = (read(PF2) << 16) | (read(PF1) << 8) | read(PF0);
+ 
+ const pfBit = (x < 80) ?
+          Math.pow(2, Math.floor((80 - x) / 4)) :
+          Math.pow(2, Math.floor((isMirror ? (x - 80) : (80 - (x - 80))) / 4));
+
+ ((pfBit & pfRaster) === pfBit) && (v = read(COLUPF));
 
  const [r, g, b] = colors[v - (v % 2)] ?? [0x00, 0x00, 0x00];
 
