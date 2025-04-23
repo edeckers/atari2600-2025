@@ -40,17 +40,25 @@ function updateScreen(read, tt) {
 
  const o = p * 4;
 
- let v = read(VBLANK) !== 0 ? 0x00 : read(COLUBK);
+ let v = read(COLUBK);
 
- const isMirror = (read(CTRLPF) & 0x01) === 0x01;
+ const isMirror = (read(CTRLPF) & 0x01);
 
- const pfRaster = (read(PF2) << 16) | (read(PF1) << 8) | read(PF0);
- 
- const pfBit = (x < 80) ?
-          Math.pow(2, Math.floor((80 - x) / 4)) :
-          Math.pow(2, Math.floor((isMirror ? (x - 80) : (80 - (x - 80))) / 4));
+ const pfRaster = ((read(PF0) >> 4) << 16) | (read(PF1) << 8) | read(PF2);
 
- ((pfBit & pfRaster) === pfBit) && (v = read(COLUPF));
+ const pw = (x < 80) ?
+          Math.floor((80 - x) / 4) - 1 :
+          Math.floor((isMirror ? (x - 80) : (80 - (x - 80))) / 4) - 1;
+
+const pfBit = Math.pow(2, pw);
+
+ (pfBit & pfRaster) && (v = read(COLUPF));
+
+// if ((pfRaster > 0)) {
+//   console.log(pfRaster.toString(2), pfBit.toString(2), x); debugger;
+// }
+
+ v = (read(VBLANK) & 0x02) ? 0x00 : v;
 
  const [r, g, b] = colors[v - (v % 2)] ?? [0x00, 0x00, 0x00];
 

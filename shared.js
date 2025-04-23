@@ -9,7 +9,7 @@ const warn = (data) => { logLevel <= 2 && console.warn(data); }
 const info = (data) => { logLevel <= 1 && console.info(data); }
 const dbg = (data) => { logLevel === 0 && console.debug(data); }
 
-const FPS = 60;
+const FPS = 600;
 
 // https://www.randomterrain.com/atari-2600-memories-tia-color-charts.html#ntsc_pal_color_conversion
 const colors = {
