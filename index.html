@@ -13,14 +13,15 @@
                      "frogger": frogger
                    };
 
-		   let rom = roms["kernel01"];
+		   let romName = "kernel01";
 
-		   const changeRom = (romName) => {
-		     rom = roms[romName];
+		   const changeRom = (rn) => {
+		     romName = rn
 	             document.dispatchEvent(new Event("chrom"));
 		   }
 
 		   const startRom = () => {
+		     const rom = roms[romName];
                      const romBytes = loadFromBase64(rom);
 		     process(romBytes);
 		   }

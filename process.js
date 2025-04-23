@@ -25,7 +25,8 @@ var rx = 0;
 var cc = 0;
 
 
-var isWsync = 0;
+var isWsync = false;
+var isVsync = false;
 
 const pia = new Uint8Array(128);
 
@@ -44,7 +45,7 @@ const printStates = () => {
 	  "x", rx.toString(16));
 }
 
-const rrom = (rom, addr) => rom[offs(addr)]
+// const rrom = (rom, addr) => rom[offs(addr)]
 
 // const sram = (addr, value) => pia[ramoffs(addr)] = value;
 // const rram = (addr) => {
@@ -55,10 +56,12 @@ const rrom = (rom, addr) => rom[offs(addr)]
 const pshsp = (write, value) => { write((sp & 0xff), value & 0xff); sp += 1; }
 const popsp = (read) => { sp -= 1; return read((sp & 0xff)) & 0xff; }
 
+ // (v & 0x80) ? ((~v & 0x7f) + 1) & 0xff : v & 0xff;
 const tcd = (v) => {
  // has MSB = 0 -> return as is
  // has MSB = 1 -> return 2s complement -> 0x80 = -128, 0x81 = -127, 0x82 = -126, etc.
- return  ((v & 0x80) === 0x80) ? -(0x80 - (v & 0x7f)) : v & 0xff;
+ // return  (v & 0x80) ? -(0x80 - (v & 0x7f)) : v & 0xff;
+ return (v & 0x80) ? -(((~v & 0x7f) + 1) & 0xff) : v & 0xff;
 }
 
 const processors = {
@@ -95,11 +98,11 @@ const processors = {
   /* RTS         */ 0x60: (read) => { l = popsp(read); h = popsp(read); pc = ((h << 8) + l) & 0xffff; cc += 6; },
   /* ROR A       */ 0x6a: () => { const ra0 = ((ra >> 1) | (fc << 7)) & 0xff; fc = ra & 0x01; ra = ra0; fnu(ra); fzu(ra); pc += 1; cc += 2;},
   /* SEI         */ 0x78: () => { fi = 1; pc++; cc += 2;},
-  /* STA nn      */ 0x85: (read, write) => { write(read(pc + 1), ra & 0xff); pc += 2; cc += 3; },
-  /* STX nn      */ 0x86: (read, write) => { write(read(pc + 1), rx & 0xff);  pc += 2; cc += 3; },
+  /* STA nn      */ 0x85: (read, write) => { const nn = read(pc + 1); write(nn, ra & 0xff); pc += 2; cc += 3; },
+  /* STX nn      */ 0x86: (read, write) => { const nn = read(pc + 1); write(nn, rx & 0xff); pc += 2; cc += 3; },
   /* TXA         */ 0x8a: () => { ra = rx; fnu(ra); fzu(ra); pc += 1; cc += 2; },
   /* BCC dd      */ 0x90: (read) => { fc === 0 && (pc += tcd(read(pc + 1)) + 2, cc += 1); cc += 2;  },
-  /* STA nn, X   */ 0x95: (read, write) => { write(read(pc + 1) + rx, ra & 0xff); pc += 2; cc += 4; },
+  /* STA nn, X   */ 0x95: (read, write) => { const nn = read(pc + 1); write((nn + rx) & 0xff, ra & 0xff); pc += 2; cc += 4; },
   /* TXS         */ 0x9a: () => { sp = rx; pc += 1; cc += 2; },
   /* LDY #nn     */ 0xa0: (read) => { ry = read(pc + 1); fnu(ry); fzu(ry); pc += 2; cc += 2; },
   /* LDX #nn     */ 0xa2: (read) => { rx = read(pc + 1); fnu(rx); fzu(rx); pc += 2; cc += 2; },
@@ -153,10 +156,9 @@ const processors = {
           cc += 5; },
   /* INY         */ 0xc8: () => { ry = (ry + 1) & 0xff; fnu(ry); fzu(ry); pc += 1; cc += 2; },
   /* CMP #nn     */ 0xc9: (read) => { const nn = read(pc + 1); const r = (ra - nn) & 0xff; fc = fl(nn > ra); fnu(r); fzu(r); pc += 2; cc += 2; },
-  /* BNE dd      */ 0xd0: (read) => { 
-	  fz === 0 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
+  /* BNE dd      */ 0xd0: (read) => { fz === 0 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
   /* CLD         */ 0xd8: () => { fd = 0; pc += 1; cc += 2; },
-  /* CPX #nn     */ 0xe0: (read) => { const nn = read(pc + 1); const r = (rx - nn) & 0xff; fc = fl(nn > rx); fnu(r); fzu(r); pc += 2; cc += 2; },
+  /* CPX #nn     */ 0xe0: (read) => { const nn = read(pc + 1); const r = (rx - nn); fc = fl(nn > rx); fnu(r); fzu(r); pc += 2; cc += 2; },
   /* SBC (nn, X) */ 0xe1: (read) => {
 	  const addr = read(pc + 1) + rx;
 	  const v = ra + fc - 1 - read(addr);
@@ -209,7 +211,7 @@ const process = async (rom, numberOfSteps = undefined) => {
   const write = (addr, v) => {
      dbg("write", addr.toString(16), v);
      // sram(addr, v)
-     if (addr === 0x02) { isWsync = 1; }
+     if (addr === 0x02) { isWsync = true; return; }
 
      mem[addr] = v;
   }
@@ -225,8 +227,24 @@ const process = async (rom, numberOfSteps = undefined) => {
   let w = 0;
 
   let fs = new Date();
+
+  let vcc = 0;
+
   while (numberOfSteps ? i < numberOfSteps : !isKilled) {
-    const isWaiting = w !== 0;
+    w = Math.max(w - 1, 0);
+    w = isWsync ? 0 : w;
+
+    const isVsync = (read(0x00) & 0x02) === 0x02;
+    vcc = isVsync ? vcc + 1 : vcc;
+
+    if (vcc >= 3 && !isVsync) {
+      s = 0;
+      // clearScreen();
+      cc = 0;
+      vcc = 0;
+    }
+
+    const isWaiting = (w > 0);
 
     if (!isWsync && !isWaiting) {
       const o = read(pc)
@@ -237,7 +255,6 @@ const process = async (rom, numberOfSteps = undefined) => {
       const cc0 = cc;
       const p = processors[o];
 
-      // console.log("o", o.toString(16));
       p(read, write);
 
       w = cc - cc0; // FIXME overflow
@@ -248,11 +265,12 @@ const process = async (rom, numberOfSteps = undefined) => {
     for (let a = 0; a < 3; a++) {
       updateScreen(read, s);
 
-      if (s % 228 === 0) { isWsync = false; }
+      if (s % 228 === 0) { 
+	isWsync = false; w = 0;  }
 
       if (s === (228 * 262)) {
         requestAnimationFrame(draw);
-        
+
 	const diff = new Date() - fs;
 	const delay = Math.max((1_000 / FPS) - diff, 0);
 	if (delay > 0) { await sleep(delay); }
@@ -266,7 +284,5 @@ const process = async (rom, numberOfSteps = undefined) => {
       s++;
       i++;
     }
-
-    w = Math.max(w - 1, 0);
   }
 }
