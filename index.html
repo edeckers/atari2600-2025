@@ -6,12 +6,27 @@
 		<script type="text/javascript" src="process.js"></script>
 		<script type="text/javascript" src="test.js"></script>
 		<script type="text/javascript">
-		   document.addEventListener("DOMContentLoaded", (event) => {
-                     // const romBytes = loadFromBase64(frogger);
-                     // const romBytes = loadFromBase64(kernel01);
-                     const romBytes = loadFromBase64(kernel13);
+                   const roms = {
+                     "kernel01": kernel01,
+                     "kernel13": kernel13,
+                     "kernel15": kernel15,
+                     "frogger": frogger
+                   };
 
+		   let rom = roms["kernel01"];
+
+		   const changeRom = (romName) => {
+		     rom = roms[romName];
+	             document.dispatchEvent(new Event("chrom"));
+		   }
+
+		   const startRom = () => {
+                     const romBytes = loadFromBase64(rom);
 		     process(romBytes);
+		   }
+                   
+		   document.addEventListener("DOMContentLoaded", (event) => {
+                     startRom();
 
 		     // testJsr();
 		     // testRts();
@@ -28,11 +43,20 @@
 		   setInterval(() => updateFr(), 1_000);
 
 		   document.addEventListener("draw", () => { frc++; });
+		   document.addEventListener("chrom", () => { startRom(); });
 
 		</script>
 	</head>
 	<body>
 		<canvas id="tehScreen" width="160" height="192"></canvas>
 		<div><input type="text" id="fr"></div>
+		<div>
+		  <select onChange="changeRom(this.options[this.selectedIndex].value)" autofocus>
+		    <option value="kernel01" selected>Kernel 01</option>
+		    <option value="kernel13">Kernel 13</option>
+		    <option value="kernel15">Kernel 15</option>
+		    <option value="frogger">Frogger</option>
+		  </select>
+		</div>
 	</body>
 </html>

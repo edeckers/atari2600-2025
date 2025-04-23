@@ -68,10 +68,12 @@ const processors = {
 
 	  const nnnn = ((h << 8) + l) & 0xffff;
 
-	  ra |= ((read(nnnn + rx + 1) << 8) + read(nnnn + rx));
+	  ra |= read(nnnn + rx);
 
 	  fn = fnu(ra);
 	  fz = fzu(ra);
+
+	  pc += 3;
           cc += 4; },
   /* JSR nnnn    */ 0x20: (read, write) => {
 	  const l = read(pc + 1) & 0xff;
@@ -179,6 +181,9 @@ const processors = {
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const process = async (rom, numberOfSteps = undefined) => {
+  let isKilled = false;
+
+  document.addEventListener("chrom", () => { isKilled = true; });
   const entrypoint = romread(rom, 0xfffc, 2)
 
   const mem = new Uint8Array(0x10000);
@@ -220,7 +225,7 @@ const process = async (rom, numberOfSteps = undefined) => {
   let w = 0;
 
   let fs = new Date();
-  while (numberOfSteps ? i < numberOfSteps : true) {
+  while (numberOfSteps ? i < numberOfSteps : !isKilled) {
     const isWaiting = w !== 0;
 
     if (!isWsync && !isWaiting) {
@@ -249,8 +254,8 @@ const process = async (rom, numberOfSteps = undefined) => {
         requestAnimationFrame(draw);
         
 	const diff = new Date() - fs;
-	const delay = Math.max((1_000 / FPS) - diff, 1);
-        await sleep(delay);
+	const delay = Math.max((1_000 / FPS) - diff, 0);
+	if (delay > 0) { await sleep(delay); }
 
 	fs = new Date();
         s = 0;
