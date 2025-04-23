@@ -30,13 +30,36 @@ function updateScreen(read, tt) {
  
  const inScreen = !invb && !inover && !inhblank;
 
+//if (romName === "kernel13" && pc > 0xf02e && !inhblank) {
+//   console.log(pc.toString(16), tt, Math.floor((tt - vb) / 228), ((tt - vb) % 228) - hb); debugger;
+//   return;
+// }
+
+// if (romName === "kernel13" && pc === 0xf02c) {
+//  console.log(pc.toString(16), tt, Math.floor((tt - vb) / 228), ((tt - vb) % 228) - hb);
+// }
+
  if (!inScreen) { return; }
+
+// if (romName === "kernel13") {
+//	 console.log(pc.toString(16), tt, Math.floor((tt - vb) / 228), ((tt - vb) % 228) - hb);
+// }
 
  const d = tt - vb;
  const y = Math.floor(d / 228);
  const x = (d % 228) - hb;
 
- const p = (y * 160) + x;
+ // if (romName === "kernel13" && pc > 0xf02c) {
+ //   // console.log(pc.toString(16), y, x); debugger;
+ //   // if (pc === 0xf02e) { console.log("f02e", y, x); }
+ //   return;
+ // }
+
+// if (romName === "kernel13" && read(COLUBK) === 191) {
+//    console.log(pc.toString(16), y, read(COLUBK));
+// }
+
+ const p = (y * W) + x;
 
  const o = p * 4;
 
