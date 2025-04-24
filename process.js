@@ -108,7 +108,7 @@ const processors = {
 
 	  pc = nnnn;
 	  cc += 3; },
-  /* RTS         */ 0x60: (read) => { l = popsp(read); h = popsp(read); /*console.log("RTS", h.toString(16), l.toString(16));*/ pc = ((h << 8) + l) & 0xffff; cc += 6; },
+  /* RTS         */ 0x60: (read) => { l = popsp(read); h = popsp(read); pc = ((h << 8) + l) & 0xffff; cc += 6; },
   /* ADC nn      */ 0x65: (read) => { // FIXME Carry
 	  const nn = read(pc + 1);
 	  const r = ra + fc + read(nn);
@@ -230,8 +230,8 @@ const processors = {
 	  const nnnn = word(read, pc + 1);
 	  ra = read(nnnn + rx);
 
-	  fnu(rx);
-	  fzu(rx);
+	  fnu(ra);
+	  fzu(ra);
 	  pc += 3;
           cc += 4; },
   /* LDX nnnn, Y */ 0xbe: (read) => {
@@ -260,7 +260,7 @@ const processors = {
   /* BNE dd      */ 0xd0: (read) => { fz === 0 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
   /* CMP nn,X    */ 0xd5: (read) => { const nn = read(pc + 1); const v = read(nn + rx); const r = (ra - v) & 0xff; fc = fl(v > ra); fnu(r); fzu(r); pc += 2; cc += 4; },
   /* CLD         */ 0xd8: () => { fd = 0; pc += 1; cc += 2; },
-  /* CPX #nn     */ 0xe0: (read) => { const nn = read(pc + 1); const r = (rx - nn); fc = fl(nn > rx); fnu(r); fzu(r); pc += 2; cc += 2; },
+  /* CPX #nn     */ 0xe0: (read) => { const nn = read(pc + 1); const r = (rx - nn) & 0xff; fc = fl(rx >= nn); fnu(r); fzu(r); pc += 2; cc += 2; },
   /* SBC (nn, X) */ 0xe1: (read) => { // FIXME Carry
 	  const nn = read(pc + 1)
 	  const addr = word(read, nn + rx);
@@ -333,8 +333,8 @@ const process = async (rom, numberOfSteps = undefined) => {
 
   const write = (addr, v) => {
      dbg("write", addr.toString(16), v);
-     // sram(addr, v)
-     if (addr === VSYNC) { isVSync = v !== 0; return; }
+
+     if (addr === VSYNC) { isVSync = v !== 0; }
      if (addr === WSYNC) { isWSync = true; return; }
      if (addr === RESP0) { isRESP0 = true; return; }
      if (addr === RESP1) { isRESP1 = true; return; }
