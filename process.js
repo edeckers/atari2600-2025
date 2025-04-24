@@ -1,5 +1,5 @@
 var pc = 0;
-var sp = 0;
+var sp = 0xff;
 
 //  Bit  Name  Expl.
 //  0    C     Carry         (0=No Carry, 1=Carry)
@@ -25,8 +25,8 @@ var rx = 0;
 var cc = 0;
 
 
-var isWsync = false;
-var isVsync = false;
+var isWSync = false;
+var isVSync = false;
 
 const pia = new Uint8Array(128);
 
@@ -53,8 +53,8 @@ const printStates = () => {
 // 	// return pia[addr];
 // }
 
-const pshsp = (write, value) => { write((sp & 0xff), value & 0xff); sp += 1; }
-const popsp = (read) => { sp -= 1; return read((sp & 0xff)) & 0xff; }
+const pshsp = (write, value) => { write((sp & 0xff), value & 0xff); sp = (sp - 1) & 0xff; }
+const popsp = (read) => { sp = (sp + 1) & 0xff; return read(sp & 0xff) & 0xff; }
 
  // (v & 0x80) ? ((~v & 0x7f) + 1) & 0xff : v & 0xff;
 const tcd = (v) => {
@@ -334,7 +334,8 @@ const process = async (rom, numberOfSteps = undefined) => {
   const write = (addr, v) => {
      dbg("write", addr.toString(16), v);
      // sram(addr, v)
-     if (addr === WSYNC) { isWsync = true; return; }
+     if (addr === VSYNC) { isVSync = v !== 0; return; }
+     if (addr === WSYNC) { isWSync = true; return; }
      if (addr === RESP0) { isRESP0 = true; return; }
      if (addr === RESP1) { isRESP1 = true; return; }
 
@@ -365,29 +366,13 @@ const process = async (rom, numberOfSteps = undefined) => {
 
   let fs = new Date();
 
-  let vcc = 0;
-
-  let isSynced = false;
-
   while (numberOfSteps ? i < numberOfSteps : !isKilled) {
     w = Math.max(w - 1, 0);
-    w = isWsync ? 0 : w;
-
-    const isVsync = (read(VSYNC) & 0x02) === 0x02;
-
-    // if (!isVsync) { isSynced = false; }
-    vcc = isVsync ? vcc + 1 : vcc;
-    // if (vcc === 1 && isVsync && !isSynced) { s = 0; cc = 0; isSynced = true; }
+    w = isWSync ? 0 : w;
 
     const isWaiting = (w > 0);
 
-    if (vcc >= 3 && !isVsync) {
-      s = 0;
-      cc = 0;
-      vcc = 0;
-    }
-
-    if (!isWsync && !isWaiting) {
+    if (!isWSync && !isWaiting) {
       const o = read(pc)
       dbg("pc", pc.toString(16), "o", o.toString(16));
 
@@ -407,13 +392,16 @@ const process = async (rom, numberOfSteps = undefined) => {
       printState && printStates();
     }
 
+
     for (let a = 0; a < 3; a++) {
       updateScreen(read, s);
 
       if (s % 228 === 0) { 
-	isWsync = false; w = 0;  }
+	isWSync = false;
+	w = 0;
+      }
 
-      if (s === (228 * 262)) {
+      if (isVSync || (s === (228 * 262))) {
         requestAnimationFrame(draw);
 
 	const diff = new Date() - fs;
@@ -424,6 +412,7 @@ const process = async (rom, numberOfSteps = undefined) => {
         s = 0;
 	clearScreen();
 	cc = 0;
+	isVSync = false;
       }
 
       s++;
