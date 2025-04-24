@@ -12,13 +12,13 @@ const PF1 = 0x0e;
 const PF2 = 0x0f;
 
 
-WSYNC = 0x02;
-VBLANK = 0x01;
+
 
 const arrayBuffer = new ArrayBuffer(4 * W * H);
 let screen = new Uint8ClampedArray(arrayBuffer);
 
-
+let resp0x = -1;
+let resp1x = -1;
 
 function clearScreen() {
  screen = new Uint8ClampedArray(arrayBuffer);
@@ -31,9 +31,15 @@ function updateScreen(read, tt) {
  
  const inScreen = !invb && !inover && !inhblank;
 
+ const d = tt - vb;
+
+ if (isRESP0) { resp0x = (d % 228) - hb; }
+ if (isRESP1) { resp1x = (d % 228) - hb; }
+ isRESP0 = false;
+ isRESP1 = false;
+
  if (!inScreen) { return; }
 
- const d = tt - vb;
  const y = Math.floor(d / 228);
  const x = (d % 228) - hb;
 
@@ -52,6 +58,9 @@ function updateScreen(read, tt) {
  const pfBit = Math.pow(2, pw - 1);
 
  (pfBit & PF) && (v = read(COLUPF));
+
+ (x >= resp0x && x < resp0x + 8) && (v = (read(GRP0) & (x - Math.pow(2, (resp0x - x)))) ? read(COLUP0) : v);
+ (x >= resp1x && x < resp1x + 8) && (v = (read(GRP1) & (x - Math.pow(2, (resp1x - x)))) ? read(COLUP1) : v);
 
  v = (read(VBLANK) & 0x02) ? 0x00 : v;
 

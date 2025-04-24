@@ -11,7 +11,26 @@ const dbg = (data) => { logLevel === 0 && console.debug(data); }
 
 const FPS = 100;
 
+// helpers
+
 PF = 0;
+RP0 = -1;
+RP1 = -1;
+
+// addresses
+VSYNC = 0x00;
+WSYNC = 0x02;
+VBLANK = 0x01;
+
+COLUP0 = 0x06;
+COLUP1 = 0x07;
+RESP0 = 0x10;
+RESP1 = 0x11;
+GRP0 = 0x1b;
+GRP1 = 0x1c;
+
+isRESP0 = false;
+isRESP1 = false;
 
 // https://www.randomterrain.com/atari-2600-memories-tia-color-charts.html#ntsc_pal_color_conversion
 const colors = {

@@ -64,12 +64,20 @@ const tcd = (v) => {
  return (v & 0x80) ? -(((~v & 0x7f) + 1) & 0xff) : v & 0xff;
 }
 
-const processors = {
-  /* ORA nnnn, X */ 0x1d: (read) => {
-	  const l = read(pc + 1);
-	  const h = read(pc + 2);
+const word = (read, addr) => {
+  const l = read(addr) & 0xff;
+  const h = read(addr + 1) & 0xff;
+  
+  return ((h << 8) + l) & 0xffff;
+}
 
-	  const nnnn = ((h << 8) + l) & 0xffff;
+const processors = {
+  /* ORA nn      */ 0x05: (read) => { const nn = read(pc + 1); ra |= read(nn); fnu(ra); fzu(ra); pc += 2; cc += 3; },
+  /* ASL A       */ 0x0a: () => { const ra0 = (ra << 1) & 0xff; fc = ((ra & 0x80) >> 7); ra = ra0; fnu(ra); fzu(ra); pc += 1; cc += 2;}, // Correct?
+  /* BPL dd      */ 0x10: (read) => { fn === 0 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
+  /* CLC         */ 0x18: () => { fc = 0; pc += 1; cc += 2; },
+  /* ORA nnnn, X */ 0x1d: (read) => {
+	  const nnnn = word(read, pc + 1);
 
 	  ra |= read(nnnn + rx);
 
@@ -79,45 +87,116 @@ const processors = {
 	  pc += 3;
           cc += 4; },
   /* JSR nnnn    */ 0x20: (read, write) => {
-	  const l = read(pc + 1) & 0xff;
-	  const h = read(pc + 2) & 0xff;
+	  const nnnn = word(read, pc + 1);
 
 	  const ret = pc + 3; // JSR operator + 2 operand bytes
 
 	  pshsp(write, (ret >> 8) & 0xff);
 	  pshsp(write, ret & 0xff);
 
-	  pc = (h << 8) + l;
+	  pc = nnnn;
           cc += 6; },
+  /* AND nn      */ 0x25: (read) => { const nn = read(pc + 1); ra = ra & read(nn); fnu(ra); fzu(ra); pc += 2; cc += 3; },
+  /* AND #nn     */ 0x29: (read) => { const nn = read(pc + 1); ra = ra & nn; fnu(ra); fzu(ra); pc += 2; cc += 2; },
+  /* ROL A       */ 0x2a: () => { const ra0 = ((ra << 1) | fc) & 0xff; fc = ((ra & 0x80) >> 7); ra = ra0; fnu(ra); fzu(ra); pc += 1; cc += 2; },
+  /* BMI dd      */ 0x30: (read) => { fn === 1 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
+  /* SEC         */ 0x38: () => { fc = 1; pc++; cc += 2;},
+  /* EOR #nn     */ 0x49: (read) => { const nn = read(pc + 1); ra ^= nn; fnu(ra); fzu(ra); pc += 2; cc += 2; },
+  /* LSR A       */ 0x4a: () => { const ra0 = (ra >> 1) & 0xff; fc = 0; ra = ra0; fnu(ra); fzu(ra); pc += 1; cc += 2; },
   /* JMP nnnn    */ 0x4c: (read) => { 
-	  const l = read(pc + 1) & 0xff;
-	  const h = read(pc + 2) & 0xff;
+	  const nnnn = word(read, pc + 1);
 
-	  pc = ((h << 8) + l) & 0xffff;
+	  pc = nnnn;
 	  cc += 3; },
-  /* RTS         */ 0x60: (read) => { l = popsp(read); h = popsp(read); pc = ((h << 8) + l) & 0xffff; cc += 6; },
+  /* RTS         */ 0x60: (read) => { l = popsp(read); h = popsp(read); /*console.log("RTS", h.toString(16), l.toString(16));*/ pc = ((h << 8) + l) & 0xffff; cc += 6; },
+  /* ADC nn      */ 0x65: (read) => { // FIXME Carry
+	  const nn = read(pc + 1);
+	  const r = ra + fc + read(nn);
+	  ra = r & 0xff;
+
+	  fnu(ra);
+	  fzu(ra);
+	  fv = fl(r !== ra);
+
+	  pc += 2;
+          cc += 3; },
+   /* ADC #nn     */ 0x69: (read) => { // FIXME Carry
+	  const nn = read(pc + 1);
+	  const r = ra + fc + nn;
+	  ra = r & 0xff;
+
+	  fnu(ra);
+	  fzu(ra);
+	  fv = fl(r !== ra);
+
+	  pc += 2;
+          cc += 2; },
   /* ROR A       */ 0x6a: () => { const ra0 = ((ra >> 1) | (fc << 7)) & 0xff; fc = ra & 0x01; ra = ra0; fnu(ra); fzu(ra); pc += 1; cc += 2;},
   /* SEI         */ 0x78: () => { fi = 1; pc++; cc += 2;},
+  /* STY nn      */ 0x84: (read, write) => { const nn = read(pc + 1); write(nn, ry & 0xff); pc += 2; cc += 3; },
   /* STA nn      */ 0x85: (read, write) => { const nn = read(pc + 1); write(nn, ra & 0xff); pc += 2; cc += 3; },
+  /* DEY         */ 0x88: () => { ry = (ry - 1) & 0xff; fnu(ry); fzu(ry); pc += 1; cc += 2; },
+  /* STY nnnn    */ 0x8c: (read, write) => {
+	  const nnnn = word(read, pc + 1);
+
+	  write(nnnn, ry & 0xff);
+
+	  pc += 3; cc += 4; },
+  /* STA nnnn    */ 0x8d: (read, write) => {
+	  const nnnn = word(read, pc + 1);
+
+	  write(nnnn, ra & 0xff);
+
+	  pc += 3; cc += 4; },
   /* STX nn      */ 0x86: (read, write) => { const nn = read(pc + 1); write(nn, rx & 0xff); pc += 2; cc += 3; },
   /* TXA         */ 0x8a: () => { ra = rx; fnu(ra); fzu(ra); pc += 1; cc += 2; },
-  /* BCC dd      */ 0x90: (read) => { fc === 0 && (pc += tcd(read(pc + 1)) + 2, cc += 1); cc += 2;  },
+  /* BCC dd      */ 0x90: (read) => { fc === 0 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
   /* STA nn, X   */ 0x95: (read, write) => { const nn = read(pc + 1); write((nn + rx) & 0xff, ra & 0xff); pc += 2; cc += 4; },
+  /* STX nn, Y   */ 0x96: (read, write) => { const nn = read(pc + 1); write((nn + ry) & 0xff, rx & 0xff); pc += 2; cc += 4; },
+  /* STA nnnn, Y */ 0x99: (read, write) => {
+	  const nnnn = word(read, pc + 1);
+
+	  write(nnnn + ry, ra & 0xff);
+
+	  pc += 3; cc += 5; },
   /* TXS         */ 0x9a: () => { sp = rx; pc += 1; cc += 2; },
   /* LDY #nn     */ 0xa0: (read) => { ry = read(pc + 1); fnu(ry); fzu(ry); pc += 2; cc += 2; },
   /* LDX #nn     */ 0xa2: (read) => { rx = read(pc + 1); fnu(rx); fzu(rx); pc += 2; cc += 2; },
+  /* LDY nn      */ 0xa4: (read) => { const nn = read(pc + 1); ry = read(nn); fnu(ry); fzu(ry); pc += 2; cc += 3; },
   /* LDA nn      */ 0xa5: (read) => { const nn = read(pc + 1); ra = read(nn & 0xff); fnu(ra); fzu(ra); pc += 2; cc += 3; },
   /* LDX nn      */ 0xa6: (read) => { const nn = read(pc + 1); rx = read(nn & 0xff); fnu(rx); fzu(rx); pc += 2; cc += 3; },
   /* TAY         */ 0xa8: () => { ry = ra; fnu(ry); fzu(ry); pc += 1; cc += 2; },
   /* LDA #nn     */ 0xa9: (read) => { ra = read(pc + 1); fnu(ra); fzu(ra); pc += 2; cc += 2; },
+  /* TAX         */ 0xaa: () => { rx = ra; fnu(rx); fzu(rx); pc += 1; cc += 2; },
   /* LDY nnnn    */ 0xac: (read) => {
-	  const nnnn = (read(pc + 2) << 8) + read(pc + 1);
+	  const nnnn = word(read, pc + 1);
 	  ry = read(nnnn);
 
 	  fnu(ry);
 	  fzu(ry);
 	  pc += 3;
           cc += 4; },
+  /* LDA nnnn     */ 0xad: (read) => {
+	  const nnnn = word(read, pc + 1);
+	  ra = read(nnnn);
+
+	  fnu(ra);
+	  fzu(ra);
+	  pc += 3;
+          cc += 4; },
+  /* BCS dd      */ 0xb0: (read) => { fc === 1 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
+  /* LDA (nn), Y */ 0xb1: (read) => {
+	  const nn = read(pc + 1)
+	  const addr = word(read, nn + ry);
+
+	  const r = read(addr);
+
+	  ra = read(r);
+
+	  fnu(ra);
+	  fzu(ra);
+	  pc += 2;
+          cc += 5; },
   /* LDA nn, X   */ 0xb5: (read) => {
 	  const nn = read(pc + 1);
 	  const r = nn + rx;
@@ -128,16 +207,35 @@ const processors = {
 	  fzu(ra);
 	  pc += 2;
           cc += 4; },
+  /* LDX nn, X   */ 0xb6: (read) => {
+	  const nn = read(pc + 1);
+	  const r = nn + rx;
+
+	  rx = read(r);
+
+	  fnu(rx);
+	  fzu(rx);
+	  pc += 2;
+          cc += 4; },
   /* LDA nnnn, Y */ 0xb9: (read) => {
-	  const nnnn = (read(pc + 2) << 8) + read(pc + 1);
+	  const nnnn = word(read, pc + 1);
 	  ra = read(nnnn + ry);
 
 	  fnu(ra);
 	  fzu(ra);
 	  pc += 3;
           cc += 4; },
+  /* TSX         */ 0xba: () => { rx = sp; fnu(rx); fzu(rx); pc += 1; cc += 2; },
+  /* LDA nnnn, X */ 0xbd: (read) => {
+	  const nnnn = word(read, pc + 1);
+	  ra = read(nnnn + rx);
+
+	  fnu(rx);
+	  fzu(rx);
+	  pc += 3;
+          cc += 4; },
   /* LDX nnnn, Y */ 0xbe: (read) => {
-	  const nnnn = (read(pc + 2) << 8) + read(pc + 1);
+	  const nnnn = word(read, pc + 1);
 	  rx = read(nnnn + ry);
 
 	  fnu(rx);
@@ -145,6 +243,8 @@ const processors = {
 	  pc += 3;
           cc += 4; },
   /* CPY #nn     */ 0xc0: (read) => { const nn = read(pc + 1); const r = (ry - nn) & 0xff; fc = fl(nn > ry); fnu(r); fzu(r); pc += 2; cc += 2; },
+  /* CPY nn      */ 0xc4: (read) => { const nn = read(pc + 1); const v = read(nn); const r = (ry - v) & 0xff; fc = fl(v > ry); fnu(r); fzu(r); pc += 2; cc += 3; },
+  /* CMP nn      */ 0xc5: (read) => { const nn = read(pc + 1); const v = read(nn); const r = (ra - v) & 0xff; fc = fl(v > ra); fnu(r); fzu(r); pc += 2; cc += 4; },
   /* DEC nn      */ 0xc6: (read, write) => {
 	  addr = read(pc + 1);
 	  v = (read(addr) - 1) & 0xff;
@@ -156,21 +256,38 @@ const processors = {
           cc += 5; },
   /* INY         */ 0xc8: () => { ry = (ry + 1) & 0xff; fnu(ry); fzu(ry); pc += 1; cc += 2; },
   /* CMP #nn     */ 0xc9: (read) => { const nn = read(pc + 1); const r = (ra - nn) & 0xff; fc = fl(nn > ra); fnu(r); fzu(r); pc += 2; cc += 2; },
+  /* DEX         */ 0xca: () => { rx = (rx - 1) & 0xff; fnu(rx); fzu(rx); pc += 1; cc += 2; },
   /* BNE dd      */ 0xd0: (read) => { fz === 0 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
+  /* CMP nn,X    */ 0xd5: (read) => { const nn = read(pc + 1); const v = read(nn + rx); const r = (ra - v) & 0xff; fc = fl(v > ra); fnu(r); fzu(r); pc += 2; cc += 4; },
   /* CLD         */ 0xd8: () => { fd = 0; pc += 1; cc += 2; },
   /* CPX #nn     */ 0xe0: (read) => { const nn = read(pc + 1); const r = (rx - nn); fc = fl(nn > rx); fnu(r); fzu(r); pc += 2; cc += 2; },
-  /* SBC (nn, X) */ 0xe1: (read) => {
-	  const addr = read(pc + 1) + rx;
-	  const v = ra + fc - 1 - read(addr);
-	  ra = v & 0xff;
+  /* SBC (nn, X) */ 0xe1: (read) => { // FIXME Carry
+	  const nn = read(pc + 1)
+	  const addr = word(read, nn + rx);
+
+	  const r = ra + fc - 1 - read(addr);
+	  ra = r & 0xff;
 
 	  fnu(ra);
 	  fzu(ra);
+	  fv = fl(r !== ra);
+
+	  pc += 2;
+          cc += 6; },
+   /* SBC #nn    */ 0xe9: (read) => { // FIXME Carry
+	  const nn = read(pc + 1);
+	  const r = ra + fc - 1 - nn;
+	  ra = r & 0xff;
+
+	  fnu(ra);
+	  fzu(ra);
+	  fv = fl(r !== ra);
 
 	  pc += 2;
           cc += 6; },
   /* INC         */ 0xe6: (read, write) => { const nn = read(pc + 1) & 0xff; const r = read(nn) + 1;  write(nn, r); fnu(r); fzu(r); pc += 2; cc += 5; },
   /* INX         */ 0xe8: () => { rx = (rx + 1) & 0xff; fnu(rx); fzu(rx); pc += 1; cc += 2; },
+  /* BEQ dd      */ 0xf0: (read) => { fz === 1 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
 }
 
 
@@ -212,22 +329,15 @@ const process = async (rom, numberOfSteps = undefined) => {
   
   const read = (addr) => {
     return mem[addr];
-    // if ((addr & 0xf000) === 0xf000) { return mem[addr]; };
-
-    // if ((addr >= 0x0000) && (addr <= 0x007f)) { return 0x38; }
-
-    // if ((addr >= 0x0080)  && (addr <= 0x00ff)) { return mem[addr]; }
-    // if ((addr >= 0x0180)  && (addr <= 0x01ff)) { return mem[addr]; }
-    // if ((addr >= 0x0480)  && (addr <= 0x04ff)) { return mem[addr]; }
-    // if ((addr >= 0x0580)  && (addr <= 0x05ff)) { return mem[addr]; }
-
-    // console.error("access", addr.toString(16), "not implemented");
   }
 
   const write = (addr, v) => {
      dbg("write", addr.toString(16), v);
      // sram(addr, v)
-     if (addr === 0x02) { isWsync = true; return; }
+     if (addr === WSYNC) { isWsync = true; return; }
+     if (addr === RESP0) { isRESP0 = true; return; }
+     if (addr === RESP1) { isRESP1 = true; return; }
+
      mem[addr] = v;
 
      if (pfs.has(addr)) {
@@ -240,7 +350,6 @@ const process = async (rom, numberOfSteps = undefined) => {
        
        PF = ((pf0rev << 16) | (pf1 << 8) | pf2rev) & 0xffffffff;
      }
-
   }
 
   const draw = drawer();
@@ -258,21 +367,25 @@ const process = async (rom, numberOfSteps = undefined) => {
 
   let vcc = 0;
 
+  let isSynced = false;
+
   while (numberOfSteps ? i < numberOfSteps : !isKilled) {
     w = Math.max(w - 1, 0);
     w = isWsync ? 0 : w;
 
-    const isVsync = (read(0x00) & 0x02) === 0x02;
+    const isVsync = (read(VSYNC) & 0x02) === 0x02;
+
+    // if (!isVsync) { isSynced = false; }
     vcc = isVsync ? vcc + 1 : vcc;
+    // if (vcc === 1 && isVsync && !isSynced) { s = 0; cc = 0; isSynced = true; }
+
+    const isWaiting = (w > 0);
 
     if (vcc >= 3 && !isVsync) {
       s = 0;
-      // clearScreen();
       cc = 0;
       vcc = 0;
     }
-
-    const isWaiting = (w > 0);
 
     if (!isWsync && !isWaiting) {
       const o = read(pc)
@@ -283,7 +396,11 @@ const process = async (rom, numberOfSteps = undefined) => {
       const cc0 = cc;
       const p = processors[o];
 
+      // try {
       p(read, write);
+      // } catch (e) {
+       // console.log("o", o.toString(16))
+      // }
 
       w = cc - cc0; // FIXME overflow
 
