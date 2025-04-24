@@ -75,6 +75,7 @@ const operators = {
   "LDY nn, X": [0xb4, 1],
   "LDY nn": [0xa4, 1],
   "LDY nnnn": [0xac, 2],
+  "LDX nnnn,Y": [0xbe, 2],
   "LDX #nn": [0xa2, 1],
   "LDX nn": [0xa6, 1],
   "LSR A": [0x4a, 0],
@@ -113,7 +114,7 @@ const branches = new Set([
   0x30,
   0xd0,
   0x10,
-  0x20, // JSR
+  // 0x20, // JSR
 ]);
 
 const jumps = new Set([
@@ -153,15 +154,15 @@ function scan(input) {
       }
 
       reachable.add(pc);
-      
 
       const operator = romread(ix, pc, 1);
       const [_, l] = operatorLookup[operator];
       const next = pc + l + 1
 
+
       if (jumps.has(operator)) {
-	// console.log("JMP");
 	const target = romread(ix, pc + 1, l);
+	console.log("JMP", pc.toString(16), target.toString(16));
         follow(ix, target);
         break;
       } else if (branches.has(operator)) {
@@ -170,6 +171,10 @@ function scan(input) {
 	const target = pc + relative;
 
         follow(ix, target);
+      } else if (operator === 0x20) {
+	const target = romread(ix, pc + 1, l)
+
+        follow(ix, target);	// console.log("JSR", target.toString(16));
       } else if (stops.has(operator)) {
 	return;
       }
@@ -243,7 +248,8 @@ const decode = (input) => {
       ].join(" ")
   }
 
-  let pc = 0xf000;
+  // let pc = 0xf000;
+  let pc = romread(input, 0xfffc, 2)
   while (pc <= 0xffff) {
     if (!(reachable.has(pc))) {
        data.push(romread(input, pc, 1));
