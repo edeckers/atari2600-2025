@@ -13,7 +13,7 @@
                      "frogger": frogger
                    };
 
-		   let romName = "kernel01";
+		   let romName = "kernel15";
 
 		   const changeRom = (rn) => {
 		     romName = rn
@@ -53,9 +53,9 @@
 		<div><input type="text" id="fr"></div>
 		<div>
 		  <select onChange="changeRom(this.options[this.selectedIndex].value)" autofocus>
-		    <option value="kernel01" selected>Kernel 01</option>
+		    <option value="kernel01">Kernel 01</option>
 		    <option value="kernel13">Kernel 13</option>
-		    <option value="kernel15">Kernel 15</option>
+		    <option value="kernel15" selected>Kernel 15</option>
 		    <option value="frogger">Frogger</option>
 		  </select>
 		</div>

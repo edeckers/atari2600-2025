@@ -182,6 +182,22 @@ const processors = {
 //  F000-FFFF  Cartridge Memory (4 Kbytes area)
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+const pfs = new Set([PF0, PF1, PF2]);
+
+const rev8 = (xs) => {
+    let x0 = 0;
+
+    x0 |= (xs & 0x80) >> 7; 
+    x0 |= (xs & 0x40) >> 5; 
+    x0 |= (xs & 0x20) >> 3; 
+    x0 |= (xs & 0x10) >> 1; 
+    x0 |= (xs & 0x08) << 1; 
+    x0 |= (xs & 0x04) << 3; 
+    x0 |= (xs & 0x02) << 5; 
+    x0 |= (xs & 0x01) << 7; 
+
+    return x0 & 0xff;
+}
 const process = async (rom, numberOfSteps = undefined) => {
   let isKilled = false;
 
@@ -212,13 +228,25 @@ const process = async (rom, numberOfSteps = undefined) => {
      dbg("write", addr.toString(16), v);
      // sram(addr, v)
      if (addr === 0x02) { isWsync = true; return; }
-
      mem[addr] = v;
+
+     if (pfs.has(addr)) {
+       const pf0 = read(PF0) & 0xff;
+       const pf1 = read(PF1) & 0xff;
+       const pf2 = read(PF2) & 0xff;
+       
+       const pf0rev = rev8(pf0) & 0xf;
+       const pf2rev = rev8(pf2);
+       
+       PF = ((pf0rev << 16) | (pf1 << 8) | pf2rev) & 0xffffffff;
+     }
+
   }
 
   const draw = drawer();
 
   pc = entrypoint;
+  PF = 0;
 
   dbg("entrypoint", pc.toString(16));
 

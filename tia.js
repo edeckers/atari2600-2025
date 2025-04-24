@@ -11,6 +11,7 @@ const PF0 = 0x0d;
 const PF1 = 0x0e;
 const PF2 = 0x0f;
 
+
 WSYNC = 0x02;
 VBLANK = 0x01;
 
@@ -30,34 +31,11 @@ function updateScreen(read, tt) {
  
  const inScreen = !invb && !inover && !inhblank;
 
-//if (romName === "kernel13" && pc > 0xf02e && !inhblank) {
-//   console.log(pc.toString(16), tt, Math.floor((tt - vb) / 228), ((tt - vb) % 228) - hb); debugger;
-//   return;
-// }
-
-// if (romName === "kernel13" && pc === 0xf02c) {
-//  console.log(pc.toString(16), tt, Math.floor((tt - vb) / 228), ((tt - vb) % 228) - hb);
-// }
-
  if (!inScreen) { return; }
-
-// if (romName === "kernel13") {
-//	 console.log(pc.toString(16), tt, Math.floor((tt - vb) / 228), ((tt - vb) % 228) - hb);
-// }
 
  const d = tt - vb;
  const y = Math.floor(d / 228);
  const x = (d % 228) - hb;
-
- // if (romName === "kernel13" && pc > 0xf02c) {
- //   // console.log(pc.toString(16), y, x); debugger;
- //   // if (pc === 0xf02e) { console.log("f02e", y, x); }
- //   return;
- // }
-
-// if (romName === "kernel13" && read(COLUBK) === 191) {
-//    console.log(pc.toString(16), y, read(COLUBK));
-// }
 
  const p = (y * W) + x;
 
@@ -67,19 +45,13 @@ function updateScreen(read, tt) {
 
  const isMirror = (read(CTRLPF) & 0x01);
 
- const pfRaster = ((read(PF0) >> 4) << 16) | (read(PF1) << 8) | read(PF2);
-
  const pw = (x < 80) ?
-          Math.floor((80 - x) / 4) - 1 :
-          Math.floor((isMirror ? (x - 80) : (80 - (x - 80))) / 4) - 1;
+          Math.ceil((80 - x) / 4) :
+          Math.ceil((isMirror ? (x - 80) : (80 - (x - 80))) / 4);
 
-const pfBit = Math.pow(2, pw);
+ const pfBit = Math.pow(2, pw - 1);
 
- (pfBit & pfRaster) && (v = read(COLUPF));
-
-// if ((pfRaster > 0)) {
-//   console.log(pfRaster.toString(2), pfBit.toString(2), x); debugger;
-// }
+ (pfBit & PF) && (v = read(COLUPF));
 
  v = (read(VBLANK) & 0x02) ? 0x00 : v;
 
