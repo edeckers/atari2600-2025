@@ -11,9 +11,6 @@ const PF0 = 0x0d;
 const PF1 = 0x0e;
 const PF2 = 0x0f;
 
-
-
-
 const arrayBuffer = new ArrayBuffer(4 * W * H);
 let screen = new Uint8ClampedArray(arrayBuffer);
 
@@ -33,10 +30,8 @@ function updateScreen(read, tt) {
 
  const d = tt - vb;
 
- if (isRESP0) { resp0x = (d % 228) - hb; }
- if (isRESP1) { resp1x = (d % 228) - hb; }
- isRESP0 = false;
- isRESP1 = false;
+ if (isRESP0) { resp0x = Math.max((d % 228) - hb, 3); isRESP0 = false; }
+ if (isRESP1) { resp1x = Math.max((d % 228) - hb, 3); isRESP1 = false; }
 
  if (!inScreen) { return; }
 
