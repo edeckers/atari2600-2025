@@ -54,8 +54,8 @@ function updateScreen(read, tt) {
 
  (pfBit & PF) && (v = read(COLUPF));
 
- (x >= resp0x && x < resp0x + 8) && (v = (read(GRP0) & (x - Math.pow(2, (resp0x - x)))) ? read(COLUP0) : v);
- (x >= resp1x && x < resp1x + 8) && (v = (read(GRP1) & (x - Math.pow(2, (resp1x - x)))) ? read(COLUP1) : v);
+ (x >= resp0x && x < resp0x + 9) && (v = (read(GRP0) & Math.pow(2, 9 - (x - resp0x))) ? read(COLUP0) : v);
+ (x >= resp1x && x < resp1x + 9) && (v = (read(GRP1) & Math.pow(2, 9 - (x - resp1x))) ? read(COLUP1) : v);
 
  v = (read(VBLANK) & 0x02) ? 0x00 : v;
 
