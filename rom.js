@@ -138,12 +138,14 @@ const romread = (input, a, bc) => {
   }
 
   zs.reverse();
+  // if (romName === "logo") { console.log("logo", input.length.toString(16)); }
+
 
   return zs.reduce((p, c) => (p << 8) + c, 0);
 }
 
 function scan(input) {
-  const entrypoint = romread(input, 0xfffc, 2)
+  const entrypoint = romread(input, 0xfffc, 2) || 0xf000;
 
   const reachable = new Set([]);
 
@@ -156,6 +158,7 @@ function scan(input) {
       reachable.add(pc);
 
       const operator = romread(ix, pc, 1);
+      console.log(operator.toString(16), pc.toString(16));
       const [_, l] = operatorLookup[operator];
       const next = pc + l + 1
 

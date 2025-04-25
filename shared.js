@@ -9,7 +9,7 @@ const warn = (data) => { logLevel <= 2 && console.warn(data); }
 const info = (data) => { logLevel <= 1 && console.info(data); }
 const dbg = (data) => { logLevel === 0 && console.debug(data); }
 
-const FPS = 100;
+const FPS = 60;
 
 // helpers
 

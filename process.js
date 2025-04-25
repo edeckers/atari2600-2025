@@ -21,6 +21,7 @@ var fz = 0;
 
 var ra = 0;
 var rx = 0;
+var ry = 0;
 
 var cc = 0;
 
@@ -355,7 +356,7 @@ const process = async (rom, numberOfSteps = undefined) => {
 
   const draw = drawer();
 
-  pc = entrypoint;
+  pc = entrypoint || 0xf000;
   PF = 0;
 
   dbg("entrypoint", pc.toString(16));
@@ -365,6 +366,8 @@ const process = async (rom, numberOfSteps = undefined) => {
   let w = 0;
 
   let fs = new Date();
+
+  if (romName === "logo") { console.log("pc", pc.toString(16)); }
 
   while (numberOfSteps ? i < numberOfSteps : !isKilled) {
     w = Math.max(w - 1, 0);
