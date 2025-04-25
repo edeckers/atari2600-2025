@@ -361,7 +361,81 @@ frogger = "eNiiAIqVAJqG2Ibg6ND2IOL8qR2FvKn+hb2Fv4XFhcGFw4W7hbmpKIW+qZWFyqlzhcmFy
 "FiZ/BgB+YGA+AwN+AD5gYH5jYz4Af2EDBgwYMAA+Y2M+Y2M+AD5jYz8DAz4AAAAAAAAAAAAAAAAA" +
 "AAgdvmcCABC4feZAAPj/1YDA4PC4XAaCkv44fLqSunw4/pKC7jh8fnw47nccPn4+HHeBQn48JEKB" +
 "iFh8JQYDAhEaPqRgwEArLvz8fjsVKC/8/344FDx+////fjz933/7/+//xgD/x/8AxmMA/+P/AGNm" +
-"/sfmx/5m/Xn/mf95/V///////18A4KAAAAAAAIDAYAQOHFz69/pcHA4EDhIQAPAA8A=="
+"/sfmx/5m/Xn/mf95/V///////18A4KAAAAAAAIDAYAQOHFz69/pcHA4EDhIQAPAA8A==";
+
+diag = "eNii/5roipUA6ND7qQeFAYUEhQWFCkw3+6m2ohKVkMoQ+6n/ohGVkMrKEPqpKoWYov+OgQKGAeiO" +
+"gAIg+PogxPupD4UBIPj6qVWNgQIg+PogCPsKhYiGia2AAkipqo2BAiD4+iAI+wWIhYiKCgWJhYnw" +
+"BoWdqSqFnGgNgAIliAWJ8AaFkakqhZCp/42BAiD4+o2AAiDp+oWIIPj6IOn6SQ+Fia2AAkn/8AaF" +
+"l6kqhZYgAPtJwIWKqf+FASD4+iDp+vAAqQ+FASD4+qD/jIECyIyAAiDp+gWJSQ8FiPAAIPj6IOn6" +
+"BYnwACAA+wWK8AaFk6kqhZKpAI2BAqlAhYaiBKCAiND9ytD6IMT7ogqg/4jQ/crQ+iwZ+akAjYMC" +
+"hYOtggKFgsaD0PytggLFgtDwqEn/KcsgOvlMFflKSkpKsEdKSkqwSEqwQqkGhY8g8/kgfPkgt/ui" +
+"DyB3+crQ+oUChQKFAoUCIHz5ogMgd/nK0Pogt/sgxPtgqQkgLPuljxhpECyN+0zo+Uyy+UwR+qn/" +
+"hZ+YKQNKqLAGpZ8p8IWfmEqwBqWfKQ+Fn8aG0ANMAPhMiPqpDIWPIPP5IN75LA34ILf7qQEgLPsg" +
+"3vmiCSDZ+crQ+iC3+yDE+2CpECAs+6WPGGkCKQ8sjfuFCYUGhQeFCIWPYKn/hRuFHIUPhQKFEIUR" +
+"qYGFCoUhoASFAoUqiND5YKkGhRWFFqkAhQmFG4UchRqpH4UZhQ6FD4WOqQGFF4WNqWaFCCDE+yC3" +
+"+yC3+6mYICz7ILf7xo7wCKkBILv7TDX6pY0pAfApqQCFGYUOqf+FGqkChRiFjakAhQ6pwIUPqbaF" +
+"CKkfhY6FGqkAhRlMNfqpAIUZhRpgogCGCSDK+oUCqQKFgsaC0PyFEKkEhYLGgtD8hREgKvsgHfsg" +
+"KvsgyvogKvsgHfsgKvsgyvogKvsgt/sgxPsgt/tgtZCFBui1kIUb6LWQhQjotZCFD+i1kIUH6LWQ" +
+"hRzoYKkABjgqBjkqBjoqBjsqYKIQhgLKEPtgBj2lPGopwGAGOCoKBjkqCgY6KgoGOyopf6pJVWCp" +
+"qoUbhRyFD6lyTOr5qSCFAYWHhQLGh9D6YKKAipUA6ND6ooCK1QDQMejQ+KL/ipUAyuB/0Pii/4rV" +
+"ANAdyuB/0PaigLUASf+VAIpJ/9UA0Ano0PAsDfhMGfgsA/ipbIUGhQeFCIUBhQKp/4UbhRypAaiI" +
+"0P2hAIUQqQWoiND9hRFwAWCpWYUBqIUChQKFKojQ96nwhSCpEIUhqSKFAaiFAojQ+3ABYKmChQGp" +
+"AoUAhQKpBqiFAojQ+6kAhQCpAoUBcAFgqSKFAaiFAojQ+0yM+1CO+NiAmNjI4MigqNDIAPwA/Nh4" +
+"ov+a6IqVAOjQ+6kHhQGFBIUFhQpMQ/+ptqISlZDKEPup/6IRlZDKyhD6rS34ySrQB60t9Mkq8ASp" +
+"KoWYov+OgQKGAeiOgAIgBP8g0P+pD4UBIAT/qVWNgQIgBP8gFP8KhYiGia2AAkipqo2BAiAE/yAU" +
+"/wWIhYiKCgWJhYnwBoWdqSqFnGgNgAIliAWJ8AaFkakqhZCp/42BAiAE/42AAiD1/oWIIAT/IPX+" +
+"SQ+Fia2AAkn/8AaFl6kqhZYgDP9JwIWKqf+FASAE/yD1/vAAqQ+FASAE/6D/jIECyIyAAiD1/gWJ" +
+"SQ8FiPAAIAR/IPX+BYnwACAM/wWK8AaFk6kqhZKpAI2BAqlAhYaiBKCAiND9ytD6IND/ogqg/4jQ" +
+"/crQ+iwn/akAjYMChYOtggKFgsaD0PytggLFgtDwqEn/KcsgSP1MI/1KSkpKsEZKSkqwR0qwQakG" +
+"hY8gAP4giv0gw/+iDyCF/crQ+oUChQKFAoUCIIr9ogMghf3K0Pogw/8g0P9gqQkgOP+ljxhpECyZ" +
+"/1BhTL/9TB7+qf+Fn5gpA0qosAalnynwhZ+YSrAGpZ8pD4WfxobQA0wA/EyU/qkMhY8gAP4g6/0s" +
+"Dfwgw/+pASA4/yDr/aIJIOb9ytD6IMP/IND/YKkQIDj/pY8YaQIpDyyZ/4UJhQaFB4UIhY9gqf+F" +
+"G4UchQ+FAoUQhRGpgYUKhSGgBIUChSqI0PlgqQaFFYUWqQCFCYUbhRyFGqkfhRmFDoUPhY6pAYUX" +
+"hY2pZoUIIND/IMP/IMP/qZggOP8gw//GjvAIqQEgx/9MQv6ljSkB8CipAIUZhQ6p/4UaqQKFGIWN" +
+"qQCFDqnAhQ+ptoUIqR+FjoUaqQCFGfC1qQCFGYUaYKIAhgkg1v6FAqkChYLGgtD8hRCpBIWCxoLQ" +
+"/IURIDb/ICn/IDb/INb+IDb/ICn/IDb/INb+IDb/IMP/IND/IMP/YLWQhQbotZCFG+i1kIUI6LWQ" +
+"hQ/otZCFB+i1kIUc6GCpAAY4KgY5KgY6KgY7KmCiEIYCyhD7YAY9pTxqKcBgBjgqCgY5KgoGOioK" +
+"BjsqKX+qSVVgqaqFG4UchQ+pckz3/akghQGFh4UCxofQ+mCigIqVAOjQ+qKAitUA0DHo0Pii/4qV" +
+"AMrgf9D4ov+K1QDQHcrgf9D2ooC1AEn/lQCKSf/VANAJ6NDwLA38TBn8LAP8qWyFBoUHhQiFAYUC" +
+"qf+FG4UcqQGoiND9oQCFEKkFqIjQ/YURcAFgqVmFAaiFAoUChSqI0Pep8IUgqRCFIakihQGohQKI" +
+"0PtwAWCpgoUBqQOFAIUCqQaohQKI0PupAIUAqQKFAXABYKkihQGohQKI0Pvwn5XfVQD8APw=";
+
+logo = "eNiiAIqVAOjQ++iGCqIChgCFAoUChQKiAIYAiIiIiIUChAi9ABGFDb0BEYUOvQIRhQ+9AxHIGOkA" +
+"8AaFAoQI0PTo6Ojo4HDQ1vDC////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"/////////////////////////////////////wAAACUAAM8tAAHPAQABxx4AA8cHAAPDDAAHwwsA" +
+"B8EEAA/BCwAfwQEAH8AIAD/ABgA+wAEAfsAGAP7ABYD8wAPA/MAC4PzAAfD8wATw+MAI8PDAB/Dg" +
+"wAXwwMAF8IDABPAAwAJwAMACMADAAQAAAB7/////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"////////////////////////////////////////////////////////////////////////////" +
+"/////////////////////////////////////////////////////////////////wAQABA"
 
 const operators = {
   "ADC #nn": [0x69, 1],
@@ -469,12 +543,14 @@ const romread = (input, a, bc) => {
   }
 
   zs.reverse();
+  // if (romName === "logo") { console.log("logo", input.length.toString(16)); }
+
 
   return zs.reduce((p, c) => (p << 8) + c, 0);
 }
 
 function scan(input) {
-  const entrypoint = romread(input, 0xfffc, 2)
+  const entrypoint = romread(input, 0xfffc, 2) || 0xf000;
 
   const reachable = new Set([]);
 
@@ -487,6 +563,7 @@ function scan(input) {
       reachable.add(pc);
 
       const operator = romread(ix, pc, 1);
+      console.log(operator.toString(16), pc.toString(16));
       const [_, l] = operatorLookup[operator];
       const next = pc + l + 1
 
