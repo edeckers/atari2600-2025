@@ -138,14 +138,15 @@ const romread = (input, a, bc) => {
   }
 
   zs.reverse();
-  // if (romName === "logo") { console.log("logo", input.length.toString(16)); }
-
 
   return zs.reduce((p, c) => (p << 8) + c, 0);
 }
 
-function scan(input) {
-  const entrypoint = romread(input, 0xfffc, 2) || 0xf000;
+const ep = (input) => (romread(input, 0xfffc, 2) & 0xffff) | 0xf000;
+
+const scan = (input) => {
+  const entrypoint = ep(input);
+  console.log("EP", entrypoint);
 
   const reachable = new Set([]);
 
@@ -155,13 +156,21 @@ function scan(input) {
         return;
       }
 
+      const operator = romread(ix, pc, 1);
+
+      if (operator === undefined) {
+	console.log("Unknown", pc.toString(16));
+	return;
+      } else if (!(operator in operatorLookup)) {
+	console.log(pc.toString(16));
+	console.log("Unknown", "o", operator, "pc", pc.toString(16));
+	return;
+      }
+
       reachable.add(pc);
 
-      const operator = romread(ix, pc, 1);
-      console.log(operator.toString(16), pc.toString(16));
       const [_, l] = operatorLookup[operator];
       const next = pc + l + 1
-
 
       if (jumps.has(operator)) {
 	const target = romread(ix, pc + 1, l);
@@ -236,9 +245,12 @@ function toASM(input, addr) {
   return [[operator].concat(operandBytes), name];
 }
 
-
 const decode = (input) => {
-  const reachable = scan(input);
+  // Mirror memory for small cartridges
+  const rom = input.length === 4096 ? input : input.concat(input);
+
+
+  const reachable = scan(rom);
 
   const lines = [];
   var data = [];
@@ -251,11 +263,11 @@ const decode = (input) => {
       ].join(" ")
   }
 
-  // let pc = 0xf000;
-  let pc = romread(input, 0xfffc, 2)
+  let pc = ep(rom)
+
   while (pc <= 0xffff) {
     if (!(reachable.has(pc))) {
-       data.push(romread(input, pc, 1));
+       data.push(romread(rom, pc, 1));
        pc++;
        continue;
     }
@@ -265,12 +277,12 @@ const decode = (input) => {
       data = [];
     }
 
-    const operator = romread(input, pc, 1);
+    const operator = romread(rom, pc, 1);
     const [_, l] = operatorLookup[operator];
 
     lines.push([
       pc.toString(16),
-      formatASM(toASM(input, pc))].join(" "));
+      formatASM(toASM(rom, pc))].join(" "));
 
     pc += l + 1;
   }
