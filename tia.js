@@ -31,7 +31,7 @@ function updateScreen(read, tt) {
  const d = tt - vb;
 
  if (isRESP0) { resp0x = Math.max((d % 228) - hb, 3); isRESP0 = false; }
- if (isRESP1) { resp1x = Math.max((d % 228) - hb, 3); isRESP1 = false; }
+ if (isRESP1) { console.log(tt); resp1x = Math.max((d % 228) - hb, 3); isRESP1 = false; }
 
  if (!inScreen) { return; }
 
@@ -42,8 +42,10 @@ function updateScreen(read, tt) {
 
  const o = p * 4;
 
+ // DEFAULT
  let v = read(COLUBK);
 
+ // PLAYFIELD
  const isMirror = (read(CTRLPF) & 0x01);
 
  const pw = (x < 80) ?
@@ -54,9 +56,11 @@ function updateScreen(read, tt) {
 
  (pfBit & PF) && (v = read(COLUPF));
 
+ // PLAYERS
  (x >= resp0x && x < resp0x + 9) && (v = (read(GRP0) & Math.pow(2, 9 - (x - resp0x))) ? read(COLUP0) : v);
  (x >= resp1x && x < resp1x + 9) && (v = (read(GRP1) & Math.pow(2, 9 - (x - resp1x))) ? read(COLUP1) : v);
 
+ // VBLANK
  v = (read(VBLANK) & 0x02) ? 0x00 : v;
 
  const [r, g, b] = colors[v - (v % 2)] ?? [0x00, 0x00, 0x00];

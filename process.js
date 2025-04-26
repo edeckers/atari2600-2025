@@ -286,7 +286,7 @@ const processors = {
 
 	  pc += 2;
           cc += 6; },
-  /* INC         */ 0xe6: (read, write) => { const nn = read(pc + 1) & 0xff; const r = read(nn) + 1;  write(nn, r); fnu(r); fzu(r); pc += 2; cc += 5; },
+  /* INC nn      */ 0xe6: (read, write) => { const nn = read(pc + 1) & 0xff; const r = read(nn) + 1; write(nn, r); fnu(r); fzu(r); pc += 2; cc += 5; },
   /* INX         */ 0xe8: () => { rx = (rx + 1) & 0xff; fnu(rx); fzu(rx); pc += 1; cc += 2; },
   /* BEQ dd      */ 0xf0: (read) => { fz === 1 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
 }
@@ -362,8 +362,9 @@ const process = async (rom, numberOfSteps = undefined) => {
   dbg("entrypoint", pc.toString(16));
 
   let i = 0;
-  let s = 0;
+  let s = (228 * (3 + 37)) + 68 + (228 / 2); // Middle of screen, first line - pretty random, other emulators seem to work that way
   let w = 0;
+
 
   let fs = new Date();
 
