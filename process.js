@@ -325,7 +325,14 @@ const process = async (rom, numberOfSteps = undefined) => {
   const mem = new Uint8Array(0x10000);
 
   for (const [i, b] of rom.entries()) {
-    mem[0xf000 + i] = b; 
+    mem[0x1000 + i] = b; 
+    mem[0x3000 + i] = b; // Prly do something smarter in reading
+    mem[0x5000 + i] = b; // Prly do something smarter in reading
+    mem[0x7000 + i] = b; // Prly do something smarter in reading
+    mem[0x9000 + i] = b; // Prly do something smarter in reading
+    mem[0xb000 + i] = b; // Prly do something smarter in reading
+    mem[0xd000 + i] = b; // Prly do something smarter in reading
+    mem[0xf000 + i] = b; // Prly do something smarter in reading
   }
   
   const read = (addr) => {
