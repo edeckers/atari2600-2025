@@ -154,6 +154,7 @@ const processors = {
   /* BCC dd      */ 0x90: (read) => { fc === 0 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
   /* STA nn, X   */ 0x95: (read, write) => { const nn = read(pc + 1); write((nn + rx) & 0xff, ra & 0xff); pc += 2; cc += 4; },
   /* STX nn, Y   */ 0x96: (read, write) => { const nn = read(pc + 1); write((nn + ry) & 0xff, rx & 0xff); pc += 2; cc += 4; },
+  /* TYA         */ 0x98: () => { ra = ry; fnu(ra); fzu(ra); pc += 1; cc += 2; },
   /* STA nnnn, Y */ 0x99: (read, write) => {
 	  const nnnn = word(read, pc + 1);
 
@@ -198,6 +199,16 @@ const processors = {
 	  fzu(ra);
 	  pc += 2;
           cc += 5; },
+  /* LDY nn, X   */ 0xb4: (read) => {
+	  const nn = read(pc + 1);
+	  const r = nn + ry;
+
+	  ry = read(r);
+
+	  fnu(ry);
+	  fzu(ry);
+	  pc += 2;
+          cc += 4; },
   /* LDA nn, X   */ 0xb5: (read) => {
 	  const nn = read(pc + 1);
 	  const r = nn + rx;
@@ -322,18 +333,7 @@ const process = async (rom, numberOfSteps = undefined) => {
   document.addEventListener("chrom", () => { isKilled = true; });
   const entrypoint = romread(rom, 0xfffc, 2)
 
-  const mem = new Uint8Array(0x10000);
-
-  for (const [i, b] of rom.entries()) {
-    mem[0x1000 + i] = b; 
-    mem[0x3000 + i] = b; // Prly do something smarter in reading
-    mem[0x5000 + i] = b; // Prly do something smarter in reading
-    mem[0x7000 + i] = b; // Prly do something smarter in reading
-    mem[0x9000 + i] = b; // Prly do something smarter in reading
-    mem[0xb000 + i] = b; // Prly do something smarter in reading
-    mem[0xd000 + i] = b; // Prly do something smarter in reading
-    mem[0xf000 + i] = b; // Prly do something smarter in reading
-  }
+  const mem = romAsMem(rom);
   
   const read = (addr) => {
     return mem[addr];
@@ -392,11 +392,12 @@ const process = async (rom, numberOfSteps = undefined) => {
       const cc0 = cc;
       const p = processors[o];
 
-      // try {
-      p(read, write);
-      // } catch (e) {
-       // console.log("o", o.toString(16))
-      // }
+      try {
+       p(read, write);
+      } catch (e) {
+       console.log("o", o.toString(16))
+       debugger;
+      }
 
       w = cc - cc0; // FIXME overflow
 

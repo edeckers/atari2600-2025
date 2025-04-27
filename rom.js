@@ -36,27 +36,35 @@ const operators = {
   "ADC #nn": [0x69, 1],
   "ADC nn": [0x65, 1],
   "ADC nn, X": [0x75, 1],
+  "ADC nnnn, Y": [0x79, 2],
+  "ADC nnnn, X": [0x7d, 2],
   "AND #nn": [0x29, 1],
   "AND nn": [0x25, 1],
+  "AND nnnn, X": [0x3d, 2],
   "ASL A": [0x0a, 0],
   "BCC dd": [0x90, 1],
   "BCS dd": [0xb0, 1],
   "BEQ dd": [0xf0, 1],
+  "BIT nn": [0x24, 1],
   "BMI dd": [0x30, 1],
   "BNE dd": [0xd0, 1],
   "BPL dd": [0x10, 1],
+  "BVC dd": [0x50, 1],
+  "BVS dd": [0x70, 1],
   "BRK": [0x00, 0],
   "CLC": [0x18, 0],
   "CLD": [0xd8, 0],
   "CMP nn": [0xc5, 1],
   "CMP #nn": [0xc9, 1],
   "CPX #nn": [0xe0, 1],
+  "CPX nn": [0xe4, 1],
   "CPY #nn": [0xc0, 1],
   "CPY nn": [0xc4, 1],
   "DEC nn": [0xc6, 1],
   "DEX": [0xca, 0],
   "DEY": [0x88, 0],
-  "EOR nn": [0x49, 1],
+  "EOR nn": [0x45, 1],
+  "EOR #nn": [0x49, 1],
   "INC nn": [0xe6, 1],
   "INC nn, X": [0xf6, 1],
   "INX": [0xe8, 0],
@@ -81,6 +89,7 @@ const operators = {
   "LSR A": [0x4a, 0],
   "ORA (nn, X)": [0x01, 1],
   "ORA nn": [0x05, 1],
+  "ORA nnnn": [0x0d, 2],
   "ORA nnnn, X": [0x1d, 2],
   "PHP": [0x08, 0],
   "ROL A": [0x2a, 0],
@@ -88,6 +97,7 @@ const operators = {
   "RTS": [0x60, 0],
   "SBC #nn": [0xe9, 1],
   "SBC (nn, X)": [0xe1, 1],
+  "SBC nn": [0xe5, 1],
   "SEC": [0x38, 0],
   "SED": [0xf8, 0],
   "SEI": [0x78, 0],
@@ -134,7 +144,8 @@ const romread = (input, a, bc) => {
   const zs = [];
 
   for (var b=0; b<bc; b++) {
-    zs.push(input[offs(a + b)]);
+    // zs.push(input[offs(a + b)]);
+    zs.push(input[a + b]);
   }
 
   zs.reverse();
@@ -228,7 +239,7 @@ function formatASM(line) {
 }
 
 function toASM(input, addr) {
-  const pc = offs(addr)
+  const pc = addr
   const operator = input[pc]
 
   if (!(operator in operatorLookup)) {
@@ -245,10 +256,26 @@ function toASM(input, addr) {
   return [[operator].concat(operandBytes), name];
 }
 
+const romAsMem = (rom) => {
+  const mem = new Uint8Array(0x10000);
+
+  for (const [i, b] of rom.entries()) {
+    mem[0x1000 + i] = b; 
+    mem[0x3000 + i] = b; // Prly do something smarter in reading
+    mem[0x5000 + i] = b; // Prly do something smarter in reading
+    mem[0x7000 + i] = b; // Prly do something smarter in reading
+    mem[0x9000 + i] = b; // Prly do something smarter in reading
+    mem[0xb000 + i] = b; // Prly do something smarter in reading
+    mem[0xd000 + i] = b; // Prly do something smarter in reading
+    mem[0xf000 + i] = b; // Prly do something smarter in reading
+  }
+
+  return mem;
+}
+ 
 const decode = (input) => {
   // Mirror memory for small cartridges
-  const rom = input.length === 4096 ? input : input.concat(input);
-
+  const rom = romAsMem(input.length === 4096 ? input : input.concat(input));
 
   const reachable = scan(rom);
 
