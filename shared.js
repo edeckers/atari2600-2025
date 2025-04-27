@@ -29,6 +29,13 @@ RESP1 = 0x11;
 GRP0 = 0x1b;
 GRP1 = 0x1c;
 
+INTIM = 0x284;
+INSTAT = 0x285;
+TIM1T = 0x294;
+TIM8T = 0x295;
+TIM64T = 0x296;
+T1024T = 0x297;
+
 isRESP0 = false;
 isRESP1 = false;
 
