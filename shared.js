@@ -36,6 +36,8 @@ TIM8T = 0x295;
 TIM64T = 0x296;
 T1024T = 0x297;
 
+SWCHB = 0x282; // B/W (0) or Color (1)?
+
 isRESP0 = false;
 isRESP1 = false;
 

@@ -15,7 +15,7 @@ var fc = 0;
 var fn = 0;
 var fi = 0;
 var fd = 0;
-var fb = 0;
+var _fb = 0;
 var fv = 0;
 var fz = 0;
 
@@ -48,7 +48,7 @@ const prstatus = () =>{
   st |= (fz & 0x01) << 1;
   st |= (fi & 0x01) << 2;
   st |= (fd & 0x01) << 3;
-  st |= (fb & 0x01) << 4;
+  st |= (_fb & 0x01) << 4;
   st |= (fv & 0x01) << 6;
   st |= (fn & 0x01) << 7;
 
@@ -59,7 +59,7 @@ const prstatus = () =>{
 
 const printStates = () => {
   console.log("pc", pc.toString(16).padStart(4, "0"));
-  console.log("f", [fc, fz, fi, fd, fb, 1, fv, fn].join(" "));
+  console.log("f", [fc, fz, fi, fd, _fb, 1, fv, fn].join(" "));
   console.log("r",
 	  "a", ra.toString(16),
 	  "x", rx.toString(16));
@@ -94,7 +94,7 @@ const word = (read, addr) => {
 const processors = {
   /* BRK         */ 0x00: (read, write) => {
 	  // console.log("BRK", "PC", pc.toString(16));
-	  fb = 1;
+	  _fb = 1;
 
 	  pshsp(write, (pc >> 8) & 0xff);
 	  pshsp(write, pc & 0xff);
@@ -442,6 +442,20 @@ const process = async (input, numberOfSteps = undefined) => {
      }
   }
 
+  const loadSwitches = () => {
+    // SWCHB.0    Reset Button          (0=Pressed)
+    // SWCHB.1    Select Button         (0=Pressed)
+    // SWCHB.2    Not used
+    // SWCHB.3    Color Switch          (0=B/W, 1=Color) (Always 0 for SECAM)
+    // SWCHB.4-5  Not used
+    // SWCHB.6    P0 Difficulty Switch  (0=Beginner (B), 1=Advanced (A))
+    // SWCHB.7    P1 Difficulty Switch  (0=Beginner (B), 1=Advanced (A))
+
+    write(SWCHB, 0b00001011);
+  }
+
+  loadSwitches();
+
   const entrypoint = word(read, 0xfffc)
 
   const draw = drawer();
@@ -457,8 +471,6 @@ const process = async (input, numberOfSteps = undefined) => {
 
 
   let fs = new Date();
-
-  if (romName === "logo") { console.log("pc", pc.toString(16)); }
 
   const timerUpdate = (cx) => {
    if (instat & 0b01000000) {
@@ -489,7 +501,6 @@ const process = async (input, numberOfSteps = undefined) => {
 
     const isWaiting = (w > 0);
 
-
     if (!isWSync && !isWaiting) {
       const o = read(pc)
       dbg("pc", pc.toString(16), "o", o.toString(16));
@@ -502,7 +513,7 @@ const process = async (input, numberOfSteps = undefined) => {
       try {
        p(read, write);
       } catch (e) {
-       console.log(e, pc.toString(16), "o", o.toString(16))
+        console.log(e, pc.toString(16), "o", o.toString(16))
 	debugger;
       }
 
