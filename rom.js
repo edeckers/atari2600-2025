@@ -622,6 +622,7 @@ const operators = {
   "STA nnnn, Y": [0x99, 2],
   "STX nn": [0x86, 1],
   "STY nn": [0x84, 1],
+  "STY nn, X": [0x94, 1],
   "TAX": [0xaa, 0],
   "TAY": [0xa8, 0],
   "TSX": [0xba, 0],
