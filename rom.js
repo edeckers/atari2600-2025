@@ -566,7 +566,7 @@ const operators = {
   "BPL dd": [0x10, 1],
   "BVC dd": [0x50, 1],
   "BVS dd": [0x70, 1],
-  "BRK": [0x00, 0],
+  "BRK": [0x00, 1], // Dummy byte https://github.com/spacerace/6502/blob/master/doc/6502-asm-doc/the%20B%20flag%20and%20BRK%20instruction.txt
   "CLC": [0x18, 0],
   "CLD": [0xd8, 0],
   "CMP nn": [0xc5, 1],
@@ -773,7 +773,7 @@ function toASM(input, addr) {
 }
 
 const romAsMem = (rom) => {
-  const mem = new Uint8Array(0x10000);
+  const mem = new Uint8Array(0xffff);
 
   for (const [i, b] of rom.entries()) {
     mem[0x1000 + i] = b; 
@@ -791,7 +791,7 @@ const romAsMem = (rom) => {
  
 const decode = (input) => {
   // Mirror memory for small cartridges
-  const rom = romAsMem(input.length === 4096 ? input : input.concat(input));
+  const rom = romAsMem(input.length === 4_096 ? input : input.concat(input));
 
   const reachable = scan(rom);
 

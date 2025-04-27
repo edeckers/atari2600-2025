@@ -93,14 +93,35 @@ const word = (read, addr) => {
 
 const processors = {
   /* BRK         */ 0x00: (read, write) => {
+	  // console.log("BRK", "PC", pc.toString(16));
+	  fb = 1;
+
+	  pshsp(write, (pc >> 8) & 0xff);
 	  pshsp(write, pc & 0xff);
-	  pshsp(write, (pc & 0xff00) >> 8);
 	  pshsp(write, prstatus());
 
-	  pc = (read(0xffff) << 8) | read(0xfffe);
+	  fi = 1;
+
+	  p = word(read, 0xfffe);
+
+	  console.log("BRK", "PC", pc.toString(16), "P", p.toString(16), read(0xffff) << 8, read(0xfffe));
+
+	  pc = p;
+
 	  cc += 7; },
   /* ORA nn      */ 0x05: (read) => { const nn = read(pc + 1); ra |= read(nn); fnu(ra); fzu(ra); pc += 2; cc += 3; },
+  /* ASL nn      */ 0x06: (read, write) => { const v = read(pc + 1); const r = (v << 1) & 0xff; write(pc + 1, r); fc = ((v & 0x80) >> 7); fnu(r); fzu(r); pc += 2; cc += 5;}, // Correct?
   /* ASL A       */ 0x0a: () => { const ra0 = (ra << 1) & 0xff; fc = ((ra & 0x80) >> 7); ra = ra0; fnu(ra); fzu(ra); pc += 1; cc += 2;}, // Correct?
+  /* ORA nnnn    */ 0x0d: (read) => {
+	  const nnnn = word(read, pc + 1);
+
+	  ra |= (read(nnnn) & 0xff);
+
+	  fn = fnu(ra);
+	  fz = fzu(ra);
+
+	  pc += 3;
+          cc += 4; },
   /* BPL dd      */ 0x10: (read) => { fn === 0 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
   /* CLC         */ 0x18: () => { fc = 0; pc += 1; cc += 2; },
   /* ORA nnnn, X */ 0x1d: (read) => {
@@ -124,12 +145,15 @@ const processors = {
 	  pc = nnnn;
           cc += 6; },
   /* BIT nn      */ 0x24: (read) => { const nn = read(pc + 1); const r = ra & read(nn); fnu(r); fzu(r); fv = fl(r & 0x40); pc += 2; cc += 3; },
+  /* BIT nnnn    */ 0x2c: (read) => { const nnnn = word(read, pc + 1); const r = ra & read(nnnn); fnu(r); fzu(r); fv = fl(r & 0x40); pc += 3; cc += 3; },
   /* AND nn      */ 0x25: (read) => { const nn = read(pc + 1); ra = ra & read(nn); fnu(ra); fzu(ra); pc += 2; cc += 3; },
   /* AND #nn     */ 0x29: (read) => { const nn = read(pc + 1); ra = ra & nn; fnu(ra); fzu(ra); pc += 2; cc += 2; },
   /* ROL A       */ 0x2a: () => { const ra0 = ((ra << 1) | fc) & 0xff; fc = ((ra & 0x80) >> 7); ra = ra0; fnu(ra); fzu(ra); pc += 1; cc += 2; },
   /* BMI dd      */ 0x30: (read) => { fn === 1 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
   /* SEC         */ 0x38: () => { fc = 1; pc++; cc += 2;},
+  /* EOR (nn, x) */ 0x41: (read) => { const nn = read(pc + 1); ra ^= read(word(read, (nn + x) & 0xff)); fnu(ra); fzu(ra); pc += 2; cc += 6; },
   /* EOR nn      */ 0x45: (read) => { const nn = read(pc + 1); ra ^= read(nn); fnu(ra); fzu(ra); pc += 2; cc += 3; },
+  /* PHA         */ 0x48: (_, write) => { pshsp(write, ra); pc += 1; cc += 3; },
   /* EOR #nn     */ 0x49: (read) => { const nn = read(pc + 1); ra ^= nn; fnu(ra); fzu(ra); pc += 2; cc += 2; },
   /* LSR A       */ 0x4a: () => { const ra0 = (ra >> 1) & 0xff; fc = 0; ra = ra0; fnu(ra); fzu(ra); pc += 1; cc += 2; },
   /* JMP nnnn    */ 0x4c: (read) => {
@@ -150,7 +174,8 @@ const processors = {
 
 	  pc += 2;
           cc += 3; },
-   /* ADC #nn     */ 0x69: (read) => { // FIXME Carry
+  /* PLA         */ 0x68: (_, write) => { ra = popsp(write); fnu(ra); fzu(ra); pc += 1; cc += 4; },
+  /* ADC #nn     */ 0x69: (read) => { // FIXME Carry
 	  const nn = read(pc + 1);
 	  const r = ra + fc + nn;
 	  ra = r & 0xff;
@@ -174,7 +199,7 @@ const processors = {
 
 	  pc += 2;
           cc += 4; },
-   /* SEI         */ 0x78: () => { fi = 1; pc++; cc += 2;},
+  /* SEI         */ 0x78: () => { fi = 1; pc++; cc += 2;},
   /* STY nn      */ 0x84: (read, write) => { const nn = read(pc + 1); write(nn, ry & 0xff); pc += 2; cc += 3; },
   /* STA nn      */ 0x85: (read, write) => { const nn = read(pc + 1); write(nn, ra & 0xff); pc += 2; cc += 3; },
   /* DEY         */ 0x88: () => { ry = (ry - 1) & 0xff; fnu(ry); fzu(ry); pc += 1; cc += 2; },
@@ -190,9 +215,16 @@ const processors = {
 	  write(nnnn, ra & 0xff);
 
 	  pc += 3; cc += 4; },
+  /* STX nnnn    */ 0x8e: (read, write) => {
+	  const nnnn = word(read, pc + 1);
+
+	  write(nnnn, rx & 0xff);
+
+	  pc += 3; cc += 4; },
   /* STX nn      */ 0x86: (read, write) => { const nn = read(pc + 1); write(nn, rx & 0xff); pc += 2; cc += 3; },
   /* TXA         */ 0x8a: () => { ra = rx; fnu(ra); fzu(ra); pc += 1; cc += 2; },
   /* BCC dd      */ 0x90: (read) => { fc === 0 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
+  /* STY nn, X   */ 0x94: (read, write) => { const nn = read(pc + 1); write((nn + rx) & 0xff, ry & 0xff); pc += 2; cc += 4; },
   /* STA nn, X   */ 0x95: (read, write) => { const nn = read(pc + 1); write((nn + rx) & 0xff, ra & 0xff); pc += 2; cc += 4; },
   /* STX nn, Y   */ 0x96: (read, write) => { const nn = read(pc + 1); write((nn + ry) & 0xff, rx & 0xff); pc += 2; cc += 4; },
   /* TYA         */ 0x98: () => { ra = ry; fnu(ra); fzu(ra); pc += 1; cc += 2; },
@@ -370,13 +402,11 @@ const rev8 = (xs) => {
 
     return x0 & 0xff;
 }
-const process = async (rom, numberOfSteps = undefined) => {
+const process = async (input, numberOfSteps = undefined) => {
   let isKilled = false;
 
   document.addEventListener("chrom", () => { isKilled = true; });
-  const entrypoint = romread(rom, 0xfffc, 2)
-
-  const mem = romAsMem(rom);
+  const mem = romAsMem(input.length === 4_092 ? input : input.concat(input));
 
   const read = (addr) => {
     if (addr === INTIM) { instat &= 0b10000000; /* interval = previnterval; */ return intim; }
@@ -412,9 +442,11 @@ const process = async (rom, numberOfSteps = undefined) => {
      }
   }
 
+  const entrypoint = word(read, 0xfffc)
+
   const draw = drawer();
 
-  pc = entrypoint || 0xf000;
+  pc = entrypoint; // || 0xf000;
   PF = 0;
 
   dbg("entrypoint", pc.toString(16));
@@ -470,8 +502,8 @@ const process = async (rom, numberOfSteps = undefined) => {
       try {
        p(read, write);
       } catch (e) {
-       console.log(e, "o", o.toString(16))
-       debugger;
+       console.log(e, pc.toString(16), "o", o.toString(16))
+	debugger;
       }
 
       w = cc - cc0; // FIXME overflow
