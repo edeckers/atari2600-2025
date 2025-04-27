@@ -17,6 +17,10 @@ PF = 0;
 RP0 = -1;
 RP1 = -1;
 
+GRP = 0;
+GRP0_DELAYED = 0;
+GRP1_DELAYED = 0;
+
 // addresses
 VSYNC = 0x00;
 WSYNC = 0x02;
@@ -26,8 +30,14 @@ COLUP0 = 0x06;
 COLUP1 = 0x07;
 RESP0 = 0x10;
 RESP1 = 0x11;
+REFP0 = 0x0b;
+REFP1 = 0x0c;
+
 GRP0 = 0x1b;
 GRP1 = 0x1c;
+
+VDELP0 = 0x25;
+VDELP1 = 0x26;
 
 INTIM = 0x284;
 INSTAT = 0x285;
