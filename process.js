@@ -41,6 +41,20 @@ const fl = (v) => v ? 1 : 0;
 const fzu = (v) => fz = fl(v === 0);
 const fnu = (v) => fn = fl(v & 0x80 === 0x80);
 
+const prstatus = () =>{
+  let st = 0;
+
+  st |= (fc & 0x01) << 0;
+  st |= (fz & 0x01) << 1;
+  st |= (fi & 0x01) << 2;
+  st |= (fd & 0x01) << 3;
+  st |= (fb & 0x01) << 4;
+  st |= (fv & 0x01) << 6;
+  st |= (fn & 0x01) << 7;
+
+  return st;
+}
+
 // const ramoffs = (addr) => (addr - 0x80) & 0xff;
 
 const printStates = () => {
@@ -78,6 +92,13 @@ const word = (read, addr) => {
 }
 
 const processors = {
+  /* BRK         */ 0x00: (read, write) => {
+	  pshsp(write, pc & 0xff);
+	  pshsp(write, (pc & 0xff00) >> 8);
+	  pshsp(write, prstatus());
+
+	  pc = (read(0xffff) << 8) | read(0xfffe);
+	  cc += 7; },
   /* ORA nn      */ 0x05: (read) => { const nn = read(pc + 1); ra |= read(nn); fnu(ra); fzu(ra); pc += 2; cc += 3; },
   /* ASL A       */ 0x0a: () => { const ra0 = (ra << 1) & 0xff; fc = ((ra & 0x80) >> 7); ra = ra0; fnu(ra); fzu(ra); pc += 1; cc += 2;}, // Correct?
   /* BPL dd      */ 0x10: (read) => { fn === 0 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
@@ -449,7 +470,7 @@ const process = async (rom, numberOfSteps = undefined) => {
       try {
        p(read, write);
       } catch (e) {
-       console.log("o", o.toString(16))
+       console.log(e, "o", o.toString(16))
        debugger;
       }
 
