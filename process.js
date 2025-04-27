@@ -165,7 +165,12 @@ const processors = {
   /* RTS         */ 0x60: (read) => { l = popsp(read); h = popsp(read); pc = ((h << 8) + l) & 0xffff; cc += 6; },
   /* ADC nn      */ 0x65: (read) => { // FIXME Carry
 	  const nn = read(pc + 1);
-	  const r = ra + fc + read(nn);
+	
+	  const v0 = read(nn) & 0xff;
+
+	  const v = fd ? (v0 >> 4) * 10 + (v0 & 0x0f) : v0;
+
+	  const r = ra + fc + v;
 	  ra = r & 0xff;
 
 	  fnu(ra);
@@ -177,7 +182,10 @@ const processors = {
   /* PLA         */ 0x68: (_, write) => { ra = popsp(write); fnu(ra); fzu(ra); pc += 1; cc += 4; },
   /* ADC #nn     */ 0x69: (read) => { // FIXME Carry
 	  const nn = read(pc + 1);
-	  const r = ra + fc + nn;
+
+	  const v = fd ? (nn >> 4) * 10 + (nn & 0x0f) : nn;
+
+	  const r = ra + fc + v;
 	  ra = r & 0xff;
 
 	  fnu(ra);
@@ -190,7 +198,12 @@ const processors = {
   /* BVS dd      */ 0x70: (read) => { fv === 1 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
   /* ADC nn, X   */ 0x75: (read) => { // FIXME Carry
 	  const nn = read(pc + 1);
-	  const r = ra + fc + read((nn + rx) & 0xff);
+
+	  const v0 = read(nn + rx) & 0xff;
+
+	  const v = fd ? (v0 >> 4) * 10 + (v0 & 0x0f) : v0;
+
+	  const r = ra + fc + v;
 	  ra = r & 0xff;
 
 	  fnu(ra);
@@ -343,14 +356,18 @@ const processors = {
   /* CMP #nn     */ 0xc9: (read) => { const nn = read(pc + 1); const r = (ra - nn) & 0xff; fc = fl(nn > ra); fnu(r); fzu(r); pc += 2; cc += 2; },
   /* DEX         */ 0xca: () => { rx = (rx - 1) & 0xff; fnu(rx); fzu(rx); pc += 1; cc += 2; },
   /* BNE dd      */ 0xd0: (read) => { fz === 0 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
-  /* CMP nn,X    */ 0xd5: (read) => { const nn = read(pc + 1); const v = read((nn + rx) & 0xff); const r = (ra - v) & 0xff; fc = fl(v > ra); fnu(r); fzu(r); pc += 2; cc += 4; },
+  /* CMP nn, X   */ 0xd5: (read) => { const nn = read(pc + 1); const v = read((nn + rx) & 0xff); const r = (ra - v) & 0xff; fc = fl(v > ra); fnu(r); fzu(r); pc += 2; cc += 4; },
   /* CLD         */ 0xd8: () => { fd = 0; pc += 1; cc += 2; },
   /* CPX #nn     */ 0xe0: (read) => { const nn = read(pc + 1); const r = (rx - nn) & 0xff; fc = fl(rx >= nn); fnu(r); fzu(r); pc += 2; cc += 2; },
   /* SBC (nn, X) */ 0xe1: (read) => { // FIXME Carry
 	  const nn = read(pc + 1)
 	  const addr = word(read, (nn + rx) & 0xff);
 
-	  const r = ra + fc - 1 - read(addr);
+	  const v0 = read(addr) & 0xff;
+
+	  const v = fd ? (v0 >> 4) * 10 + (v0 & 0x0f) : v0;
+
+	  const r = ra + fc - 1 - v;
 	  ra = r & 0xff;
 
 	  fnu(ra);
@@ -361,7 +378,11 @@ const processors = {
           cc += 6; },
    /* SBC #nn    */ 0xe9: (read) => { // FIXME Carry
 	  const nn = read(pc + 1);
-	  const r = ra + fc - 1 - nn;
+
+	  const v = fd ? (nn >> 4) * 10 + (nn & 0x0f) : nn;
+
+	  const r = ra + fc - 1 - v;
+
 	  ra = r & 0xff;
 
 	  fnu(ra);
@@ -387,6 +408,7 @@ const processors = {
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const pfs = new Set([PF0, PF1, PF2]);
+const players = new Set([REFP0, REFP1, GRP0, GRP1]);
 
 const rev8 = (xs) => {
     let x0 = 0;
@@ -402,11 +424,26 @@ const rev8 = (xs) => {
 
     return x0 & 0xff;
 }
+
+const flip8 = (xs) => {
+    return ~xs & 0xff;
+}
+
 const process = async (input, numberOfSteps = undefined) => {
   let isKilled = false;
 
   document.addEventListener("chrom", () => { isKilled = true; });
   const mem = romAsMem(input.length === 4_092 ? input : input.concat(input));
+
+  const updateGrp = () => {
+     const grp0 = read(GRP0) & 0xff;
+     const grp1 = read(GRP1) & 0xff;
+     
+     const grp0_ = read(REFP0) & 0x80 ? rev8(grp0) : grp0;
+     const grp1_ = read(REFP1) & 0x80 ? rev8(grp1) : grp1;
+  
+     GRP = ((grp0_ << 8) | grp1_) & 0xffff;
+  }
 
   const read = (addr) => {
     if (addr === INTIM) { instat &= 0b10000000; /* interval = previnterval; */ return intim; }
@@ -427,6 +464,34 @@ const process = async (input, numberOfSteps = undefined) => {
      if (addr === TIM8T ) { interval = 8; intim = v - 1; instat &= 0b01000000; console.log("TIM8T"); return; }
      if (addr === TIM64T) { interval = 64; intim = v - 1; instat &= 0b01000000; console.log("TIM64T"); return; }
      if (addr === T1024T) { interval = 1_024; intim = v - 1; instat &= 0b01000000; console.log("T1024T"); return; }
+
+     if (players.has(addr)) {
+     	if (addr === GRP0) {
+     	   if (read(VDELP1)) {
+     	     mem[GRP1] = GRP1_DELAYED;
+	     updateGrp();
+     	   }
+     
+     	   if (read(VDELP0)) {
+     	     GRP0_DELAYED = v;
+     	     return;
+     	   }
+     	}
+     
+     	if (addr === GRP1) {
+     	   if (read(VDELP0)) {
+     	     mem[GRP0] = GRP0_DELAYED;
+	     updateGrp();
+     	   }
+     
+     	   if (read(VDELP1)) {
+     	     GRP1_DELAYED = v;
+     	     return;
+     	   }
+        }
+
+	updateGrp();
+     }
 
      mem[addr] = v;
 
