@@ -3,9 +3,14 @@ const [W, H] = [160, 192];
 const vb = 228 * (3 + 37);
 const hb = 68;
 
-const COLUBK = 0x09;
+const NUSIZ0 = 0x04;
+const NUSIZ1 = 0x05;
+const COLUP0 = 0x06;
+const COLUP1 = 0x07;
 const COLUPF = 0x08;
+const COLUBK = 0x09;
 const CTRLPF = 0x0a;
+
 
 const PF0 = 0x0d;
 const PF1 = 0x0e;
@@ -48,21 +53,34 @@ function updateScreen(read, tt) {
  // PLAYFIELD
  const isMirror = (read(CTRLPF) & 0x01);
 
- const pw = (x < 80) ?
+ const isPfLeft = (x <= 80);
+ const isScore = read(CTRLPF) & 0x06 === 0x02;
+
+ const pw = isPfLeft ?
           Math.ceil((80 - x) / 4) :
           Math.ceil((isMirror ? (x - 80) : (80 - (x - 80))) / 4);
 
  const pfBit = Math.pow(2, pw - 1);
+ const pfColor = isScore ? read(isPfLeft ? COLUP0 : COLUP1) : read(COLUPF);
 
- (pfBit & PF) && (v = read(COLUPF));
+ (pfBit & PF) && (v = pfColor);
 
  // PLAYERS
- const dp = (grp, rp, colup) => {
-   v = (grp & Math.pow(2, 9 - (x - rp))) ? read(colup) : v
+ const dp = (grp, rp, colup, nusiz) => {
+   const justDiff = x - rp;
+
+   const isCopy = nusiz & 0xa0 === 0x00; // bit 5 and 7 are for wides
+   const size = (nusiz & 0x80) ? 4 : 2; // bit 5 = 2x, bit 7 = 4x
+
+   const diff = isCopy ? justDiff : Math.floor(justDiff / size);
+
+   if (diff > 8) { return; }
+
+   v = (grp & Math.pow(2, 9 - diff)) ? read(colup) : v;
  }
 
- (x >= resp0x && x < resp0x + 9) && dp((GRP >> 8) & 0xff, resp0x, COLUP0);
- (x >= resp1x && x < resp1x + 9) && dp(GRP & 0xff, resp1x, COLUP1);
+ (x >= resp0x) && dp((GRP >> 8) & 0xff, resp0x, COLUP0, NUSIZ0);
+ (x >= resp1x) && dp(GRP & 0xff, resp1x, COLUP1, NUSIZ1);
 
  // VBLANK
  v = (read(VBLANK) & 0x02) ? 0x00 : v;
