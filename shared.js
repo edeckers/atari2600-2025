@@ -9,6 +9,15 @@ const warn = (data) => { logLevel <= 2 && console.warn(data); }
 const info = (data) => { logLevel <= 1 && console.info(data); }
 const dbg = (data) => { logLevel === 0 && console.debug(data); }
 
+ // (v & 0x80) ? ((~v & 0x7f) + 1) & 0xff : v & 0xff;
+const tcd = (v) => {
+ // has MSB = 0 -> return as is
+ // has MSB = 1 -> return 2s complement -> 0x80 = -128, 0x81 = -127, 0x82 = -126, etc.
+ // return  (v & 0x80) ? -(0x80 - (v & 0x7f)) : v & 0xff;
+ return (v & 0x80) ? -(((~v & 0x7f) + 1) & 0xff) : v & 0xff;
+}
+
+
 const FPS = 60;
 
 // helpers

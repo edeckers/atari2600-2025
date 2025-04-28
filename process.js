@@ -27,6 +27,7 @@ var cc = 0;
 
 var isWSync = false;
 var isVSync = false;
+var isVsyncHi = false;
 
 var intim = 0xff;
 var instat = 0b00000000;
@@ -75,14 +76,6 @@ const printStates = () => {
 
 const pshsp = (write, value) => { write((sp & 0xff), value & 0xff); sp = (sp - 1) & 0xff; }
 const popsp = (read) => { sp = (sp + 1) & 0xff; return read(sp & 0xff) & 0xff; }
-
- // (v & 0x80) ? ((~v & 0x7f) + 1) & 0xff : v & 0xff;
-const tcd = (v) => {
- // has MSB = 0 -> return as is
- // has MSB = 1 -> return 2s complement -> 0x80 = -128, 0x81 = -127, 0x82 = -126, etc.
- // return  (v & 0x80) ? -(0x80 - (v & 0x7f)) : v & 0xff;
- return (v & 0x80) ? -(((~v & 0x7f) + 1) & 0xff) : v & 0xff;
-}
 
 const word = (read, addr) => {
   const l = read(addr) & 0xff;
@@ -144,8 +137,8 @@ const processors = {
 
 	  pc = nnnn;
           cc += 6; },
-  /* BIT nn      */ 0x24: (read) => { const nn = read(pc + 1); const r = ra & read(nn); fnu(r); fzu(r); fv = fl(r & 0x40); pc += 2; cc += 3; },
-  /* BIT nnnn    */ 0x2c: (read) => { const nnnn = word(read, pc + 1); const r = ra & read(nnnn); fnu(r); fzu(r); fv = fl(r & 0x40); pc += 3; cc += 3; },
+  /* BIT nn      */ 0x24: (read) => { const nn = read(pc + 1); const r = ra & read(nn); fnu(read(nn)); fzu(r); fv = fl(read(nn) & 0x40); pc += 2; cc += 3; },
+  /* BIT nnnn    */ 0x2c: (read) => { const nnnn = word(read, pc + 1); const r = ra & read(nnnn); fnu(read(nnnn)); fzu(r); fv = fl(read(nnnn) & 0x40); pc += 3; cc += 3; },
   /* AND nn      */ 0x25: (read) => { const nn = read(pc + 1); ra = ra & read(nn); fnu(ra); fzu(ra); pc += 2; cc += 3; },
   /* AND #nn     */ 0x29: (read) => { const nn = read(pc + 1); ra = ra & nn; fnu(ra); fzu(ra); pc += 2; cc += 2; },
   /* ROL A       */ 0x2a: () => { const ra0 = ((ra << 1) | fc) & 0xff; fc = ((ra & 0x80) >> 7); ra = ra0; fnu(ra); fzu(ra); pc += 1; cc += 2; },
@@ -455,7 +448,13 @@ const process = async (input, numberOfSteps = undefined) => {
   const write = (addr, v) => {
      dbg("write", addr.toString(16), v);
 
-     if (addr === VSYNC) { isVSync = v !== 0; }
+     if (addr === VSYNC) {
+	 newIsVsync = (v & 0x02) === 0x02;
+	
+	 isVsyncHi = (isVSync && !newIsVsync);
+	
+	 isVSync = newIsVsync;
+     }
      if (addr === WSYNC) { isWSync = true; return; }
      if (addr === RESP0) { isRESP0 = true; return; }
      if (addr === RESP1) { isRESP1 = true; return; }
@@ -608,7 +607,9 @@ const process = async (input, numberOfSteps = undefined) => {
         s = 0;
 	clearScreen();
 	cc = 0;
+	// isVsyncHi = false;
 	isVSync = false;
+	break;
       }
 
       s++;

@@ -56,11 +56,11 @@ function updateScreen(read, tt) {
 
  (pfBit & PF) && (v = read(COLUPF));
 
+ // PLAYERS
  const dp = (grp, rp, colup) => {
    v = (grp & Math.pow(2, 9 - (x - rp))) ? read(colup) : v
  }
 
- // PLAYERS
  (x >= resp0x && x < resp0x + 9) && dp((GRP >> 8) & 0xff, resp0x, COLUP0);
  (x >= resp1x && x < resp1x + 9) && dp(GRP & 0xff, resp1x, COLUP1);
 
