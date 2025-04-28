@@ -74,6 +74,7 @@ const operators = {
   "INY": [0xc8, 0],
   "JMP nnnn": [0x4c, 2],
   "JSR nnnn": [0x20, 2],
+  "LDA (nn), X": [0xa1, 1],
   "LAX nn": [0xa7, 1],
   "LDA #nn": [0xa9, 1],
   "LDA (nn), Y": [0xb1, 1],
@@ -194,14 +195,12 @@ const scan = (input) => {
 
       if (jumps.has(operator)) {
 	const target = romread(ix, pc + 1, l);
-	console.log("JMP", pc.toString(16), target.toString(16));
+
         follow(ix, target);
         break;
       } else if (branches.has(operator)) {
-	const relative = next + romread(ix, pc + 1, l)
-
-	const target = pc + relative;
-
+	const target = (pc + tcd(romread(ix, pc + 1, 1)) + 2) & 0xffff;
+	
         follow(ix, target);
       } else if (operator === 0x20) {
 	const target = romread(ix, pc + 1, l)
@@ -269,7 +268,7 @@ const romAsMem = (rom) => {
   const mem = new Uint8Array(0x10000); // 0x10000, bc 0x0000 - 0xFFFF
 
   for (const [i, b] of rom.entries()) {
-    mem[0x1000 + i] = b; 
+    mem[0x1000 + i] = b;
     mem[0x3000 + i] = b; // Prly do something smarter in reading
     mem[0x5000 + i] = b; // Prly do something smarter in reading
     mem[0x7000 + i] = b; // Prly do something smarter in reading
@@ -281,7 +280,7 @@ const romAsMem = (rom) => {
 
   return mem;
 }
- 
+
 const decode = (input) => {
   // Mirror memory for small cartridges
   const rom = romAsMem(input.length === 4_096 ? input : input.concat(input));
@@ -316,9 +315,11 @@ const decode = (input) => {
     const operator = romread(rom, pc, 1);
     const [_, l] = operatorLookup[operator];
 
+    const comment = branches.has(operator) ? `    ; ${(pc + 2 + tcd(romread(rom, pc + 1, 1))).toString(16)}` : "";
+
     lines.push([
       pc.toString(16),
-      formatASM(toASM(rom, pc))].join(" "));
+      formatASM(toASM(rom, pc)) + comment].join(" "));
 
     pc += l + 1;
   }
