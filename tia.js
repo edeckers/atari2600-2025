@@ -67,16 +67,28 @@ function updateScreen(read, tt) {
 
  // PLAYERS
  const dp = (grp, rp, colup, nusiz) => {
-   const justDiff = x - rp;
-
    const isCopy = nusiz & 0xa0 === 0x00; // bit 5 and 7 are for wides
-   const size = (nusiz & 0x80) ? 4 : 2; // bit 5 = 2x, bit 7 = 4x
+   const size = (nusiz & 0x80) ? 4 : (nusiz & 0x20) ? 2 : 1; // bit 5 = 2x, bit 7 = 4x
 
-   const diff = isCopy ? justDiff : Math.floor(justDiff / size);
+   const drawCopy = (ofx) => {
+     const d = Math.floor((x - (rp + ofx)) / size);
+     if (d < 0) { return; }
+     if (d > 8) { return; }
 
-   if (diff > 8) { return; }
+     v = (grp & Math.pow(2, 9 - d)) ? read(colup) : v;
+   }
 
-   v = (grp & Math.pow(2, 9 - diff)) ? read(colup) : v;
+   drawCopy(0);
+   
+   if (!isCopy) {
+     return;
+   }
+
+   (nusiz & 0x02) && drawCopy(16);
+   (nusiz & 0x04) && drawCopy(32);
+   (nusiz & 0x08) && (drawCopy(16), drawCopy(32));
+   (nusiz & 0x10) && drawCopy(56);
+   (nusiz & 0x40) && (drawCopy(16), drawCopy(32), drawCopy(56));
  }
 
  (x >= resp0x) && dp((GRP >> 8) & 0xff, resp0x, COLUP0, NUSIZ0);
