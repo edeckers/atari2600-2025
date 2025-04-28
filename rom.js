@@ -557,10 +557,12 @@ const operators = {
   "AND nn": [0x25, 1],
   "AND nnnn, X": [0x3d, 2],
   "ASL A": [0x0a, 0],
+  "ASL nn": [0x06, 1],
   "BCC dd": [0x90, 1],
   "BCS dd": [0xb0, 1],
   "BEQ dd": [0xf0, 1],
   "BIT nn": [0x24, 1],
+  "BIT nnnn": [0x2c, 2],
   "BMI dd": [0x30, 1],
   "BNE dd": [0xd0, 1],
   "BPL dd": [0x10, 1],
@@ -577,6 +579,7 @@ const operators = {
   "CPY nn": [0xc4, 1],
   "DEC nn": [0xc6, 1],
   "DEX": [0xca, 0],
+  "CMP nn, X": [0xd5, 1],
   "DEY": [0x88, 0],
   "EOR nn": [0x45, 1],
   "EOR #nn": [0x49, 1],
@@ -602,11 +605,14 @@ const operators = {
   "LDX #nn": [0xa2, 1],
   "LDX nn": [0xa6, 1],
   "LSR A": [0x4a, 0],
+  "LSR nn": [0x3c, 1],
   "ORA (nn, X)": [0x01, 1],
   "ORA nn": [0x05, 1],
   "ORA nnnn": [0x0d, 2],
   "ORA nnnn, X": [0x1d, 2],
+  "PHA": [0x48, 0],
   "PHP": [0x08, 0],
+  "PLA": [0x68, 0],
   "ROL A": [0x2a, 0],
   "ROR A": [0x6a, 0],
   "RTS": [0x60, 0],
@@ -621,8 +627,10 @@ const operators = {
   "STA nnnn": [0x8d, 2],
   "STA nnnn, Y": [0x99, 2],
   "STX nn": [0x86, 1],
+  "STX nnnn": [0x8e, 2],
   "STY nn": [0x84, 1],
   "STY nn, X": [0x94, 1],
+  "STY nnnn": [0x8c, 2],
   "TAX": [0xaa, 0],
   "TAY": [0xa8, 0],
   "TSX": [0xba, 0],
@@ -773,7 +781,7 @@ function toASM(input, addr) {
 }
 
 const romAsMem = (rom) => {
-  const mem = new Uint8Array(0xffff);
+  const mem = new Uint8Array(0x10000); // 0x10000, bc 0x0000 - 0xFFFF
 
   for (const [i, b] of rom.entries()) {
     mem[0x1000 + i] = b; 

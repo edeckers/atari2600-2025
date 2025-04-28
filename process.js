@@ -155,7 +155,7 @@ const processors = {
   /* EOR nn      */ 0x45: (read) => { const nn = read(pc + 1); ra ^= read(nn); fnu(ra); fzu(ra); pc += 2; cc += 3; },
   /* PHA         */ 0x48: (_, write) => { pshsp(write, ra); pc += 1; cc += 3; },
   /* EOR #nn     */ 0x49: (read) => { const nn = read(pc + 1); ra ^= nn; fnu(ra); fzu(ra); pc += 2; cc += 2; },
-  /* LSR A       */ 0x4a: () => { const ra0 = (ra >> 1) & 0xff; fc = 0; ra = ra0; fnu(ra); fzu(ra); pc += 1; cc += 2; },
+  /* LSR A       */ 0x4a: () => { const ra0 = (ra >> 1) & 0xff; fc = ra & 0x01; ra = ra0; fnu(ra); fzu(ra); pc += 1; cc += 2; },
   /* JMP nnnn    */ 0x4c: (read) => {
 	  const nnnn = word(read, pc + 1);
 
