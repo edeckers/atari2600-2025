@@ -37,13 +37,19 @@ VBLANK = 0x01;
 
 COLUP0 = 0x06;
 COLUP1 = 0x07;
-RESP0 = 0x10;
-RESP1 = 0x11;
 REFP0 = 0x0b;
 REFP1 = 0x0c;
+RESP0 = 0x10;
+RESP1 = 0x11;
+RESM0 = 0x12;
+RESM1 = 0x13;
+RESBL = 0x14;
 
 GRP0 = 0x1b;
 GRP1 = 0x1c;
+ENAM0 = 0x1d;
+ENAM1 = 0x1e;
+ENABL = 0x1f;
 
 VDELP0 = 0x25;
 VDELP1 = 0x26;
@@ -59,6 +65,9 @@ SWCHB = 0x282; // B/W (0) or Color (1)?
 
 isRESP0 = false;
 isRESP1 = false;
+isRESM0 = false;
+isRESM1 = false;
+isRESBL = false;
 
 // https://www.randomterrain.com/atari-2600-memories-tia-color-charts.html#ntsc_pal_color_conversion
 const colors = {
