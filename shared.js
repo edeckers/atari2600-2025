@@ -18,7 +18,7 @@ const tcd = (v) => {
 }
 
 
-const FPS = 60;
+const FPS = 120;
 
 // helpers
 
