@@ -21,6 +21,9 @@ let screen = new Uint8ClampedArray(arrayBuffer);
 
 let resp0x = -1;
 let resp1x = -1;
+let resm0x = -1;
+let resm1x = -1;
+let resblx = -1;
 
 function clearScreen() {
  screen = new Uint8ClampedArray(arrayBuffer);
@@ -37,6 +40,9 @@ function updateScreen(read, tt) {
 
  if (isRESP0) { resp0x = Math.max((d % 228) - hb, 3); isRESP0 = false; }
  if (isRESP1) { resp1x = Math.max((d % 228) - hb, 3); isRESP1 = false; }
+ if (isRESM0) { resm0x = Math.max((d % 228) - hb, 3); isRESM0 = false; }
+ if (isRESM1) { resm1x = Math.max((d % 228) - hb, 3); isRESM1 = false; }
+ if (isRESBL) { resblx = Math.max((d % 228) - hb, 3); isRESBL = false; }
 
  if (!inScreen) { return; }
 
@@ -93,6 +99,9 @@ function updateScreen(read, tt) {
 
  (x >= resp0x) && dp((GRP >> 8) & 0xff, resp0x, COLUP0, NUSIZ0);
  (x >= resp1x) && dp(GRP & 0xff, resp1x, COLUP1, NUSIZ1);
+ (x >= resm0x) && dp(1, resm0x, COLUP0, NUSIZ0);
+ (x >= resm1x) && dp(1, resm1x, COLUP1, NUSIZ1);
+ (x >= resblx) && dp(1, resblx, COLUPF, NUSIZ0);
 
  // VBLANK
  v = (read(VBLANK) & 0x02) ? 0x00 : v;

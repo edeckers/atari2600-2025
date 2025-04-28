@@ -339,7 +339,7 @@ const processors = {
           cc += 4; },
   /* CPY #nn     */ 0xc0: (read) => { const nn = read(pc + 1); const r = (ry - nn) & 0xff; fc = fl(nn > ry); fnu(r); fzu(r); pc += 2; cc += 2; },
   /* CPY nn      */ 0xc4: (read) => { const nn = read(pc + 1); const v = read(nn); const r = (ry - v) & 0xff; fc = fl(v > ry); fnu(r); fzu(r); pc += 2; cc += 3; },
-  /* CMP nn      */ 0xc5: (read) => { const nn = read(pc + 1); const v = read(nn); const r = (ra - v) & 0xff; fc = fl(v > ra); fnu(r); fzu(r); pc += 2; cc += 4; },
+  /* CMP nn      */ 0xc5: (read) => { const nn = read(pc + 1); const v = read(nn); const r = (ra - v) & 0xff; fc = fl(v <= ra); fnu(r); fzu(r); pc += 2; cc += 4; },
   /* DEC nn      */ 0xc6: (read, write) => {
 	  addr = read(pc + 1);
 	  v = (read(addr) - 1) & 0xff;
@@ -350,10 +350,10 @@ const processors = {
 	  pc += 2;
           cc += 5; },
   /* INY         */ 0xc8: () => { ry = (ry + 1) & 0xff; fnu(ry); fzu(ry); pc += 1; cc += 2; },
-  /* CMP #nn     */ 0xc9: (read) => { const nn = read(pc + 1); const r = (ra - nn) & 0xff; fc = fl(nn > ra); fnu(r); fzu(r); pc += 2; cc += 2; },
+  /* CMP #nn     */ 0xc9: (read) => { const nn = read(pc + 1); const r = (ra - nn) & 0xff; fc = fl(nn <= ra); fnu(r); fzu(r); pc += 2; cc += 2; },
   /* DEX         */ 0xca: () => { rx = (rx - 1) & 0xff; fnu(rx); fzu(rx); pc += 1; cc += 2; },
   /* BNE dd      */ 0xd0: (read) => { fz === 0 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
-  /* CMP nn, X   */ 0xd5: (read) => { const nn = read(pc + 1); const v = read((nn + rx) & 0xff); const r = (ra - v) & 0xff; fc = fl(v > ra); fnu(r); fzu(r); pc += 2; cc += 4; },
+  /* CMP nn, X   */ 0xd5: (read) => { const nn = read(pc + 1); const v = read((nn + rx) & 0xff); const r = (ra - v) & 0xff; fc = fl(v <= ra); fnu(r); fzu(r); pc += 2; cc += 4; },
   /* CLD         */ 0xd8: () => { fd = 0; pc += 1; cc += 2; },
   /* CPX #nn     */ 0xe0: (read) => { const nn = read(pc + 1); const r = (rx - nn) & 0xff; fc = fl(rx >= nn); fnu(r); fzu(r); pc += 2; cc += 2; },
   /* SBC (nn, X) */ 0xe1: (read) => {
@@ -482,6 +482,9 @@ const process = async (input, numberOfSteps = undefined) => {
      if (addr === WSYNC) { isWSync = true; return; }
      if (addr === RESP0) { isRESP0 = true; return; }
      if (addr === RESP1) { isRESP1 = true; return; }
+     if (addr === RESM0) { isRESM0 = true; return; }
+     if (addr === RESM1) { isRESM1 = true; return; }
+     if (addr === RESBL) { isRESBL = true; return; }
 
      if (addr === TIM1T) { interval = 1; intim = v - 1; instat &= 0b01000000; console.log("TIM1T"); return; }
      if (addr === TIM8T ) { interval = 8; intim = v - 1; instat &= 0b01000000; console.log("TIM8T"); return; }
