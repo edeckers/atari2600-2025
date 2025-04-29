@@ -42,6 +42,7 @@ const operators = {
   "AND nn": [0x25, 1],
   "AND nn, X": [0x35, 1],
   "AND nnnn, X": [0x3d, 2],
+  "AND nnnn, Y": [0x39, 2],
   "ASL A": [0x0a, 0],
   "ASL nn": [0x06, 1],
   "BCC dd": [0x90, 1],
@@ -75,6 +76,7 @@ const operators = {
   "INX": [0xe8, 0],
   "INY": [0xc8, 0],
   "JMP nnnn": [0x4c, 2],
+  "JMP (nnnn)": [0x6c, 2],
   "JSR nnnn": [0x20, 2],
   "LDA (nn), X": [0xa1, 1],
   "LAX nn": [0xa7, 1],
@@ -106,6 +108,7 @@ const operators = {
   "PLA": [0x68, 0],
   "ROL A": [0x2a, 0],
   "ROR A": [0x6a, 0],
+  "RTI": [0x40, 0],
   "RTS": [0x60, 0],
   "SBC #nn": [0xe9, 1],
   "SBC (nn, X)": [0xe1, 1],
@@ -294,7 +297,7 @@ const decode = (input) => {
     const operator = romread(rom, pc, 1);
     const [_, l] = operatorLookup[operator];
 
-    const comment = branches.has(operator) ? `    ; ${(pc + 2 + tcd(romread(rom, pc + 1, 1))).toString(16)}` : "";
+    const comment = branches.has(operator) ? `       ; ${(pc + 2 + tcd(romread(rom, pc + 1, 1))).toString(16)}` : "";
 
     lines.push([
       pc.toString(16),

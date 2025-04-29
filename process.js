@@ -30,9 +30,8 @@ var isVSync = false;
 var isVSyncHi = false;
 
 var intim = 0xff;
-var instat = 0b00000000;
+var instat = 0x00;
 var interval = 1;
-// var previnterval = 1;
 var timerCounter = 1;
 
 const pia = new Uint8Array(128);
@@ -132,6 +131,7 @@ const processors = {
 	  cc += 7; },
   /* ORA nn      */ 0x05: (read) => { const nn = read(pc + 1); ra |= read(nn); fnu(ra); fzu(ra); pc += 2; cc += 3; },
   /* ASL nn      */ 0x06: (read, write) => { const v = read(pc + 1); const r = (v << 1) & 0xff; write(pc + 1, r); fc = ((v & 0x80) >> 7); fnu(r); fzu(r); pc += 2; cc += 5;}, // Correct?
+  /* PHP         */ 0x08: (_, write) => { pshsp(write, prstatus()); pc += 1; cc += 3; },
   /* ORA #nn     */ 0x09: (read) => { const nn = read(pc + 1); ra |= nn; fnu(ra); fzu(ra); pc += 2; cc += 2; },
   /* ASL A       */ 0x0a: () => { const ra0 = (ra << 1) & 0xff; fc = ((ra & 0x80) >> 7); ra = ra0; fnu(ra); fzu(ra); pc += 1; cc += 2;}, // Correct?
   /* ORA nnnn    */ 0x0d: (read) => {
@@ -174,7 +174,7 @@ const processors = {
   /* BMI dd      */ 0x30: (read) => { fn === 1 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
   /* AND nn, X   */ 0x35: (read) => { const nn = read(pc + 1); ra = ra & read((nn + rx) & 0xff); fnu(ra); fzu(ra); pc += 2; cc += 4; },
   /* SEC         */ 0x38: () => { fc = 1; pc++; cc += 2;},
-  /* RTI         */ 0x40: (read, write) => {
+  /* RTI         */ 0x40: (read) => {
 	  const st = popsp(read);
 	  const l = popsp(read);
 	  const h = popsp(read);
@@ -472,6 +472,7 @@ const processors = {
           cc += 2; },
   /* INC nn      */ 0xe6: (read, write) => { const nn = read(pc + 1) & 0xff; const r = read(nn) + 1; write(nn, r); fnu(r); fzu(r); pc += 2; cc += 5; },
   /* INX         */ 0xe8: () => { rx = (rx + 1) & 0xff; fnu(rx); fzu(rx); pc += 1; cc += 2; },
+  /* NOP         */ 0xea: () => { pc += 1; cc += 2; },
   /* BEQ dd      */ 0xf0: (read) => { fz === 1 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
   /* INC nn, X   */ 0xf6: (read, write) => { const nn = read(pc + 1) & 0xff; const r = read((nn + rx) & 0xff) + 1; write(nn, r); fnu(r); fzu(r); pc += 2; cc += 5; },
   /* CLD         */ 0xf8: () => { fd = 0; pc += 1; cc += 2; },
@@ -525,8 +526,14 @@ const process = async (input, numberOfSteps = undefined) => {
   }
 
   const read = (addr) => {
-    if (addr === INTIM) { instat &= 0b10000000; /* interval = previnterval; */ return intim; }
-    if (addr === INSTAT) { instat &= 0b10000000; return instat; }
+    if (addr === INTIM) { 
+	    // instat &= 0xBF; // Reset bit 6 on read
+
+	    return intim; }
+    if (addr === INSTAT) {
+	    instat &= 0xBF; // Reset bit 6 on read instat
+	    return instat;
+    }
 
     return mem[addr];
   }
@@ -548,10 +555,10 @@ const process = async (input, numberOfSteps = undefined) => {
      if (addr === RESM1) { isRESM1 = true; return; }
      if (addr === RESBL) { isRESBL = true; return; }
 
-     if (addr === TIM1T) { interval = 1; intim = v - 1; instat &= 0b01000000; /* console.log("TIM1T"); */ return; }
-     if (addr === TIM8T ) { interval = 8; intim = v - 1; instat &= 0b01000000; /* console.log("TIM8T"); */ return; }
-     if (addr === TIM64T) { interval = 64; intim = v - 1; instat &= 0b01000000; /* console.log("TIM64T"); */ return; }
-     if (addr === T1024T) { interval = 1_024; intim = v - 1; instat &= 0b01000000; /* console.log("T1024T"); */ return; }
+     if (addr === TIM1T)  { interval = 1;     intim = (v - 1) & 0xff; instat &= 0x40; return; }
+     if (addr === TIM8T ) { interval = 8;     intim = (v - 1) & 0xff; instat &= 0x40; return; }
+     if (addr === TIM64T) { interval = 64;    intim = (v - 1) & 0xff; instat &= 0x40; return; }
+     if (addr === T1024T) { interval = 1_024; intim = (v - 1) & 0xff; instat &= 0x40; return; }
 
      if (players.has(addr)) {
      	if (addr === GRP0) {
@@ -626,7 +633,7 @@ const process = async (input, numberOfSteps = undefined) => {
   let fs = new Date();
 
   const timerUpdate = (cx) => {
-   if (instat & 0b01000000) {
+   if (instat & 0x40) {
      intim = (intim - 1) & 0xff;
      return;
    }
@@ -634,14 +641,12 @@ const process = async (input, numberOfSteps = undefined) => {
    if (timerCounter <= cx) {
      timerCounter = interval;
      intim--;
-     // console.log("INTIM", intim, interval);
-     
-     if (intim === 0) {
-       instat = 0b11000000;
-       intim = 0xff;
-       // previnterval = interval;
-       // interval = 1;
-     }
+   }
+
+   if (intim <= 0) {
+     instat |= 0xc0; // Set bit 6 and 7 on underflow
+     intim = 0xff;
+     timerCounter = 0xff;
      return;
    }
 
@@ -658,8 +663,6 @@ const process = async (input, numberOfSteps = undefined) => {
       const o = read(pc)
       dbg("pc", pc.toString(16), "o", o.toString(16));
 
-      // printAsm && info(formatASM(toASM(mem, pc)));
-
       const cc0 = cc;
       const p = processors[o];
       const pc0 = pc;
@@ -673,7 +676,7 @@ const process = async (input, numberOfSteps = undefined) => {
 
       printAsm && tr(formatASM(toASM(mem, pc0)))
 
-      w = cc - cc0; // FIXME overflow
+      w = cc - cc0;
 
       timerUpdate(w);
       printState && printStates();
