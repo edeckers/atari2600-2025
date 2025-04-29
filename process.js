@@ -527,6 +527,7 @@ const process = async (input, numberOfSteps = undefined) => {
 
   const read = (addr) => {
     if (addr === INTIM) { 
+	    // console.log("INTIM", intim);
 	    // instat &= 0xBF; // Reset bit 6 on read
 
 	    return intim; }
@@ -633,17 +634,18 @@ const process = async (input, numberOfSteps = undefined) => {
   let fs = new Date();
 
   const timerUpdate = (cx) => {
-   if (instat & 0x40) {
+   if (read(INSTAT) & 0x40) {
      intim = (intim - 1) & 0xff;
      return;
    }
 
+   const t0 = read(INTIM) - 1;
    if (timerCounter <= cx) {
      timerCounter = interval;
-     intim--;
+     write(INTIM, t0 & 0xff);
    }
 
-   if (intim <= 0) {
+   if (t0 <= 0) {
      instat |= 0xc0; // Set bit 6 and 7 on underflow
      intim = 0xff;
      timerCounter = 0xff;
