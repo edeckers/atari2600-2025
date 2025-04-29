@@ -1,5 +1,5 @@
 const printHex = true;
-const printAsm = false;
+const printAsm = true;
 const printState = false;
 
 const logLevel = 1;
@@ -47,9 +47,9 @@ function formatASM(line) {
 
 const formatPc = () => pc.toString(16).padStart(4, "0");
 const formatFx = () => ["c:", fc, "z:", fz, "i:", fi, "d:", fd, "b:", _fb, "_:", 1, "v:", fv, "n:", fn].join(" ")
-const formatRx = () => ["a:", ra.toString(16), "x:", rx.toString(16), "y:", ry.toString(16), "s:", sp.toString(16)].join(" ");
+const formatRx = () => ["a:", ra.toString(16).padStart(2, "0"), "x:", rx.toString(16).padStart(2, "0"), "y:", ry.toString(16).padStart(2, "0"), "s:", sp.toString(16).padStart(2, "0")].join(" ");
 
-let logSteps = 1_500;
+let logSteps = 2_500;
 const tr = (line) => {
   if (logSteps === 0) { return; }
 
