@@ -555,6 +555,7 @@ const operators = {
   "ADC nnnn, X": [0x7d, 2],
   "AND #nn": [0x29, 1],
   "AND nn": [0x25, 1],
+  "AND nn, X": [0x35, 1],
   "AND nnnn, X": [0x3d, 2],
   "ASL A": [0x0a, 0],
   "ASL nn": [0x06, 1],
@@ -578,6 +579,7 @@ const operators = {
   "CPY #nn": [0xc0, 1],
   "CPY nn": [0xc4, 1],
   "DEC nn": [0xc6, 1],
+  "DEC nn, X": [0xd6, 1],
   "DEX": [0xca, 0],
   "CMP nn, X": [0xd5, 1],
   "DEY": [0x88, 0],
@@ -602,13 +604,16 @@ const operators = {
   "LDY nn, X": [0xb4, 1],
   "LDY nn": [0xa4, 1],
   "LDY nnnn": [0xac, 2],
-  "LDX nnnn,Y": [0xbe, 2],
   "LDX #nn": [0xa2, 1],
   "LDX nn": [0xa6, 1],
+  "LDX nn, Y": [0xb6, 2],
+  "LDX nnnn, Y": [0xbe, 2],
   "LSR A": [0x4a, 0],
   "LSR nn": [0x3c, 1],
+  "ORA #nn": [0x09, 1],
   "ORA (nn, X)": [0x01, 1],
   "ORA nn": [0x05, 1],
+  "ORA nn, X": [0x15, 1],
   "ORA nnnn": [0x0d, 2],
   "ORA nnnn, X": [0x1d, 2],
   "PHA": [0x48, 0],
@@ -734,32 +739,6 @@ const scan = (input) => {
   return reachable;
 }
 
-
-function formatHex(input, columns = 10) {
-  const operations = [];
-
-  for (i = 0; i < input.length; i += columns) {
-    operations.push(input.slice(i, i + columns).map(v => v.padStart(2, "0")).join(" "));
-  }
-
-  return operations.join("\n");
-}
-
-function formatASM(line) {
-  const [ops, name] = line;
-
-  const codeAsHex = ops.map(c => c.toString(16).padStart(2, "0"));
-
-  const operand = ops.slice(1);
-
-  return [
-    codeAsHex.join(" ").padEnd(8, " "),
-    name
-	  .replace("nnnn", "nn")
-	  .replace("dd", "nn")
-	  .replace("nn", operand.reverse().map(o => o.toString(16).padStart(2, "0")).join(""))
-  ].join(" ");
-}
 
 function toASM(input, addr) {
   const pc = addr
