@@ -40,7 +40,7 @@ const pia = new Uint8Array(128);
 const fl = (v) => v ? 1 : 0;
 
 const fzu = (v) => fz = fl(v === 0);
-const fnu = (v) => fn = fl(v & 0x80 === 0x80);
+const fnu = (v) => fn = fl((v & 0x80) === 0x80);
 
 const prstatus = () =>{
   let st = 0;
@@ -50,21 +50,35 @@ const prstatus = () =>{
   st |= (fi & 0x01) << 2;
   st |= (fd & 0x01) << 3;
   st |= (_fb & 0x01) << 4;
+  st |= 1 << 5; // Unused / always one
   st |= (fv & 0x01) << 6;
   st |= (fn & 0x01) << 7;
 
   return st;
 }
 
+const restatus = (st) => {
+  fc = (st & 0x01) >> 0;
+  fz = (st & 0x02) >> 1;
+  fi = (st & 0x04) >> 2;
+  fd = (st & 0x08) >> 3;
+  //_fb cannot be updated
+  // Unused bit cannot be updated
+  fv = (st & 0x40) >> 6;
+  fn = (st & 0x80) >> 7;
+ }
+
 // const ramoffs = (addr) => (addr - 0x80) & 0xff;
 
-const printStates = () => {
-  console.log("pc", pc.toString(16).padStart(4, "0"));
-  console.log("f", [fc, fz, fi, fd, _fb, 1, fv, fn].join(" "));
-  console.log("r",
-	  "a", ra.toString(16),
-	  "x", rx.toString(16));
-}
+// const printStates = () => {
+//   console.log("pc", pc.toString(16).padStart(4, "0"));
+//   console.log("f", formatFx());
+//   console.log("r",
+// 	  "a", ra.toString(16),
+// 	  "x", rx.toString(16),
+// 	  "y", ry.toString(16),
+//           "s", sp.toString(16));
+// }
 
 // const rrom = (rom, addr) => rom[offs(addr)]
 
@@ -84,6 +98,20 @@ const word = (read, addr) => {
   return ((h << 8) + l) & 0xffff;
 }
 
+const b2d = (b) => {
+ const h = Math.floor(b / 10);
+ const l = (b % 10) & 0xf;
+
+ return (h << 4) + l;
+}
+
+const d2b = (d) => {
+ const h = (d >> 4) & 0xf;
+ const l = d & 0xf;
+
+ return h * 10 + l;
+}
+
 const processors = {
   /* BRK         */ 0x00: (read, write) => {
 	  // console.log("BRK", "PC", pc.toString(16));
@@ -97,13 +125,14 @@ const processors = {
 
 	  p = word(read, 0xfffe);
 
-	  console.log("BRK", "PC", pc.toString(16), "P", p.toString(16), read(0xffff) << 8, read(0xfffe));
+	  // console.log("BRK", "PC", pc.toString(16), "P", p.toString(16), read(0xffff) << 8, read(0xfffe));
 
 	  pc = p;
 
 	  cc += 7; },
   /* ORA nn      */ 0x05: (read) => { const nn = read(pc + 1); ra |= read(nn); fnu(ra); fzu(ra); pc += 2; cc += 3; },
   /* ASL nn      */ 0x06: (read, write) => { const v = read(pc + 1); const r = (v << 1) & 0xff; write(pc + 1, r); fc = ((v & 0x80) >> 7); fnu(r); fzu(r); pc += 2; cc += 5;}, // Correct?
+  /* ORA #nn     */ 0x09: (read) => { const nn = read(pc + 1); ra |= nn; fnu(ra); fzu(ra); pc += 2; cc += 2; },
   /* ASL A       */ 0x0a: () => { const ra0 = (ra << 1) & 0xff; fc = ((ra & 0x80) >> 7); ra = ra0; fnu(ra); fzu(ra); pc += 1; cc += 2;}, // Correct?
   /* ORA nnnn    */ 0x0d: (read) => {
 	  const nnnn = word(read, pc + 1);
@@ -145,7 +174,21 @@ const processors = {
   /* BMI dd      */ 0x30: (read) => { fn === 1 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
   /* AND nn, X   */ 0x35: (read) => { const nn = read(pc + 1); ra = ra & read((nn + rx) & 0xff); fnu(ra); fzu(ra); pc += 2; cc += 4; },
   /* SEC         */ 0x38: () => { fc = 1; pc++; cc += 2;},
-  /* EOR (nn, X) */ 0x41: (read) => { const nn = read(pc + 1); ra ^= read(word(read, (nn + x) & 0xff)); fnu(ra); fzu(ra); pc += 2; cc += 6; },
+  /* RTI         */ 0x40: (read, write) => {
+	  const st = popsp(read);
+	  const l = popsp(read);
+	  const h = popsp(read);
+
+	  restatus(st);
+
+	  p = (h << 8) + l;
+
+	  // console.log("RTI", "PC", pc.toString(16), "P", p.toString(16), read(0xffff) << 8, read(0xfffe));
+
+	  pc = p;
+
+	  cc += 6; },
+  /* EOR (nn, X) */ 0x41: (read) => { const nn = read(pc + 1); ra ^= read(word(read, (nn + rx) & 0xff)); fnu(ra); fzu(ra); pc += 2; cc += 6; },
   /* EOR nn      */ 0x45: (read) => { const nn = read(pc + 1); ra ^= read(nn); fnu(ra); fzu(ra); pc += 2; cc += 3; },
   /* PHA         */ 0x48: (_, write) => { pshsp(write, ra); pc += 1; cc += 3; },
   /* EOR #nn     */ 0x49: (read) => { const nn = read(pc + 1); ra ^= nn; fnu(ra); fzu(ra); pc += 2; cc += 2; },
@@ -162,9 +205,11 @@ const processors = {
 	
 	  const v0 = read(nn) & 0xff;
 
-	  const v = fd ? (v0 >> 4) * 10 + (v0 & 0x0f) : v0;
+	  const v = fd ? b2d(v0) : v0;
 
-	  const r = ra + fc + v;
+	  const r0 = fd ? b2d(ra) + fc + b2d(v) : ra + fc + v;
+	  const r = fd ? d2b(r0) : r0;
+
 	  ra = r & 0xff;
 
 	  fnu(ra);
@@ -178,9 +223,11 @@ const processors = {
   /* ADC #nn     */ 0x69: (read) => {
 	  const nn = read(pc + 1);
 
-	  const v = fd ? (nn >> 4) * 10 + (nn & 0x0f) : nn;
+	  const v = fd ? b2d(nn) : nn;
 
-	  const r = ra + fc + v;
+	  const r0 = fd ? b2d(ra) + fc + b2d(v) : ra + fc + v;
+	  const r = fd ? d2b(r0) : r0;
+
 	  ra = r & 0xff;
 
 	  fnu(ra);
@@ -197,9 +244,11 @@ const processors = {
 
 	  const v0 = read(nn + rx) & 0xff;
 
-	  const v = fd ? (v0 >> 4) * 10 + (v0 & 0x0f) : v0;
+	  const v = fd ? b2d(v0) : v0;
 
-	  const r = ra + fc + v;
+	  const r0 = fd ? b2d(ra) + fc + b2d(v) : ra + fc + v;
+	  const r = fd ? d2b(r0) : r0;
+
 	  ra = r & 0xff;
 
 	  fnu(ra);
@@ -337,34 +386,45 @@ const processors = {
 	  fzu(rx);
 	  pc += 3;
           cc += 4; },
-  /* CPY #nn     */ 0xc0: (read) => { const nn = read(pc + 1); const r = (ry - nn) & 0xff; fc = fl(nn > ry); fnu(r); fzu(r); pc += 2; cc += 2; },
-  /* CPY nn      */ 0xc4: (read) => { const nn = read(pc + 1); const v = read(nn); const r = (ry - v) & 0xff; fc = fl(v > ry); fnu(r); fzu(r); pc += 2; cc += 3; },
+  /* CPY #nn     */ 0xc0: (read) => { const nn = read(pc + 1); const r = (ry - nn) & 0xff; fc = fl(nn <= ry); fnu(r); fzu(r); pc += 2; cc += 2; },
+  /* CPY nn      */ 0xc4: (read) => { const nn = read(pc + 1); const v = read(nn); const r = (ry - v) & 0xff; fc = fl(v <= ry); fnu(r); fzu(r); pc += 2; cc += 3; },
   /* CMP nn      */ 0xc5: (read) => { const nn = read(pc + 1); const v = read(nn); const r = (ra - v) & 0xff; fc = fl(v <= ra); fnu(r); fzu(r); pc += 2; cc += 4; },
   /* DEC nn      */ 0xc6: (read, write) => {
-	  addr = read(pc + 1);
-	  v = (read(addr) - 1) & 0xff;
-	  write(addr, v);
+	  nn = read(pc + 1);
+	  v = (read(nn) - 1) & 0xff;
+	  write(nn, v);
 
 	  fnu(v);
 	  fzu(v);
 	  pc += 2;
           cc += 5; },
+   /* DEC nn, X   */ 0xd6: (read, write) => {
+	  nn = read(pc + 1);
+	  v = (read((nn + rx) & 0xff) - 1) & 0xff;
+	  write(nn, v);
+
+	  fnu(v);
+	  fzu(v);
+	  pc += 2;
+          cc += 6; },
   /* INY         */ 0xc8: () => { ry = (ry + 1) & 0xff; fnu(ry); fzu(ry); pc += 1; cc += 2; },
   /* CMP #nn     */ 0xc9: (read) => { const nn = read(pc + 1); const r = (ra - nn) & 0xff; fc = fl(nn <= ra); fnu(r); fzu(r); pc += 2; cc += 2; },
   /* DEX         */ 0xca: () => { rx = (rx - 1) & 0xff; fnu(rx); fzu(rx); pc += 1; cc += 2; },
   /* BNE dd      */ 0xd0: (read) => { fz === 0 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
   /* CMP nn, X   */ 0xd5: (read) => { const nn = read(pc + 1); const v = read((nn + rx) & 0xff); const r = (ra - v) & 0xff; fc = fl(v <= ra); fnu(r); fzu(r); pc += 2; cc += 4; },
   /* CLD         */ 0xd8: () => { fd = 0; pc += 1; cc += 2; },
-  /* CPX #nn     */ 0xe0: (read) => { const nn = read(pc + 1); const r = (rx - nn) & 0xff; fc = fl(rx >= nn); fnu(r); fzu(r); pc += 2; cc += 2; },
+  /* CPX #nn     */ 0xe0: (read) => { const nn = read(pc + 1); const r = (rx - nn) & 0xff; fc = fl(nn <= rx); fnu(r); fzu(r); pc += 2; cc += 2; },
   /* SBC (nn, X) */ 0xe1: (read) => {
 	  const nn = read(pc + 1)
 	  const addr = word(read, (nn + rx) & 0xff);
 
 	  const v0 = read(addr) & 0xff;
 
-	  const v = fd ? (v0 >> 4) * 10 + (v0 & 0x0f) : v0;
+	  const v = fd ? b2d(v0) : v0;
 
-	  const r = ra + fc - 1 - v;
+	  const r0 = fd ? b2d(ra) + fc - 1 - b2d(v) : ra + fc - 1 - v;
+
+	  const r = fd ? d2b(r0) : r0;
 	  ra = r & 0xff;
 
 	  fnu(ra);
@@ -379,9 +439,9 @@ const processors = {
 
 	  const nn0 = read(nn) & 0xff;
 
-	  const v = fd ? (nn0 >> 4) * 10 + (nn0 & 0x0f) : nn0;
+	  const v = fd ? b2d(nn0) : nn0;
 
-	  const r = ra + fc - 1 - v;
+	  const r = fd ? b2d(ra) + fc - 1 - b2d(v) : ra + fc - 1 - v;
 
 	  ra = r & 0xff;
 
@@ -395,9 +455,11 @@ const processors = {
     /* SBC #nn   */ 0xe9: (read) => {
 	  const nn = read(pc + 1);
 
-	  const v = fd ? (nn >> 4) * 10 + (nn & 0x0f) : nn;
+	  const v = fd ? b2d(nn) : nn;
 
-	  const r = ra + fc - 1 - v;
+	  const r0 = fd ? b2d(ra) + fc - 1 - b2d(v) : ra + fc - 1 - v;
+
+	  const r = fd ? d2b(r0) : r0;
 
 	  ra = r & 0xff;
 
@@ -445,7 +507,7 @@ const rev8 = (xs) => {
 const flip8 = (xs) => {
     return ~xs & 0xff;
 }
-
+let vSyncCount = 0;
 const process = async (input, numberOfSteps = undefined) => {
   let isKilled = false;
 
@@ -486,10 +548,10 @@ const process = async (input, numberOfSteps = undefined) => {
      if (addr === RESM1) { isRESM1 = true; return; }
      if (addr === RESBL) { isRESBL = true; return; }
 
-     if (addr === TIM1T) { interval = 1; intim = v - 1; instat &= 0b01000000; console.log("TIM1T"); return; }
-     if (addr === TIM8T ) { interval = 8; intim = v - 1; instat &= 0b01000000; console.log("TIM8T"); return; }
-     if (addr === TIM64T) { interval = 64; intim = v - 1; instat &= 0b01000000; console.log("TIM64T"); return; }
-     if (addr === T1024T) { interval = 1_024; intim = v - 1; instat &= 0b01000000; console.log("T1024T"); return; }
+     if (addr === TIM1T) { interval = 1; intim = v - 1; instat &= 0b01000000; /* console.log("TIM1T"); */ return; }
+     if (addr === TIM8T ) { interval = 8; intim = v - 1; instat &= 0b01000000; /* console.log("TIM8T"); */ return; }
+     if (addr === TIM64T) { interval = 64; intim = v - 1; instat &= 0b01000000; /* console.log("TIM64T"); */ return; }
+     if (addr === T1024T) { interval = 1_024; intim = v - 1; instat &= 0b01000000; /* console.log("T1024T"); */ return; }
 
      if (players.has(addr)) {
      	if (addr === GRP0) {
@@ -596,10 +658,11 @@ const process = async (input, numberOfSteps = undefined) => {
       const o = read(pc)
       dbg("pc", pc.toString(16), "o", o.toString(16));
 
-      // printAsm && info(formatASM(toASM(rom, pc)));
+      // printAsm && info(formatASM(toASM(mem, pc)));
 
       const cc0 = cc;
       const p = processors[o];
+      const pc0 = pc;
 
       try {
        p(read, write);
@@ -607,6 +670,8 @@ const process = async (input, numberOfSteps = undefined) => {
         console.log(e, pc.toString(16), "o", o.toString(16))
 	debugger;
       }
+
+      printAsm && tr(formatASM(toASM(mem, pc0)))
 
       w = cc - cc0; // FIXME overflow
 

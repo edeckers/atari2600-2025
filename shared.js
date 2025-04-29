@@ -1,5 +1,5 @@
 const printHex = true;
-const printAsm = true;
+const printAsm = false;
 const printState = false;
 
 const logLevel = 1;
@@ -15,6 +15,47 @@ const tcd = (v) => {
  // has MSB = 1 -> return 2s complement -> 0x80 = -128, 0x81 = -127, 0x82 = -126, etc.
  // return  (v & 0x80) ? -(0x80 - (v & 0x7f)) : v & 0xff;
  return (v & 0x80) ? -(((~v & 0x7f) + 1) & 0xff) : v & 0xff;
+}
+
+
+
+function formatHex(input, columns = 10) {
+  const operations = [];
+
+  for (i = 0; i < input.length; i += columns) {
+    operations.push(input.slice(i, i + columns).map(v => v.padStart(2, "0")).join(" "));
+  }
+
+  return operations.join("\n");
+}
+
+function formatASM(line) {
+  const [ops, name] = line;
+
+  const codeAsHex = ops.map(c => c.toString(16).padStart(2, "0"));
+
+  const operand = ops.slice(1);
+
+  return [
+    codeAsHex.join(" ").padEnd(8, " "),
+    name
+	  .replace("nnnn", "nn")
+	  .replace("dd", "nn")
+	  .replace("nn", operand.reverse().map(o => o.toString(16).padStart(2, "0")).join(""))
+  ].join(" ");
+}
+
+const formatPc = () => pc.toString(16).padStart(4, "0");
+const formatFx = () => ["c:", fc, "z:", fz, "i:", fi, "d:", fd, "b:", _fb, "_:", 1, "v:", fv, "n:", fn].join(" ")
+const formatRx = () => ["a:", ra.toString(16), "x:", rx.toString(16), "y:", ry.toString(16), "s:", sp.toString(16)].join(" ");
+
+let logSteps = 1_500;
+const tr = (line) => {
+  if (logSteps === 0) { return; }
+
+  const plx = line.padEnd(20, " ");
+  trace.value +=  [plx, formatPc(), formatFx(), formatRx()].join(" ") + "\n";
+  logSteps--;
 }
 
 

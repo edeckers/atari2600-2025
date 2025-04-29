@@ -28,6 +28,24 @@
 		   const startRom = () => {
 		     const rom = roms[romName];
                      const romBytes = loadFromBase64(rom);
+		     rx = 0;
+		     ry = 0;
+		     ra = 0;
+		     sp = 0;
+
+		     fc = 0;
+                     fc = 0;
+                     fn = 0;
+                     fi = 0;
+                     fd = 0;
+                     _fb = 0;
+                     fv = 0;
+                     fz = 0;
+
+		     pc = 0;
+
+		     trace.value = "";
+		     logSteps = 1_500;
 		     process(romBytes);
 		   }
                    
@@ -50,6 +68,7 @@
 
 		   document.addEventListener("draw", () => { frc++; });
 		   document.addEventListener("chrom", () => { startRom(); });
+		   document.addEventListener("trace", () => { startRom(); });
 
 		</script>
 	</head>
@@ -69,5 +88,6 @@
 		    <option value="pongsports">Pong Sports</option>
 		  </select>
 		</div>
+		<div><textarea id="trace" rows="10" cols="50"></textarea></div>
 	</body>
 </html>
