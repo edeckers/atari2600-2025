@@ -205,7 +205,7 @@ const processors = {
 	
 	  const v0 = read(nn) & 0xff;
 
-	  const v = fd ? b2d(v0) : v0;
+	  const v = fd ? b2d(v0) : tcd(v0);
 
 	  const r0 = fd ? b2d(ra) + fc + b2d(v) : ra + fc + v;
 	  const r = fd ? d2b(r0) : r0;
@@ -223,7 +223,7 @@ const processors = {
   /* ADC #nn     */ 0x69: (read) => {
 	  const nn = read(pc + 1);
 
-	  const v = fd ? b2d(nn) : nn;
+	  const v = fd ? b2d(nn) : tcd(nn);
 
 	  const r0 = fd ? b2d(ra) + fc + b2d(v) : ra + fc + v;
 	  const r = fd ? d2b(r0) : r0;
@@ -244,7 +244,7 @@ const processors = {
 
 	  const v0 = read(nn + rx) & 0xff;
 
-	  const v = fd ? b2d(v0) : v0;
+	  const v = fd ? b2d(v0) : tcd(v0);
 
 	  const r0 = fd ? b2d(ra) + fc + b2d(v) : ra + fc + v;
 	  const r = fd ? d2b(r0) : r0;
@@ -257,6 +257,25 @@ const processors = {
 	  fc = fl(fd ? r > 99 : r > 0xff);
 
 	  pc += 2;
+          cc += 4; },
+  /* ADC nnnn, Y   */ 0x79: (read) => {
+	  const nnnn = word(read, pc + 1);
+
+	  const v0 = read((nnnn + ry) & 0xffff) & 0xff;
+
+	  const v = fd ? b2d(v0) : tcd(v0);
+
+	  const r0 = fd ? b2d(ra) + fc + b2d(v) : ra + fc + v;
+	  const r = fd ? d2b(r0) : r0;
+
+	  ra = r & 0xff;
+
+	  fnu(ra);
+	  fzu(ra);
+	  fv = fl(r !== ra);
+	  fc = fl(fd ? r > 99 : r > 0xff);
+
+	  pc += 3;
           cc += 4; },
   /* SEI         */ 0x78: () => { fi = 1; pc++; cc += 2;},
   /* STY nn      */ 0x84: (read, write) => { const nn = read(pc + 1); write(nn, ry & 0xff); pc += 2; cc += 3; },
@@ -420,7 +439,7 @@ const processors = {
 
 	  const v0 = read(addr) & 0xff;
 
-	  const v = fd ? b2d(v0) : v0;
+	  const v = fd ? b2d(v0) : tcd(v0);
 
 	  const r0 = fd ? b2d(ra) + fc - 1 - b2d(v) : ra + fc - 1 - v;
 
@@ -430,7 +449,7 @@ const processors = {
 	  fnu(ra);
 	  fzu(ra);
 	  fv = fl(r !== ra);
-	  fc = fl(ra >= 0);
+	  fc = fl(r >= 0);
 
 	  pc += 2;
           cc += 6; },
@@ -439,7 +458,7 @@ const processors = {
 
 	  const nn0 = read(nn) & 0xff;
 
-	  const v = fd ? b2d(nn0) : nn0;
+	  const v = fd ? b2d(nn0) : tcd(nn0);
 
 	  const r = fd ? b2d(ra) + fc - 1 - b2d(v) : ra + fc - 1 - v;
 
@@ -448,14 +467,14 @@ const processors = {
 	  fnu(ra);
 	  fzu(ra);
 	  fv = fl(r !== ra);
-	  fc = fl(ra >= 0);
+	  fc = fl(r >= 0);
 
 	  pc += 2;
           cc += 3; },
     /* SBC #nn   */ 0xe9: (read) => {
 	  const nn = read(pc + 1);
 
-	  const v = fd ? b2d(nn) : nn;
+	  const v = fd ? b2d(nn) : tcd(nn);
 
 	  const r0 = fd ? b2d(ra) + fc - 1 - b2d(v) : ra + fc - 1 - v;
 
@@ -466,7 +485,7 @@ const processors = {
 	  fnu(ra);
 	  fzu(ra);
 	  fv = fl(r !== ra);
-	  fc = fl(ra >= 0);
+	  fc = fl(r >= 0);
 
 	  pc += 2;
           cc += 2; },
@@ -530,7 +549,7 @@ const process = async (input, numberOfSteps = undefined) => {
 	    // console.log("INTIM", intim);
 	    // instat &= 0xBF; // Reset bit 6 on read
 
-	    return intim; }
+	    return mem[addr]; }
     if (addr === INSTAT) {
 	    instat &= 0xBF; // Reset bit 6 on read instat
 	    return instat;
@@ -556,10 +575,10 @@ const process = async (input, numberOfSteps = undefined) => {
      if (addr === RESM1) { isRESM1 = true; return; }
      if (addr === RESBL) { isRESBL = true; return; }
 
-     if (addr === TIM1T)  { interval = 1;     intim = (v - 1) & 0xff; instat &= 0x40; return; }
-     if (addr === TIM8T ) { interval = 8;     intim = (v - 1) & 0xff; instat &= 0x40; return; }
-     if (addr === TIM64T) { interval = 64;    intim = (v - 1) & 0xff; instat &= 0x40; return; }
-     if (addr === T1024T) { interval = 1_024; intim = (v - 1) & 0xff; instat &= 0x40; return; }
+     if (addr === TIM1T)  { interval = 1;     mem[INTIM] = Math.max((v - 1), 0) & 0xff; instat &= 0x40; return; }
+     if (addr === TIM8T)  { interval = 8;     mem[INTIM] = Math.max((v - 1), 0) & 0xff; instat &= 0x40; return; }
+     if (addr === TIM64T) { interval = 64;    mem[INTIM] = Math.max((v - 1), 0) & 0xff; instat &= 0x40; return; }
+     if (addr === T1024T) { interval = 1_024; mem[INTIM] = Math.max((v - 1), 0) & 0xff; instat &= 0x40; return; }
 
      if (players.has(addr)) {
      	if (addr === GRP0) {
@@ -639,13 +658,18 @@ const process = async (input, numberOfSteps = undefined) => {
      return;
    }
 
-   const t0 = read(INTIM) - 1;
-   if (timerCounter <= cx) {
-     timerCounter = interval;
-     write(INTIM, t0 & 0xff);
+   const update = () => {
+      if (timerCounter <= cx) {
+	const t0 = read(INTIM) - 1;
+        timerCounter = interval;
+        write(INTIM, Math.max(t0 & 0xff, 0));
+	return t0;
+      }
+
+      return read(INTIM);
    }
 
-   if (t0 <= 0) {
+   if (update() <= 0) {
      instat |= 0xc0; // Set bit 6 and 7 on underflow
      intim = 0xff;
      timerCounter = 0xff;
