@@ -17,6 +17,13 @@ const tcd = (v) => {
  return (v & 0x80) ? -(((~v & 0x7f) + 1) & 0xff) : v & 0xff;
 }
 
+const tcd4 = (v) => {
+ // has MSB = 0 -> return as is
+ // has MSB = 1 -> return 2s complement -> 0x80 = -128, 0x81 = -127, 0x82 = -126, etc.
+ // return  (v & 0x80) ? -(0x80 - (v & 0x7f)) : v & 0xff;
+ return (v & 0x08) ? -(((~v & 0x07) + 1) & 0x0f) : v & 0x0f;
+}
+
 
 
 function formatHex(input, columns = 10) {
@@ -94,6 +101,13 @@ ENABL = 0x1f;
 
 VDELP0 = 0x25;
 VDELP1 = 0x26;
+HMP0 = 0x20;
+HMP1 = 0x21;
+HMM0 = 0x22;
+HMM1 = 0x23;
+HMBL = 0x24;
+HMOVE = 0x2a;
+HMCLR = 0x2b;
 
 INTIM = 0x284;
 INSTAT = 0x285;
@@ -109,6 +123,9 @@ isRESP1 = false;
 isRESM0 = false;
 isRESM1 = false;
 isRESBL = false;
+
+isHMOVE = false;
+isHMCLR = false;
 
 // https://www.randomterrain.com/atari-2600-memories-tia-color-charts.html#ntsc_pal_color_conversion
 const colors = {

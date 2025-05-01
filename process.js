@@ -29,7 +29,6 @@ var isWSync = false;
 var isVSync = false;
 var isVSyncHi = false;
 
-var intim = 0xff;
 var instat = 0x00;
 var interval = 1;
 var timerCounter = 1;
@@ -545,11 +544,12 @@ const process = async (input, numberOfSteps = undefined) => {
   }
 
   const read = (addr) => {
-    if (addr === INTIM) { 
-	    // console.log("INTIM", intim);
-	    // instat &= 0xBF; // Reset bit 6 on read
+    if (addr === HMP0) { return hmp0; }
+    if (addr === HMP1) { return hmp1; }
+    if (addr === HMM0) { return hmm0; }
+    if (addr === HMM1) { return hmm1; }
+    if (addr === HMBL) { return hmbl; }
 
-	    return mem[addr]; }
     if (addr === INSTAT) {
 	    instat &= 0xBF; // Reset bit 6 on read instat
 	    return instat;
@@ -560,6 +560,9 @@ const process = async (input, numberOfSteps = undefined) => {
 
   const write = (addr, v) => {
      dbg("write", addr.toString(16), v);
+
+     if (addr === HMP0) { hmp0 = v; return; }
+     if (addr === HMP1) { hmp1 = v; return; }
 
      if (addr === VSYNC) {
 	 newIsVsync = (v & 0x02) === 0x02;
@@ -574,6 +577,9 @@ const process = async (input, numberOfSteps = undefined) => {
      if (addr === RESM0) { isRESM0 = true; return; }
      if (addr === RESM1) { isRESM1 = true; return; }
      if (addr === RESBL) { isRESBL = true; return; }
+
+     if (addr === HMOVE) { isHMOVE = true; return; }
+     if (addr === HMCLR) { isHMCLR = true; return; }
 
      if (addr === TIM1T)  { interval = 1;     mem[INTIM] = Math.max((v - 1), 0) & 0xff; instat &= 0x40; return; }
      if (addr === TIM8T)  { interval = 8;     mem[INTIM] = Math.max((v - 1), 0) & 0xff; instat &= 0x40; return; }
@@ -654,7 +660,8 @@ const process = async (input, numberOfSteps = undefined) => {
 
   const timerUpdate = (cx) => {
    if (read(INSTAT) & 0x40) {
-     intim = (intim - 1) & 0xff;
+     // intim = (intim - 1) & 0xff;
+     write(INTIM, (read(INTIM) - 1) & 0xff);
      return;
    }
 
@@ -671,7 +678,7 @@ const process = async (input, numberOfSteps = undefined) => {
 
    if (update() <= 0) {
      instat |= 0xc0; // Set bit 6 and 7 on underflow
-     intim = 0xff;
+     // intim = 0xff;
      timerCounter = 0xff;
      return;
    }

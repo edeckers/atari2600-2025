@@ -25,6 +25,12 @@ let resm0x = -1;
 let resm1x = -1;
 let resblx = -1;
 
+let hmp0 = 0;
+let hmp1 = 0;
+let hmm0 = 0;
+let hmm1 = 0;
+let hmbl = 0;
+
 function clearScreen() {
  screen = new Uint8ClampedArray(arrayBuffer);
 }
@@ -43,6 +49,23 @@ function updateScreen(read, tt) {
  if (isRESM0) { resm0x = Math.max((tt % 228) - hb, 3); isRESM0 = false; }
  if (isRESM1) { resm1x = Math.max((tt % 228) - hb, 3); isRESM1 = false; }
  if (isRESBL) { resblx = Math.max((tt % 228) - hb, 3); isRESBL = false; }
+ if (isHMOVE) { 
+	 resp0x = (resp0x + tcd4((hmp0 >> 4) & 0xf) * -1) % 160;
+	 resp1x = (resp1x + tcd4((hmp1 >> 4) & 0xf) * -1) % 160;
+	 resm0x = (resm0x + tcd4((hmm0 >> 4) & 0xf) * -1) % 160;
+	 resm1x = (resm1x + tcd4((hmm1 >> 4) & 0xf) * -1) % 160;
+	 resblx = (resblx + tcd4((hmbl >> 4) & 0xf) * -1) % 160;
+
+	 isHMOVE = false; }
+
+ if (isHMCLR) {
+	 resp0x = 0;
+	 resp1x = 0;
+	 resm0x = 0;
+	 resm1x = 0;
+	 resblx = 0;
+
+	 isHMCLR = false; }
 
  if (!inScreen) { return; }
 
