@@ -38,11 +38,11 @@ function updateScreen(read, tt) {
 
  const d = tt - vb;
 
- if (isRESP0) { resp0x = Math.max((d % 228) - hb, 3); isRESP0 = false; }
- if (isRESP1) { resp1x = Math.max((d % 228) - hb, 3); isRESP1 = false; }
- if (isRESM0) { resm0x = Math.max((d % 228) - hb, 3); isRESM0 = false; }
- if (isRESM1) { resm1x = Math.max((d % 228) - hb, 3); isRESM1 = false; }
- if (isRESBL) { resblx = Math.max((d % 228) - hb, 3); isRESBL = false; }
+ if (isRESP0) { resp0x = Math.max((tt % 228) - hb, 3); isRESP0 = false; }
+ if (isRESP1) { resp1x = Math.max((tt % 228) - hb, 3); isRESP1 = false; }
+ if (isRESM0) { resm0x = Math.max((tt % 228) - hb, 3); isRESM0 = false; }
+ if (isRESM1) { resm1x = Math.max((tt % 228) - hb, 3); isRESM1 = false; }
+ if (isRESBL) { resblx = Math.max((tt % 228) - hb, 3); isRESBL = false; }
 
  if (!inScreen) { return; }
 
