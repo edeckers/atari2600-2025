@@ -679,6 +679,7 @@ const process = async (input, numberOfSteps = undefined) => {
    timerCounter -= cx;
   }
 
+  let j =0 ;
   while (numberOfSteps ? i < numberOfSteps : !isKilled) {
     w = Math.max(w - 1, 0);
     w = isWSync ? 0 : w;
@@ -708,6 +709,12 @@ const process = async (input, numberOfSteps = undefined) => {
       printState && printStates();
     }
 
+    // if ((pc >= 0xf0bb)) {
+    //     console.log("PC", pc.toString(16), "o", operatorLookup[read(pc)], "w", w.toString(16), "isWSync", isWSync, "x", s % 228, "rx", rx);
+    //     j++;
+    //     
+    //     if (j > 100) { debugger; }
+    // }
 
     for (let a = 0; a < 3; a++) {
       updateScreen(read, s);
