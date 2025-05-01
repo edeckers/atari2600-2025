@@ -44,6 +44,7 @@ function updateScreen(read, tt) {
 
  const d = tt - vb;
 
+   
  if (isRESP0) { resp0x = Math.max((tt % 228) - hb, 3); isRESP0 = false; }
  if (isRESP1) { resp1x = Math.max((tt % 228) - hb, 3); isRESP1 = false; }
  if (isRESM0) { resm0x = Math.max((tt % 228) - hb, 3); isRESM0 = false; }
@@ -59,11 +60,18 @@ function updateScreen(read, tt) {
 	 isHMOVE = false; }
 
  if (isHMCLR) {
-	 resp0x = 0;
-	 resp1x = 0;
-	 resm0x = 0;
-	 resm1x = 0;
-	 resblx = 0;
+	 console.log("HMCLR", resp0x, resp1x, resm0x, resm1x, resblx);
+	 // resp0x -= hmp0;
+	 // resp1x -= hmp1;
+	 // resm0x -= hmm0;
+	 // resm1x -= hmm1;
+	 // resblx -= hmbl;
+
+	 // hmp0= 0;
+	 // hmp1= 0;
+	 // hmm0= 0;
+	 // hmm1= 0;
+	 // hmbl= 0;
 
 	 isHMCLR = false; }
 
@@ -90,21 +98,22 @@ function updateScreen(read, tt) {
           Math.ceil((isMirror ? (x - 80) : (80 - (x - 80))) / 4);
 
  const pfBit = Math.pow(2, pw - 1);
- const pfColor = isScore ? read(isPfLeft ? COLUP0 : COLUP1) : read(COLUPF);
+ const pfColor = 0xf0; // isScore ? read(isPfLeft ? COLUP0 : COLUP1) : read(COLUPF);
 
  (pfBit & PF) && (v = pfColor);
 
  // PLAYERS
  const dp = (grp, rp, colup, nusiz) => {
-   const isCopy = nusiz & 0xa0 === 0x00; // bit 5 and 7 are for wides
-   const size = (nusiz & 0x80) ? 4 : (nusiz & 0x20) ? 2 : 1; // bit 5 = 2x, bit 7 = 4x
+   const psz = read(nusiz) & 7
+   const isCopy = ((psz !== 5) && (psz !== 7)); // 5 and 7 are for wides
+   const size = (psz === 7) ? 4 : ((psz === 5) ? 2 : 1); // 5 = 2x, 7 = 4x
 
    const drawCopy = (ofx) => {
-     const d = Math.floor((x - (rp + ofx)) / size);
-     if (d < 0) { return; }
-     if (d > 8) { return; }
+     const q = Math.floor((x - (rp + ofx)) / size);
+     if (q < 0) { return; }
+     if (q > 8) { return; }
 
-     v = (grp & Math.pow(2, 9 - d)) ? read(colup) : v;
+     v = (read(grp) & Math.pow(2, 9 - q)) ? 0xff /* read(colup) */ : v;
    }
 
    drawCopy(0);
@@ -113,21 +122,21 @@ function updateScreen(read, tt) {
      return;
    }
 
-   (nusiz & 0x02) && drawCopy(16);
-   (nusiz & 0x04) && drawCopy(32);
-   (nusiz & 0x08) && (drawCopy(16), drawCopy(32));
-   (nusiz & 0x10) && drawCopy(56);
-   (nusiz & 0x40) && (drawCopy(16), drawCopy(32), drawCopy(56));
+   (psz === 1) && drawCopy(16);
+   (psz === 2) && drawCopy(32);
+   (psz === 3) && (drawCopy(16), drawCopy(32));
+   (psz === 4) && drawCopy(56);
+   (psz === 6) && (drawCopy(16), drawCopy(32), drawCopy(56));
  }
 
- (x >= resp0x) && dp((GRP >> 8) & 0xff, resp0x, COLUP0, NUSIZ0);
- (x >= resp1x) && dp(GRP & 0xff, resp1x, COLUP1, NUSIZ1);
- (x >= resm0x) && dp(1, resm0x, COLUP0, NUSIZ0);
- (x >= resm1x) && dp(1, resm1x, COLUP1, NUSIZ1);
- (x >= resblx) && dp(1, resblx, COLUPF, NUSIZ0);
+ (x >= resp0x) && dp(GRP0, resp0x, COLUP0, NUSIZ0);
+ // (x >= resp1x) && dp(GRP1, resp1x, COLUP1, NUSIZ1);
+ // (x >= resm0x) && dp(1, resm0x, COLUP0, NUSIZ0);
+ // (x >= resm1x) && dp(1, resm1x, COLUP1, NUSIZ1);
+ // (x >= resblx) && dp(1, resblx, COLUPF, NUSIZ0);
 
  // VBLANK
- v = (read(VBLANK) & 0x02) ? 0x00 : v;
+ // v = (read(VBLANK) & 0x02) ? 0x00 : v;
 
  const [r, g, b] = colors[v - (v % 2)] ?? [0x00, 0x00, 0x00];
 

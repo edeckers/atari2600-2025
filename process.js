@@ -110,6 +110,37 @@ const d2b = (d) => {
  return h * 10 + l;
 }
 
+const indiry = (read, nn) => {
+  const o = read(nn) + ry;
+  const o2 = o % 0xff;
+  const c = o2 < o ? 1 : 0;
+
+  const l = read(o2) & 0xff;
+  const h = (read(o2 + 1) + c) & 0xff;
+
+  const addr = ((h << 8) + l) & 0xffff;
+  
+  const r = read(addr);
+  
+  return read(r) & 0xffff;
+}
+
+const indirx = (read, nn) => {
+  const o = nn + rx;
+  const o2 = (nn + rx) % 0xff;
+  const c = o2 < o ? 1 : 0;
+
+  const l = read(o2) & 0xff;
+  const h = (read(o2 + 1) + c) & 0xff;
+
+  const addr = ((h << 8) + l) & 0xffff;
+  
+  const r = read(addr);
+  
+  return read(r) & 0xffff;
+}
+
+
 const processors = {
   /* BRK         */ 0x00: (read, write) => {
 	  // console.log("BRK", "PC", pc.toString(16));
@@ -129,10 +160,10 @@ const processors = {
 
 	  cc += 7; },
   /* ORA nn      */ 0x05: (read) => { const nn = read(pc + 1); ra |= read(nn); fnu(ra); fzu(ra); pc += 2; cc += 3; },
-  /* ASL nn      */ 0x06: (read, write) => { const v = read(pc + 1); const r = (v << 1) & 0xff; write(pc + 1, r); fc = ((v & 0x80) >> 7); fnu(r); fzu(r); pc += 2; cc += 5;}, // Correct?
+  /* ASL nn      */ 0x06: (read, write) => { const nn = read(pc + 1); const r = (nn << 1) & 0xff; write(pc + 1, r); fc = ((nn & 0x80) >> 7); fnu(r); fzu(r); pc += 2; cc += 5;},
   /* PHP         */ 0x08: (_, write) => { pshsp(write, prstatus()); pc += 1; cc += 3; },
   /* ORA #nn     */ 0x09: (read) => { const nn = read(pc + 1); ra |= nn; fnu(ra); fzu(ra); pc += 2; cc += 2; },
-  /* ASL A       */ 0x0a: () => { const ra0 = (ra << 1) & 0xff; fc = ((ra & 0x80) >> 7); ra = ra0; fnu(ra); fzu(ra); pc += 1; cc += 2;}, // Correct?
+  /* ASL A       */ 0x0a: () => { const ra0 = (ra << 1) & 0xff; fc = ((ra & 0x80) >> 7); ra = ra0; fnu(ra); fzu(ra); pc += 1; cc += 2;},
   /* ORA nnnn    */ 0x0d: (read) => {
 	  const nnnn = word(read, pc + 1);
 
@@ -187,7 +218,7 @@ const processors = {
 	  pc = p;
 
 	  cc += 6; },
-  /* EOR (nn, X) */ 0x41: (read) => { const nn = read(pc + 1); ra ^= read(word(read, (nn + rx) & 0xff)); fnu(ra); fzu(ra); pc += 2; cc += 6; },
+  /* EOR (nn, X) */ 0x41: (read) => { const nn = read(pc + 1); ra ^= indirx(read, nn); fnu(ra); fzu(ra); pc += 2; cc += 6; },
   /* EOR nn      */ 0x45: (read) => { const nn = read(pc + 1); ra ^= read(nn); fnu(ra); fzu(ra); pc += 2; cc += 3; },
   /* PHA         */ 0x48: (_, write) => { pshsp(write, ra); pc += 1; cc += 3; },
   /* EOR #nn     */ 0x49: (read) => { const nn = read(pc + 1); ra ^= nn; fnu(ra); fzu(ra); pc += 2; cc += 2; },
@@ -197,6 +228,14 @@ const processors = {
 
 	  pc = nnnn;
 	  cc += 3; },
+  /* LSR nnnn    */ 0x4e: (read) => { 
+	  const nnnn = word(read, pc + 1);
+
+	  const m = read(nnnn) & 0xff;
+
+	  const r = m >> 1;
+
+          fc = m & 0x01; ra = r; fnu(ra); fzu(ra); pc += 3; cc += 6; },
   /* BVC dd      */ 0x50: (read) => { fv === 0 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
   /* RTS         */ 0x60: (read) => { l = popsp(read); h = popsp(read); pc = ((h << 8) + l) & 0xffff; cc += 6; },
   /* ADC nn      */ 0x65: (read) => {
@@ -339,9 +378,8 @@ const processors = {
   /* BCS dd      */ 0xb0: (read) => { fc === 1 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
   /* LDA (nn), Y */ 0xb1: (read) => {
 	  const nn = read(pc + 1)
-	  const addr = word(read, nn + ry);
 
-	  const r = read(addr);
+	  const r = indiry(read, nn);
 
 	  ra = read(r);
 
@@ -434,9 +472,8 @@ const processors = {
   /* CPX #nn     */ 0xe0: (read) => { const nn = read(pc + 1); const r = (rx - nn) & 0xff; fc = fl(nn <= rx); fnu(r); fzu(r); pc += 2; cc += 2; },
   /* SBC (nn, X) */ 0xe1: (read) => {
 	  const nn = read(pc + 1)
-	  const addr = word(read, (nn + rx) & 0xff);
 
-	  const v0 = read(addr) & 0xff;
+	  const v0 = indirx(read, nn)
 
 	  const v = fd ? b2d(v0) : tcd(v0);
 
@@ -534,13 +571,13 @@ const process = async (input, numberOfSteps = undefined) => {
   const mem = romAsMem(input.length === 4_092 ? input : input.concat(input));
 
   const updateGrp = () => {
-     const grp0 = read(GRP0) & 0xff;
-     const grp1 = read(GRP1) & 0xff;
-     
-     const grp0_ = read(REFP0) & 0x80 ? rev8(grp0) : grp0;
-     const grp1_ = read(REFP1) & 0x80 ? rev8(grp1) : grp1;
+     // const grp0 = read(GRP0) & 0xff;
+     // const grp1 = read(GRP1) & 0xff;
+     // 
+     // const grp0_ = (read(REFP0) & 0x08) ? rev8(grp0) : grp0;
+     // const grp1_ = (read(REFP1) & 0x08) ? rev8(grp1) : grp1;
   
-     GRP = ((grp0_ << 8) | grp1_) & 0xffff;
+     // GRP = ((grp0_ << 8) | grp1_) & 0xffff;
   }
 
   const read = (addr) => {
@@ -550,9 +587,13 @@ const process = async (input, numberOfSteps = undefined) => {
     if (addr === HMM1) { return hmm1; }
     if (addr === HMBL) { return hmbl; }
 
+    if (addr === INTIM) { // Restart interval
+      instat &= 0x7f // Reset bit 7 on read -> I think this works, but is it correct?
+      return mem[INTIM]
+    }
     if (addr === INSTAT) {
-	    instat &= 0xBF; // Reset bit 6 on read instat
-	    return instat;
+      instat &= 0xbf; // Reset bit 6 on read instat
+      return instat;
     }
 
     return mem[addr];
@@ -563,6 +604,9 @@ const process = async (input, numberOfSteps = undefined) => {
 
      if (addr === HMP0) { hmp0 = v; return; }
      if (addr === HMP1) { hmp1 = v; return; }
+     if (addr === HMM0) { hmm0 = v; return; }
+     if (addr === HMM1) { hmm1 = v; return; }
+     if (addr === HMBL) { hmbl = v; return; }
 
      if (addr === VSYNC) {
 	 newIsVsync = (v & 0x02) === 0x02;
@@ -581,39 +625,12 @@ const process = async (input, numberOfSteps = undefined) => {
      if (addr === HMOVE) { isHMOVE = true; return; }
      if (addr === HMCLR) { isHMCLR = true; return; }
 
-     if (addr === TIM1T)  { interval = 1;     mem[INTIM] = Math.max((v - 1), 0) & 0xff; instat &= 0x40; return; }
-     if (addr === TIM8T)  { interval = 8;     mem[INTIM] = Math.max((v - 1), 0) & 0xff; instat &= 0x40; return; }
-     if (addr === TIM64T) { interval = 64;    mem[INTIM] = Math.max((v - 1), 0) & 0xff; instat &= 0x40; return; }
-     if (addr === T1024T) { interval = 1_024; mem[INTIM] = Math.max((v - 1), 0) & 0xff; instat &= 0x40; return; }
+     if (addr === TIM1T)  { interval = 1;     mem[INTIM] = Math.max((v - 1), 0) & 0xff; instat &= 0x7f; return; }
+     if (addr === TIM8T)  { interval = 8;     mem[INTIM] = Math.max((v - 1), 0) & 0xff; instat &= 0x7f; return; }
+     if (addr === TIM64T) { interval = 64;    mem[INTIM] = Math.max((v - 1), 0) & 0xff; instat &= 0x7f; return; }
+     if (addr === T1024T) { interval = 1_024; mem[INTIM] = Math.max((v - 1), 0) & 0xff; instat &= 0x7f; return; }
 
-     if (players.has(addr)) {
-     	if (addr === GRP0) {
-     	   if (read(VDELP1)) {
-     	     mem[GRP1] = GRP1_DELAYED;
-	     updateGrp();
-     	   }
      
-     	   if (read(VDELP0)) {
-     	     GRP0_DELAYED = v;
-     	     return;
-     	   }
-     	}
-     
-     	if (addr === GRP1) {
-     	   if (read(VDELP0)) {
-     	     mem[GRP0] = GRP0_DELAYED;
-	     updateGrp();
-     	   }
-     
-     	   if (read(VDELP1)) {
-     	     GRP1_DELAYED = v;
-     	     return;
-     	   }
-        }
-
-	updateGrp();
-     }
-
      mem[addr] = v;
 
      if (pfs.has(addr)) {
@@ -625,6 +642,20 @@ const process = async (input, numberOfSteps = undefined) => {
        const pf2rev = rev8(pf2);
 
        PF = ((pf0rev << 16) | (pf1 << 8) | pf2rev) & 0xffffffff;
+     }
+
+     if (addr === GRP0) {
+        if (mem[VDELP1] & 0x01) { mem[GRP1] = GRP1_DELAYED; }
+        if (mem[VDELP0] & 0x01) { GRP0_DELAYED = v; return; }
+	
+        mem[GRP0] = (mem[REFP0] & 0x08) ? rev8(v) : v;	
+     }
+
+     if (addr === GRP1) {
+        if (mem[VDELP0] & 0x01) { mem[GRP0] = GRP0_DELAYED; }
+        if (mem[VDELP1] & 0x01) { GRP1_DELAYED = v; return; }
+
+        mem[GRP1] = (mem[REFP1] & 0x08) ? rev8(v) : v;	
      }
   }
 
@@ -658,32 +689,27 @@ const process = async (input, numberOfSteps = undefined) => {
 
   let fs = new Date();
 
-  const timerUpdate = (cx) => {
-   if (read(INSTAT) & 0x40) {
-     // intim = (intim - 1) & 0xff;
-     write(INTIM, (read(INTIM) - 1) & 0xff);
-     return;
+  const tickTimer = () => {
+   if (mem[INSTAT] & 0x40) { // Don't read() -> side-effect
+     mem[INTIM] = (mem[INTIM] - 1) & 0xff;
+     return
    }
 
    const update = () => {
-      if (timerCounter <= cx) {
-	const t0 = read(INTIM) - 1;
+      if (timerCounter <= 0) {
+        mem[INTIM] -= 1;
         timerCounter = interval;
-        write(INTIM, Math.max(t0 & 0xff, 0));
-	return t0;
       }
 
-      return read(INTIM);
+      return mem[INTIM];
    }
 
    if (update() <= 0) {
      instat |= 0xc0; // Set bit 6 and 7 on underflow
-     // intim = 0xff;
      timerCounter = 0xff;
-     return;
    }
 
-   timerCounter -= cx;
+   timerCounter--;
   }
 
   let j =0 ;
@@ -712,7 +738,6 @@ const process = async (input, numberOfSteps = undefined) => {
 
       w = cc - cc0;
 
-      timerUpdate(w);
       printState && printStates();
     }
 
@@ -724,6 +749,8 @@ const process = async (input, numberOfSteps = undefined) => {
     // }
 
     for (let a = 0; a < 3; a++) {
+      a === 0 && tickTimer();
+
       updateScreen(read, s);
 
       if (s % 228 === 0) {
