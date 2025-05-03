@@ -25,11 +25,11 @@ let resm0x = -1;
 let resm1x = -1;
 let resblx = -1;
 
-let hmp0 = 0;
-let hmp1 = 0;
-let hmm0 = 0;
-let hmm1 = 0;
-let hmbl = 0;
+let resp0x_ = resp0x;
+let resp1x_ = resp1x;
+let resm0x_ = resm0x;
+let resm1x_ = resm1x;
+let resblx_ = resblx;
 
 function clearScreen() {
  screen = new Uint8ClampedArray(arrayBuffer);
@@ -44,34 +44,29 @@ function updateScreen(read, tt) {
 
  const d = tt - vb;
 
+
+
    
- if (isRESP0) { resp0x = Math.max((tt % 228) - hb, 3); isRESP0 = false; }
- if (isRESP1) { resp1x = Math.max((tt % 228) - hb, 3); isRESP1 = false; }
- if (isRESM0) { resm0x = Math.max((tt % 228) - hb, 3); isRESM0 = false; }
- if (isRESM1) { resm1x = Math.max((tt % 228) - hb, 3); isRESM1 = false; }
- if (isRESBL) { resblx = Math.max((tt % 228) - hb, 3); isRESBL = false; }
+ if (isRESP0) { resp0x_ = Math.max((tt % 228) - hb, 3); resp0x = resp0x_; isRESP0 = false; }
+ if (isRESP1) { resp1x_ = Math.max((tt % 228) - hb, 3); resp1x = resp1x_; isRESP1 = false; }
+ if (isRESM0) { resm0x_ = Math.max((tt % 228) - hb, 3); resm0x = resm0x_; isRESM0 = false; }
+ if (isRESM1) { resm1x_ = Math.max((tt % 228) - hb, 3); resm1x = resm1x_; isRESM1 = false; }
+ if (isRESBL) { resblx_ = Math.max((tt % 228) - hb, 3); resblx = resblx_; isRESBL = false; }
  if (isHMOVE) { 
-	 resp0x = (resp0x + tcd4((hmp0 >> 4) & 0xf) * -1) % 160;
-	 resp1x = (resp1x + tcd4((hmp1 >> 4) & 0xf) * -1) % 160;
-	 resm0x = (resm0x + tcd4((hmm0 >> 4) & 0xf) * -1) % 160;
-	 resm1x = (resm1x + tcd4((hmm1 >> 4) & 0xf) * -1) % 160;
-	 resblx = (resblx + tcd4((hmbl >> 4) & 0xf) * -1) % 160;
+	 resp0x += (tcd4((read(HMP0) >> 4) & 0xf) * -1) % 160;
+	 resp1x += (tcd4((read(HMP1) >> 4) & 0xf) * -1) % 160;
+	 resm0x += (tcd4((read(HMM0) >> 4) & 0xf) * -1) % 160;
+	 resm1x += (tcd4((read(HMM1) >> 4) & 0xf) * -1) % 160;
+	 resblx += (tcd4((read(HMBL) >> 4) & 0xf) * -1) % 160;
 
 	 isHMOVE = false; }
 
  if (isHMCLR) {
-	 console.log("HMCLR", resp0x, resp1x, resm0x, resm1x, resblx);
-	 // resp0x -= hmp0;
-	 // resp1x -= hmp1;
-	 // resm0x -= hmm0;
-	 // resm1x -= hmm1;
-	 // resblx -= hmbl;
-
-	 // hmp0= 0;
-	 // hmp1= 0;
-	 // hmm0= 0;
-	 // hmm1= 0;
-	 // hmbl= 0;
+	 resp0x = resp0x_;
+	 resp1x = resp1x_;
+	 resm0x = resm0x_;
+	 resm1x = resm1x_;
+	 resblx = resblx_;
 
 	 isHMCLR = false; }
 
@@ -130,7 +125,7 @@ function updateScreen(read, tt) {
  }
 
  (x >= resp0x) && dp(GRP0, resp0x, COLUP0, NUSIZ0);
- // (x >= resp1x) && dp(GRP1, resp1x, COLUP1, NUSIZ1);
+ (x >= resp1x) && dp(GRP1, resp1x, COLUP1, NUSIZ1);
  // (x >= resm0x) && dp(1, resm0x, COLUP0, NUSIZ0);
  // (x >= resm1x) && dp(1, resm1x, COLUP1, NUSIZ1);
  // (x >= resblx) && dp(1, resblx, COLUPF, NUSIZ0);
