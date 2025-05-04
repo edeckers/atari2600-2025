@@ -45,8 +45,6 @@ function updateScreen(read, tt) {
  const d = tt - vb;
 
 
-
-   
  if (isRESP0) { resp0x_ = Math.max((tt % 228) - hb, 3); resp0x = resp0x_; isRESP0 = false; }
  if (isRESP1) { resp1x_ = Math.max((tt % 228) - hb, 3); resp1x = resp1x_; isRESP1 = false; }
  if (isRESM0) { resm0x_ = Math.max((tt % 228) - hb, 3); resm0x = resm0x_; isRESM0 = false; }
@@ -83,10 +81,10 @@ function updateScreen(read, tt) {
  let v = read(COLUBK);
 
  // PLAYFIELD
- const isMirror = (read(CTRLPF) & 0x01);
+ const isMirror = (read(CTRLPF) & 0x01) === 0x01;
 
  const isPfLeft = (x <= 80);
- const isScore = read(CTRLPF) & 0x06 === 0x02;
+ const isScore = (read(CTRLPF) & 0x06) === 0x02;
 
  const pw = isPfLeft ?
           Math.ceil((80 - x) / 4) :
@@ -103,12 +101,14 @@ function updateScreen(read, tt) {
    const isCopy = ((psz !== 5) && (psz !== 7)); // 5 and 7 are for wides
    const size = (psz === 7) ? 4 : ((psz === 5) ? 2 : 1); // 5 = 2x, 7 = 4x
 
+   // console.log("GRP", grp.toString(2));
+
    const drawCopy = (ofx) => {
      const q = Math.floor((x - (rp + ofx)) / size);
      if (q < 0) { return; }
      if (q > 8) { return; }
 
-     v = (read(grp) & Math.pow(2, 9 - q)) ? read(colup) : v;
+     v = (read(grp) & Math.pow(2, 8 - q)) ? read(colup) : v;
    }
 
    drawCopy(0);
@@ -125,7 +125,7 @@ function updateScreen(read, tt) {
  }
 
  (x >= resp0x) && dp(GRP0, resp0x, COLUP0, NUSIZ0);
- (x >= resp1x) && dp(GRP1, resp1x, COLUP1, NUSIZ1);
+// (x >= resp1x) && dp(GRP1, resp1x, COLUP1, NUSIZ1);
  // (x >= resm0x) && dp(1, resm0x, COLUP0, NUSIZ0);
  // (x >= resm1x) && dp(1, resm1x, COLUP1, NUSIZ1);
  // (x >= resblx) && dp(1, resblx, COLUPF, NUSIZ0);
