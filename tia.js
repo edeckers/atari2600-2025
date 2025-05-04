@@ -131,7 +131,7 @@ function updateScreen(read, tt) {
  // (x >= resblx) && dp(1, resblx, COLUPF, NUSIZ0);
 
  // VBLANK
- // v = (read(VBLANK) & 0x02) ? 0x00 : v;
+ v = (read(VBLANK) & 0x02) ? 0x00 : v;
 
  const [r, g, b] = colors[v - (v % 2)] ?? [0x00, 0x00, 0x00];
 

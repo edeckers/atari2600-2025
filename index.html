@@ -32,9 +32,18 @@
 	             document.dispatchEvent(new Event("chrom"));
 		   }
 
+		   const loadSource = (rbx) => {
+                     const lines = decode(rbx);
+
+                     document.getElementById("source").value = lines.join("\n");
+		   }
+
 		   const startRom = () => {
 		     const rom = roms[romName];
                      const romBytes = loadFromBase64(rom);
+
+                     loadSource(romBytes);
+
 		     rx = 0;
 		     ry = 0;
 		     ra = 0;
@@ -75,32 +84,37 @@
 
 		   document.addEventListener("draw", () => { frc++; });
 		   document.addEventListener("chrom", () => { startRom(); });
-		   document.addEventListener("trace", () => { startRom(); });
+		   // document.addEventListener("trace", () => { startRom(); });
 
 		</script>
 	</head>
 	<body>
-		<canvas id="tehScreen" width="160" height="192"></canvas>
-		<div><input type="text" id="fr"></div>
-		<div>
-		  <select onChange="changeRom(this.options[this.selectedIndex].value)" autofocus>
-		    <option value="kernel01">Kernel 01</option>
-		    <option value="kernel13">Kernel 13</option>
-		    <option value="kernel15">Kernel 15</option>
-		    <option value="kernel22">Kernel 22</option>
-		    <option value="demo3_8">Demo3_8</option>
-		    <option value="complexscene1" selected>complexscene1</option>
-		    <option value="sethorizpos">sethorizpos</option>
-		    <option value="piatimer">piatimer</option>
-		    <option value="timing2">timing2</option>
- 		    <option value="hello">Hello</option>
-		    <option value="diag">Diag</option>
-		    <option value="logo">Logo</option>
-		    <option value="combat">Combat</option>
-		    <option value="frogger">Frogger</option>
-		    <option value="pongsports">Pong Sports</option>
-		  </select>
-		</div>
-		<div><textarea id="trace" rows="10" cols="50"></textarea></div>
+          <div style="display: flex">
+	    <div>
+	      <canvas id="tehScreen" width="160" height="192"></canvas>
+	      <div><input type="text" id="fr"></div>
+	      <div style="display: flex">
+	        <select onChange="changeRom(this.options[this.selectedIndex].value)" autofocus>
+	          <option value="kernel01">Kernel 01</option>
+	          <option value="kernel13">Kernel 13</option>
+	          <option value="kernel15">Kernel 15</option>
+	          <option value="kernel22">Kernel 22</option>
+	          <option value="demo3_8">Demo3_8</option>
+	          <option value="complexscene1" selected>complexscene1</option>
+	          <option value="sethorizpos">sethorizpos</option>
+	          <option value="piatimer">piatimer</option>
+	          <option value="timing2">timing2</option>
+ 	          <option value="hello">Hello</option>
+	          <option value="diag">Diag</option>
+	          <option value="logo">Logo</option>
+	          <option value="combat">Combat</option>
+	          <option value="frogger">Frogger</option>
+	          <option value="pongsports">Pong Sports</option>
+	        </select>
+	      </div>
+	      <div><textarea id="trace" rows="10" cols="50"></textarea></div>
+	    </div>
+	    <div><textarea id="source" rows="40" cols="50"></textarea></div>
+          </div>
 	</body>
 </html>
