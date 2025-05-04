@@ -67,10 +67,11 @@ const formatRx = () => ["a:", ra.toString(16).padStart(2, "0"), "x:", rx.toStrin
 
 const breakpoints = new Set();
 let isContinue = false;
-let isBreak = false;
+let isStep = false;
+let isBreakout = false;
 
-const FPS = 200;
-// const FPS = 60;
+// const FPS = 200;
+const FPS = 60;
 // const FPS = 30;
 
 // helpers
@@ -147,6 +148,8 @@ let pstatus = {
   intim: 0,
   instat: 0,
   interval: 1,
+  memory: new Uint8Array(0x10000),
+  timerCounter: 0,
   isVSync: false,
   isWSync: false,
 };

@@ -93,7 +93,7 @@ function updateScreen(read, tt) {
           Math.ceil((isMirror ? (x - 80) : (80 - (x - 80))) / 4);
 
  const pfBit = Math.pow(2, pw - 1);
- const pfColor = 0xf0; // isScore ? read(isPfLeft ? COLUP0 : COLUP1) : read(COLUPF);
+ const pfColor = isScore ? read(isPfLeft ? COLUP0 : COLUP1) : read(COLUPF);
 
  (pfBit & PF) && (v = pfColor);
 
@@ -108,7 +108,7 @@ function updateScreen(read, tt) {
      if (q < 0) { return; }
      if (q > 8) { return; }
 
-     v = (read(grp) & Math.pow(2, 9 - q)) ? 0xff /* read(colup) */ : v;
+     v = (read(grp) & Math.pow(2, 9 - q)) ? read(colup) : v;
    }
 
    drawCopy(0);
