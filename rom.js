@@ -97,6 +97,8 @@ const operators = {
   "LDX nnnn, Y": [0xbe, 2],
   "LSR A": [0x4a, 0],
   "LSR nn": [0x3c, 1],
+  "LSR nnnn": [0x4e, 2],
+  "NOP": [0xea, 0],
   "ORA #nn": [0x09, 1],
   "ORA (nn, X)": [0x01, 1],
   "ORA nn": [0x05, 1],

@@ -119,9 +119,9 @@ const indiry = (read, nn) => {
   const h = (read(o2 + 1) + c) & 0xff;
 
   const addr = ((h << 8) + l) & 0xffff;
-  
+
   const r = read(addr);
-  
+
   return read(r) & 0xffff;
 }
 
@@ -134,9 +134,9 @@ const indirx = (read, nn) => {
   const h = (read(o2 + 1) + c) & 0xff;
 
   const addr = ((h << 8) + l) & 0xffff;
-  
+
   const r = read(addr);
-  
+
   return read(r) & 0xffff;
 }
 
@@ -228,7 +228,7 @@ const processors = {
 
 	  pc = nnnn;
 	  cc += 3; },
-  /* LSR nnnn    */ 0x4e: (read) => { 
+  /* LSR nnnn    */ 0x4e: (read) => {
 	  const nnnn = word(read, pc + 1);
 
 	  const m = read(nnnn) & 0xff;
@@ -240,7 +240,7 @@ const processors = {
   /* RTS         */ 0x60: (read) => { l = popsp(read); h = popsp(read); pc = ((h << 8) + l) & 0xffff; cc += 6; },
   /* ADC nn      */ 0x65: (read) => {
 	  const nn = read(pc + 1);
-	
+
 	  const v0 = read(nn) & 0xff;
 
 	  const v = fd ? b2d(v0) : tcd(v0);
@@ -577,10 +577,13 @@ const process = async (input, numberOfSteps = undefined) => {
     // if (addr === HMM1) { return hmm1; }
     // if (addr === HMBL) { return hmbl; }
 
-    if (addr === INTIM) { // Restart interval
-      mem[INSTAT] &= 0x7f // Reset bit 7 on read -> I think this works, but is it correct?
-    }
-    if (addr === INSTAT) {
+    if (addr === INTIM) {
+      if (mem[INSTAT] & 0x40) { // Restart interval
+	// timerCounter = interval;
+	// mem[INSTAT] ^= 0x40;
+	mem[INSTAT] &= 0xbf;
+      }
+    } else if (addr === INSTAT) {
       mem[INSTAT] &= 0xbf; // Reset bit 6 on read instat
     }
 
@@ -598,9 +601,9 @@ const process = async (input, numberOfSteps = undefined) => {
 
      if (addr === VSYNC) {
 	 newIsVsync = (v & 0x02) === 0x02;
-	
+
 	 isVSyncHi = (isVSync && !newIsVsync);
-	
+
 	 isVSync = newIsVsync;
      }
      if (addr === WSYNC) { isWSync = true; return; }
@@ -613,10 +616,10 @@ const process = async (input, numberOfSteps = undefined) => {
      if (addr === HMOVE) { isHMOVE = true; return; }
      if (addr === HMCLR) { isHMCLR = true; return; }
 
-     if (addr === TIM1T)  { interval = 1;     mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
-     if (addr === TIM8T)  { interval = 8;     mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
-     if (addr === TIM64T) { interval = 64;    mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
-     if (addr === T1024T) { interval = 1_024; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
+     if (addr === TIM1T)  { interval = 1;     timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
+     if (addr === TIM8T)  { interval = 8;     timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
+     if (addr === TIM64T) { interval = 64;    timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
+     if (addr === T1024T) { interval = 1_024; timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
 
      mem[addr] = v;
 
@@ -635,14 +638,14 @@ const process = async (input, numberOfSteps = undefined) => {
        if (mem[VDELP1] & 0x01) { mem[GRP1] = GRP1_DELAYED; }
        if (mem[VDELP0] & 0x01) { GRP0_DELAYED = v; return; }
 
-       mem[GRP0] = (mem[REFP0] & 0x08) ? rev8(v) : v;	
+       mem[GRP0] = (mem[REFP0] & 0x08) ? rev8(v) : v;
      }
 
      if (addr === GRP1) {
-       if (mem[VDELP0] & 0x01) { mem[GRP0] = GRP0_DELAYED; }
+       if (mem[VDELP0] & 0x01) { /* mem[GRP0] = GRP0_DELAYED; */ }
        if (mem[VDELP1] & 0x01) { GRP1_DELAYED = v; return; }
 
-       mem[GRP1] = (mem[REFP1] & 0x08) ? rev8(v) : v;	
+       mem[GRP1] = (mem[REFP1] & 0x08) ? rev8(v) : v;
      }
   }
 
@@ -677,20 +680,19 @@ const process = async (input, numberOfSteps = undefined) => {
   let fs = new Date();
 
   const tickTimer = () => {
-   if (mem[INSTAT] & 0x40) { // Don't read() -> side-effect
-     const t0 = mem[INTIM] - 1;
-     mem[INTIM] = t0 & 0xff;
-     if (t0 < 0) {
-       mem[INSTAT] |= 0xc0; // Set timer underflow
-       mem[INTIM] = 0xff;
-     }
-     return
-   }
+   // if (mem[INSTAT] & 0x40) { // Don't read() -> side-effect
+   //   const t0 = mem[INTIM] - 1;
+   //   if (t0 < 0) {
+   //     mem[INSTAT] |= 0xc0; // Set timer underflow
+   //     mem[INTIM] = 0xff;
+   //   } else { mem[INTIM] = t0 & 0xff; }
+   //   return;
+   // }
 
    if (timerCounter > 0) { timerCounter--; return; }
 
    const t0 = mem[INTIM] - 1;
-   if (t0 < 0) { mem[INSTAT] |= 0xc0; mem[INTIM] = 0xff; timerCounter = 0; } else { mem[INTIM] = t0; timerCounter = interval; }
+   if (t0 < 0) { mem[INSTAT] |= 0xc0; mem[INTIM] = 0xff; timerCounter = 1; } else { mem[INTIM] = t0; timerCounter = interval; }
   }
 
   let j =0 ;
@@ -722,10 +724,14 @@ const process = async (input, numberOfSteps = undefined) => {
       printState && printStates();
     }
 
+    if (romName === "complexscene1") {
+	if (pc === 0xf077) { console.log("ra", ra, "ry", ry, "nn", read(pc + 1), "m", indiry(read, read(pc + 1))); }
+    } 
+
     // if ((pc >= 0xf0bb)) {
     //     console.log("PC", pc.toString(16), "o", operatorLookup[read(pc)], "w", w.toString(16), "isWSync", isWSync, "x", s % 228, "rx", rx);
     //     j++;
-    //     
+    //
     //     if (j > 100) { debugger; }
     // }
 
