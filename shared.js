@@ -56,15 +56,18 @@ const formatPc = () => pc.toString(16).padStart(4, "0");
 const formatFx = () => ["c:", fc, "z:", fz, "i:", fi, "d:", fd, "b:", _fb, "_:", 1, "v:", fv, "n:", fn].join(" ")
 const formatRx = () => ["a:", ra.toString(16).padStart(2, "0"), "x:", rx.toString(16).padStart(2, "0"), "y:", ry.toString(16).padStart(2, "0"), "s:", sp.toString(16).padStart(2, "0")].join(" ");
 
-let logSteps = 2_500;
-const tr = (line) => {
-  if (logSteps === 0) { return; }
+// let logSteps = 2_500;
+// const tr = (line) => {
+//   if (logSteps === 0) { return; }
+// 
+//   const plx = line.padEnd(20, " ");
+//   trace.value +=  [plx, formatPc(), formatFx(), formatRx()].join(" ") + "\n";
+//   logSteps--;
+// }
 
-  const plx = line.padEnd(20, " ");
-  trace.value +=  [plx, formatPc(), formatFx(), formatRx()].join(" ") + "\n";
-  logSteps--;
-}
-
+const breakpoints = new Set();
+let isContinue = false;
+let isBreak = false;
 
 const FPS = 200;
 // const FPS = 60;
@@ -118,7 +121,7 @@ TIM8T = 0x295;
 TIM64T = 0x296;
 T1024T = 0x297;
 
-SWCHB = 0x282; // B/W (0) or Color (1)?
+SWCHB = 0x282; // .3 B/W (0) or Color (1)?
 
 isRESP0 = false;
 isRESP1 = false;
@@ -129,6 +132,25 @@ isRESBL = false;
 isHMOVE = false;
 isHMCLR = false;
 
+let pstatus = {
+  pc: 0,
+  rx: 0,
+  ry: 0,
+  ra: 0,
+  sp: 0,
+  fc: 0,
+  fz: 0,
+  fv: 0,
+  fn: 0,
+  fd: 0,
+  fi: 0,
+  intim: 0,
+  instat: 0,
+  interval: 1,
+  isVSync: false,
+  isWSync: false,
+};
+        
 // https://www.randomterrain.com/atari-2600-memories-tia-color-charts.html#ntsc_pal_color_conversion
 const colors = {
   0x00: [0x00, 0x00, 0x00],

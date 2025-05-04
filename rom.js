@@ -278,8 +278,8 @@ const decode = (input) => {
       return [
 	".data",
 	[(pc - data.length).toString(16), "...", pc.toString(16)].join(""),
-	data.map(c => c.toString(16).padStart(2, "0")).join(" ")
-      ].join(" ")
+	data.map(c => c.toString(16).padStart(2, "0"))
+      ]
   }
 
   let pc = ep(rom)
@@ -303,7 +303,7 @@ const decode = (input) => {
 
     lines.push([
       pc.toString(16),
-      formatASM(toASM(rom, pc)) + comment].join(" "));
+      formatASM(toASM(rom, pc)) + comment]);
 
     pc += l + 1;
   }
