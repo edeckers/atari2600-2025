@@ -33,6 +33,7 @@ var isVSyncHi = false;
 var interval = 1;
 var timerCounter = 1;
 
+
 const pia = new Uint8Array(128);
 
 const fl = (v) => v ? 1 : 0;
@@ -564,10 +565,12 @@ const flip8 = (xs) => {
     return ~xs & 0xff;
 }
 let vSyncCount = 0;
-const process = async (input, numberOfSteps = undefined) => {
+const process = async (input) => {
   let isKilled = false;
 
-  document.addEventListener("chrom", () => { isKilled = true; });
+  document.addEventListener("chrom", () => { isKilled = true; isBreak = false; });
+  document.addEventListener("continue", () => { isContinue = true; });
+
   const mem = romAsMem(input.length === 4_092 ? input : input.concat(input));
 
   const read = (addr) => {
@@ -695,20 +698,49 @@ const process = async (input, numberOfSteps = undefined) => {
    if (t0 < 0) { mem[INSTAT] |= 0xc0; mem[INTIM] = 0xff; timerCounter = 1; } else { mem[INTIM] = t0; timerCounter = interval; }
   }
 
-  let j =0 ;
-  while (numberOfSteps ? i < numberOfSteps : !isKilled) {
+  while (!isKilled) {
     w = Math.max(w - 1, 0);
     w = isWSync ? 0 : w;
 
     const isWaiting = (w > 0);
 
+
     if (!isWSync && !isWaiting) {
+      isContinue = false;
+      while (breakpoints.has(pc) && !isContinue) {
+              document.dispatchEvent(new Event("break"));
+	      pstatus = {
+		pc,
+		rx,
+		ry,
+		ra,
+		sp,
+		fc,
+		fz,
+		fv,
+		fn,
+		fd,
+		fi,
+		intim: mem[INTIM],
+		instat: mem[INSTAT],
+		interval,
+		isVSync,
+		isWSync,
+	      }
+              console.log("BREAK", pc.toString(16));
+              await sleep(100);
+      }
+
+      if (breakpoints.has(pc) && isContinue) {
+          console.log("III");
+      }
+
       const o = read(pc)
       dbg("pc", pc.toString(16), "o", o.toString(16));
 
       const cc0 = cc;
       const p = processors[o];
-      const pc0 = pc;
+      // const pc0 = pc;
 
       try {
        p(read, write);
@@ -717,23 +749,12 @@ const process = async (input, numberOfSteps = undefined) => {
 	debugger;
       }
 
-      printAsm && tr(formatASM(toASM(mem, pc0)))
+      // printAsm && tr(formatASM(toASM(mem, pc0)))
 
       w = cc - cc0;
 
       printState && printStates();
     }
-
-    if (romName === "complexscene1") {
-	if (pc === 0xf077) { console.log("ra", ra, "ry", ry, "nn", read(pc + 1), "m", indiry(read, read(pc + 1))); }
-    } 
-
-    // if ((pc >= 0xf0bb)) {
-    //     console.log("PC", pc.toString(16), "o", operatorLookup[read(pc)], "w", w.toString(16), "isWSync", isWSync, "x", s % 228, "rx", rx);
-    //     j++;
-    //
-    //     if (j > 100) { debugger; }
-    // }
 
     for (let a = 0; a < 3; a++) {
       updateScreen(read, s);
