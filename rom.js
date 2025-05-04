@@ -1029,6 +1029,7 @@ const operators = {
   "INC nn, X": [0xf6, 1],
   "INX": [0xe8, 0],
   "INY": [0xc8, 0],
+  "ISC nn": [0xe7, 1], // Illegal
   "JMP nnnn": [0x4c, 2],
   "JMP (nnnn)": [0x6c, 2],
   "JSR nnnn": [0x20, 2],

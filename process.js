@@ -66,26 +66,6 @@ const restatus = (st) => {
   fn = (st & 0x80) >> 7;
  }
 
-// const ramoffs = (addr) => (addr - 0x80) & 0xff;
-
-// const printStates = () => {
-//   console.log("pc", pc.toString(16).padStart(4, "0"));
-//   console.log("f", formatFx());
-//   console.log("r",
-// 	  "a", ra.toString(16),
-// 	  "x", rx.toString(16),
-// 	  "y", ry.toString(16),
-//           "s", sp.toString(16));
-// }
-
-// const rrom = (rom, addr) => rom[offs(addr)]
-
-// const sram = (addr, value) => pia[ramoffs(addr)] = value;
-// const rram = (addr) => {
-// 	return pia[ramoffs(addr)];
-// 	// return pia[addr];
-// }
-
 const pshsp = (write, value) => { write((sp & 0xff), value & 0xff); sp = (sp - 1) & 0xff; }
 const popsp = (read) => { sp = (sp + 1) & 0xff; return read(sp & 0xff) & 0xff; }
 
@@ -278,7 +258,7 @@ const processors = {
 
 	  pc += 2;
           cc += 3; },
-  /* PLA         */ 0x68: (_, write) => { ra = popsp(write); fnu(ra); fzu(ra); pc += 1; cc += 4; },
+  /* PLA         */ 0x68: (read) => { ra = popsp(read); fnu(ra); fzu(ra); pc += 1; cc += 4; },
   /* ADC #nn     */ 0x69: (read) => {
 	  const nn = read(pc + 1);
 
@@ -317,7 +297,7 @@ const processors = {
 
 	  pc += 2;
           cc += 4; },
-  /* ADC nnnn, Y   */ 0x79: (read) => {
+  /* ADC nnnn, Y */ 0x79: (read) => {
 	  const nnnn = word(read, pc + 1);
 
 	  const v0 = read((nnnn + ry) & 0xffff) & 0xff;
@@ -401,6 +381,15 @@ const processors = {
 	  const nn = read(pc + 1)
 
 	  ra = rindiry(read, nn);
+	  if (nn === 0x87) { 
+	    console.log(
+		    "indiry",
+		    indiry(read, nn).toString(16),
+		    "ry", ry.toString(16),
+		    "ra", ra.toString(16),
+		    read(nn).toString(16),
+		    (read(nn + 1)).toString(16));
+	  }
 
 	  fnu(ra);
 	  fzu(ra);
@@ -470,7 +459,7 @@ const processors = {
 	  fzu(v);
 	  pc += 2;
           cc += 5; },
-   /* DEC nn, X   */ 0xd6: (read, write) => {
+   /* DEC nn, X  */ 0xd6: (read, write) => {
 	  nn = read(pc + 1);
 
 	  v = (rpzx(read, nn) - 1) & 0xff;
@@ -506,7 +495,7 @@ const processors = {
 
 	  pc += 2;
           cc += 6; },
-   /* SBC nn     */ 0xe5: (read) => {
+  /* SBC nn      */ 0xe5: (read) => {
 	  const nn = read(pc + 1);
 
 	  const nn0 = read(nn) & 0xff;
@@ -524,7 +513,32 @@ const processors = {
 
 	  pc += 2;
           cc += 3; },
-    /* SBC #nn   */ 0xe9: (read) => {
+  /* INC nn      */ 0xe6: (read, write) => { const nn = read(pc + 1) & 0xff; const r = (read(nn) + 1) & 0xff; write(nn, r); fnu(r); fzu(r); pc += 2; cc += 5; },
+  /* INX         */ 0xe8: () => { rx = (rx + 1) & 0xff; fnu(rx); fzu(rx); pc += 1; cc += 2; },
+  /* ISC nn      */ 0xe7: (read) => {  // UNDOCUMENTED
+	  // https://www.masswerk.at/nowgobang/2021/6502-illegal-opcodes
+	  const nn = read(pc + 1);
+
+	  const nn0  = read(nn);
+
+	  const v = fd ? b2d(nn0 + 1) : tcd(nn0 + 1); // INC
+
+	  const v0 = v & 0xff;
+
+	  if (v0 < v) { fc = 1; } else { fc = 0; }
+
+	  const r = fd ? b2d(ra) + fc - 1 - b2d(v0) : ra + fc - 1 - v0; // SBC
+
+	  ra = r & 0xff;
+
+	  fnu(ra);
+	  fzu(ra);
+	  fv = fl(r !== ra);
+	  fc = fl(r >= 0);
+
+	  pc += 2;
+          cc += 5; },
+  /* SBC #nn     */ 0xe9: (read) => {
 	  const nn = read(pc + 1);
 
 	  const v = fd ? b2d(nn) : tcd(nn);
@@ -542,8 +556,6 @@ const processors = {
 
 	  pc += 2;
           cc += 2; },
-  /* INC nn      */ 0xe6: (read, write) => { const nn = read(pc + 1) & 0xff; const r = (read(nn) + 1) & 0xff; write(nn, r); fnu(r); fzu(r); pc += 2; cc += 5; },
-  /* INX         */ 0xe8: () => { rx = (rx + 1) & 0xff; fnu(rx); fzu(rx); pc += 1; cc += 2; },
   /* NOP         */ 0xea: () => { pc += 1; cc += 2; },
   /* BEQ dd      */ 0xf0: (read) => { fz === 1 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
   /* INC nn, X   */ 0xf6: (read, write) => { const nn = read(pc + 1) & 0xff; const r = (rpzx(read, nn) + 1) & 0xff; write(pzx(nn), r); fnu(r); fzu(r); pc += 2; cc += 5; },
@@ -591,16 +603,8 @@ const process = async (input) => {
   const mem = romAsMem(input.length === 4_092 ? input : input.concat(input));
 
   const read = (addr) => {
-    // if (addr === HMP0) { return hmp0; }
-    // if (addr === HMP1) { return hmp1; }
-    // if (addr === HMM0) { return hmm0; }
-    // if (addr === HMM1) { return hmm1; }
-    // if (addr === HMBL) { return hmbl; }
-
     if (addr === INTIM) {
       if (mem[INSTAT] & 0x40) { // Restart interval
-	// timerCounter = interval;
-	// mem[INSTAT] ^= 0x40;
 	mem[INSTAT] &= 0xbf;
       }
     } else if (addr === INSTAT) {
@@ -610,22 +614,13 @@ const process = async (input) => {
     return mem[addr];
   }
 
+  const setGrp0 = (v0) => { mem[GRP0] = (mem[REFP0] & 0x08) ? rev8(v0) : v0; }
+  const setGrp1 = (v0) => { mem[GRP1] = (mem[REFP1] & 0x08) ? rev8(v0) : v0; }
+
   const write = (addr, v) => {
      dbg("write", addr.toString(16), v);
 
-     // if (addr === HMP0) { hmp0 = v; return; }
-     // if (addr === HMP1) { hmp1 = v; return; }
-     // if (addr === HMM0) { hmm0 = v; return; }
-     // if (addr === HMM1) { hmm1 = v; return; }
-     // if (addr === HMBL) { hmbl = v; return; }
-
-     if (addr === VSYNC) {
-	 newIsVsync = (v & 0x02) === 0x02;
-
-	 isVSyncHi = (isVSync && !newIsVsync);
-
-	 isVSync = newIsVsync;
-     }
+     // STROBES, i.e. won't be actually stored and return early
      if (addr === WSYNC) { isWSync = true; return; }
      if (addr === RESP0) { isRESP0 = true; return; }
      if (addr === RESP1) { isRESP1 = true; return; }
@@ -641,8 +636,35 @@ const process = async (input) => {
      if (addr === TIM64T) { interval = 64;    timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
      if (addr === T1024T) { interval = 1_024; timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
 
+     // SPECIAL CASES with extra actions
+     if (addr === VSYNC) {
+	 newIsVsync = (v & 0x02) === 0x02;
+
+	 isVSyncHi = (isVSync && !newIsVsync);
+
+	 isVSync = newIsVsync;
+     }
+
+     if (addr === GRP0) {
+       if (mem[VDELP1] & 0x01) { setGrp1(GRP1_DELAYED); }
+       if (mem[VDELP0] & 0x01) { GRP0_DELAYED = v; return; }
+
+       setGrp0(v);
+       return; // Do not store bc delayed write, reversing, etc
+     }
+
+     if (addr === GRP1) {
+       if (mem[VDELP0] & 0x01) { setGrp0(GRP0_DELAYED); }
+       if (mem[VDELP1] & 0x01) { GRP1_DELAYED = v; return; }
+
+       setGrp1(v);
+       return; // Do not store bc delayed write, reversing, etc
+     }
+
+     // UPDATE MEMORY
      mem[addr] = v;
 
+     // POST PROCESSING, i.e. update helper registers and the like
      if (pfs.has(addr)) {
        const pf0 = read(PF0) & 0xff;
        const pf1 = read(PF1) & 0xff;
@@ -654,19 +676,6 @@ const process = async (input) => {
        PF = ((pf0rev << 16) | (pf1 << 8) | pf2rev) & 0xffffffff;
      }
 
-     if (addr === GRP0) {
-       if (mem[VDELP1] & 0x01) { mem[GRP1] = GRP1_DELAYED; }
-       if (mem[VDELP0] & 0x01) { GRP0_DELAYED = v; return; }
-
-       mem[GRP0] = (mem[REFP0] & 0x08) ? rev8(v) : v;
-     }
-
-     if (addr === GRP1) {
-       if (mem[VDELP0] & 0x01) { /* mem[GRP0] = GRP0_DELAYED; */ }
-       if (mem[VDELP1] & 0x01) { GRP1_DELAYED = v; return; }
-
-       mem[GRP1] = (mem[REFP1] & 0x08) ? rev8(v) : v;
-     }
   }
 
   const loadSwitches = () => {
