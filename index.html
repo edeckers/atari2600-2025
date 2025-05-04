@@ -24,8 +24,8 @@
 		     "pongsports": pongsports,
                    };
 
-		   let romName = "complexscene1";
-		   // let romName = "frogger";
+		   // let romName = "complexscene1";
+		   let romName = "frogger";
 
 		   const changeRom = (rn) => {
 		     romName = rn
@@ -41,8 +41,46 @@
 
 		     document.getElementById("fx").innerHTML = ["c:", pstatus.fc, "z:", pstatus.fz, "i:", pstatus.fi, "d:", pstatus.fd, "b:", _fb, "_:", 1, "v:", pstatus.fv, "n:", pstatus.fn].join(" ");
 
-		     document.getElementById("intim").innerHTML = pstatus.intim;
+		     document.getElementById("intim").innerHTML = pstatus.intim.toString(10);
 		     document.getElementById("instat").innerHTML = pstatus.instat.toString(2);
+		     document.getElementById("interval").innerHTML = pstatus.interval.toString(10);
+		     document.getElementById("timerCounter").innerHTML = pstatus.timerCounter.toString(10);
+		   }
+
+		   const loadMemory = () => {
+		     const memoryEl = document.getElementById("memory");
+
+		     const columns = []
+		     for (let i = 0; i < 0x10; i++) {
+			columns.push(i.toString(16).padStart(2, "0"));
+		     }
+		     
+	             memoryEl.innerHTML = "<div>&nbsp;&nbsp;&nbsp;" + columns.join(" ") + "</div>";
+		     for (let y = 0x00; y < 0x100; y+=0x10) {
+		       const row = [];
+		       for (let x = 0; x < 0x10; x++) {
+			 const address = y + x;
+
+			 const value = pstatus.memory[address];
+
+			 row.push(value.toString(16).padStart(2, "0"));
+		       }
+
+		       memoryEl.innerHTML += `<div>${y.toString(16).padStart(2, "0")} ${row.join(" ")}</div>`;
+		     }
+		   }
+
+		   const updateHighlights = () => {
+		     const lines = document.querySelectorAll("#source div[id^='line-']");
+		     for (const line of lines) {
+		       const address = parseInt(line.id.slice(5), 16);
+
+		       if (address === pstatus.pc) {
+			 line.style.background = "#00ff00";
+		       } else {
+			 line.style.background = "none";
+		       }
+		     }
 		   }
 
 		   const loadSource = (rbx) => {
@@ -73,13 +111,12 @@
 		     console.log("startRom", romName);
 		     const romBytes = readRom();
 
-		     breakpoints.clear();
                      loadSource(romBytes);
 
 		     rx = 0;
 		     ry = 0;
 		     ra = 0;
-		     sp = 0;
+		     sp = 0xff;
 
 		     fc = 0;
                      fc = 0;
@@ -110,19 +147,24 @@
 
 		   document.addEventListener("DOMContentLoaded", (event) => {
 		     document.getElementById("source").addEventListener("dblclick", (event) => {
-                       console.log(event, window.getSelection().focusOffset);
 	               toggleBreakpoint(parseInt(event.target.innerHTML.slice(0, 4), 16));
 		     });
 
 		     document.getElementById("continue").addEventListener("click", (event) => {
                        document.dispatchEvent(new Event("continue"));
 		     });
+		     document.getElementById("step").addEventListener("click", (event) => {
+                       document.dispatchEvent(new Event("step"));
+		     });
+		     document.getElementById("restart").addEventListener("click", (event) => {
+                       startRom();
+		     });
 
                      startRom();
 
 		     document.addEventListener("draw", () => { frc++; });
-		     document.addEventListener("chrom", () => { startRom(); });
-		     document.addEventListener("break", () => { console.log("BR"); loadDebugInfo(); });
+		     document.addEventListener("chrom", () => { startRom(); breakpoints.clear(); });
+		     document.addEventListener("break", () => { loadDebugInfo(); loadMemory(); updateHighlights(); });
                    });
 
 		   var frc = 0; 
@@ -137,7 +179,7 @@
 		</script>
 	</head>
 	<body>
-          <div style="display: flex">
+          <div style="display: flex; gap: 10px">
 	    <div>
 	      <canvas id="tehScreen" width="160" height="192"></canvas>
 	      <div><input type="text" id="fr"></div>
@@ -148,7 +190,7 @@
 	          <option value="kernel15">Kernel 15</option>
 	          <option value="kernel22">Kernel 22</option>
 	          <option value="demo3_8">Demo3_8</option>
-	          <option value="complexscene1" selected>complexscene1</option>
+		  <!--<option value="complexscene1">complexscene1</option> -->
 	          <option value="sethorizpos">sethorizpos</option>
 	          <option value="piatimer">piatimer</option>
 	          <option value="timing2">timing2</option>
@@ -156,14 +198,18 @@
 	          <option value="diag">Diag</option>
 	          <option value="logo">Logo</option>
 	          <option value="combat">Combat</option>
-	          <option value="frogger">Frogger</option>
+	          <option value="frogger" selected>Frogger</option>
 	          <option value="pongsports">Pong Sports</option>
 	        </select>
 	      </div>
 	    </div>
 	    <div>
+	      <div style="display: flex; flex-direction: column; font-family: courier; gap: 10px;">
+		<div id="source" style="font-family: courier;"></div>
+	      </div>
+	    </div>
+	    <div style="position: fixed; left: 30%;">
 	      <div style="display: flex; flex-direction: column; font-family: courier;">
-		<button id="continue">Continue</button>
 		<div id="debuginfo">
 		  <div>RX: <span id="rx">0</span></div>
 		  <div>RY: <span id="ry">0</span></div>
@@ -171,11 +217,17 @@
 		  <div>SP: <span id="sp">0</span></div>
 		  <div>PC: <span id="pc">0</span></div>
 		  <div>Flags: <span id="fx">0</span></div>
-		  <div>INTIM: <span id="intim">0</span></div>
-		  <div>INSTAT: <span id="instat">0</span></div>
-		  <div>INTERVAL: <span id="interval">0</span></div>
+		  <div>Intim: <span id="intim">0</span></div>
+		  <div>Instat: <span id="instat">0</span></div>
+		  <div>Interval: <span id="interval">0</span></div>
+		  <div>TimerCounter: <span id="timerCounter">0</span></div>
 		</div>
-		<div id="source" rows="40" cols="50"></div>
+		<div id="memory" style="font-family: courier;"></div>
+		<div style="display: flex; gap: 10px;">
+		  <button id="continue">Continue</button>
+		  <button id="step">Step</button>
+		  <button id="restart">Restart</button>
+		</div>
 	      </div>
 	    </div>
           </div>

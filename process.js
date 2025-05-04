@@ -29,7 +29,6 @@ var isWSync = false;
 var isVSync = false;
 var isVSyncHi = false;
 
-// var instat = 0x00;
 var interval = 1;
 var timerCounter = 1;
 
@@ -111,34 +110,55 @@ const d2b = (d) => {
  return h * 10 + l;
 }
 
+// https://www.pagetable.com/c64ref/6502/?tab=3#(a8),Y
 const indiry = (read, nn) => {
   const o = read(nn) + ry;
-  const o2 = o % 0xff;
-  const c = o2 < o ? 1 : 0;
+  const l = o % 0xff;
+  const c = fl(l < o);
 
-  const l = read(o2) & 0xff;
-  const h = (read(o2 + 1) + c) & 0xff;
+  const h = (read(nn + 1) + c) & 0xff;
 
-  const addr = ((h << 8) + l) & 0xffff;
-
-  const r = read(addr);
-
-  return read(r) & 0xffff;
+  return ((h << 8) + l) & 0xffff;
 }
 
+const rindiry = (read, nn) => {
+  const addr = indiry(read, nn);
+
+  return read(addr) & 0xffff;
+}
+
+// https://www.pagetable.com/c64ref/6502/?tab=3#(a8,X)
 const indirx = (read, nn) => {
-  const o = nn + rx;
-  const o2 = (nn + rx) % 0xff;
-  const c = o2 < o ? 1 : 0;
+  const l = (nn + rx) % 0xff;
+  const h = read(nn + 1) & 0xff;
 
-  const l = read(o2) & 0xff;
-  const h = (read(o2 + 1) + c) & 0xff;
+  return ((h << 8) + l) & 0xffff;
+}
 
-  const addr = ((h << 8) + l) & 0xffff;
+const rindirx = (read, nn) => {
+  const addr = indirx(read, nn);
 
-  const r = read(addr);
+  return read(addr) & 0xffff;
+}
 
-  return read(r) & 0xffff;
+const pzx = (nn) => {
+  return (nn + rx) & 0xff;
+}
+
+const rpzx = (read, nn) => {
+  const addr = pzx(nn);
+
+  return read(addr);
+}
+
+const pzy = (nn) => {
+  return (nn + ry) & 0xff;
+}
+
+const rpzy = (read, nn) => {
+  const addr = pzy(nn);
+
+  return read(addr);
 }
 
 
@@ -203,7 +223,7 @@ const processors = {
   /* AND #nn     */ 0x29: (read) => { const nn = read(pc + 1); ra = ra & nn; fnu(ra); fzu(ra); pc += 2; cc += 2; },
   /* ROL A       */ 0x2a: () => { const ra0 = ((ra << 1) | fc) & 0xff; fc = ((ra & 0x80) >> 7); ra = ra0; fnu(ra); fzu(ra); pc += 1; cc += 2; },
   /* BMI dd      */ 0x30: (read) => { fn === 1 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
-  /* AND nn, X   */ 0x35: (read) => { const nn = read(pc + 1); ra = ra & read((nn + rx) & 0xff); fnu(ra); fzu(ra); pc += 2; cc += 4; },
+  /* AND nn, X   */ 0x35: (read) => { const nn = read(pc + 1); ra = ra & rpzx(read, nn); fnu(ra); fzu(ra); pc += 2; cc += 4; },
   /* SEC         */ 0x38: () => { fc = 1; pc++; cc += 2;},
   /* RTI         */ 0x40: (read) => {
 	  const st = popsp(read);
@@ -219,7 +239,7 @@ const processors = {
 	  pc = p;
 
 	  cc += 6; },
-  /* EOR (nn, X) */ 0x41: (read) => { const nn = read(pc + 1); ra ^= indirx(read, nn); fnu(ra); fzu(ra); pc += 2; cc += 6; },
+  /* EOR (nn, X) */ 0x41: (read) => { const nn = read(pc + 1); ra ^= rindirx(read, nn); fnu(ra); fzu(ra); pc += 2; cc += 6; },
   /* EOR nn      */ 0x45: (read) => { const nn = read(pc + 1); ra ^= read(nn); fnu(ra); fzu(ra); pc += 2; cc += 3; },
   /* PHA         */ 0x48: (_, write) => { pshsp(write, ra); pc += 1; cc += 3; },
   /* EOR #nn     */ 0x49: (read) => { const nn = read(pc + 1); ra ^= nn; fnu(ra); fzu(ra); pc += 2; cc += 2; },
@@ -281,7 +301,7 @@ const processors = {
   /* ADC nn, X   */ 0x75: (read) => {
 	  const nn = read(pc + 1);
 
-	  const v0 = read(nn + rx) & 0xff;
+	  const v0 = rpzx(read, nn);
 
 	  const v = fd ? b2d(v0) : tcd(v0);
 
@@ -341,9 +361,9 @@ const processors = {
   /* STX nn      */ 0x86: (read, write) => { const nn = read(pc + 1); write(nn, rx & 0xff); pc += 2; cc += 3; },
   /* TXA         */ 0x8a: () => { ra = rx; fnu(ra); fzu(ra); pc += 1; cc += 2; },
   /* BCC dd      */ 0x90: (read) => { fc === 0 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
-  /* STY nn, X   */ 0x94: (read, write) => { const nn = read(pc + 1); write((nn + rx) & 0xff, ry & 0xff); pc += 2; cc += 4; },
-  /* STA nn, X   */ 0x95: (read, write) => { const nn = read(pc + 1); write((nn + rx) & 0xff, ra & 0xff); pc += 2; cc += 4; },
-  /* STX nn, Y   */ 0x96: (read, write) => { const nn = read(pc + 1); write((nn + ry) & 0xff, rx & 0xff); pc += 2; cc += 4; },
+  /* STY nn, X   */ 0x94: (read, write) => { const nn = read(pc + 1); write(pzx(nn), ry & 0xff); pc += 2; cc += 4; },
+  /* STA nn, X   */ 0x95: (read, write) => { const nn = read(pc + 1); write(pzx(nn), ra & 0xff); pc += 2; cc += 4; },
+  /* STX nn, Y   */ 0x96: (read, write) => { const nn = read(pc + 1); write(pzy(nn), rx & 0xff); pc += 2; cc += 4; },
   /* TYA         */ 0x98: () => { ra = ry; fnu(ra); fzu(ra); pc += 1; cc += 2; },
   /* STA nnnn, Y */ 0x99: (read, write) => {
 	  const nnnn = word(read, pc + 1);
@@ -380,9 +400,7 @@ const processors = {
   /* LDA (nn), Y */ 0xb1: (read) => {
 	  const nn = read(pc + 1)
 
-	  const r = indiry(read, nn);
-
-	  ra = read(r);
+	  ra = rindiry(read, nn);
 
 	  fnu(ra);
 	  fzu(ra);
@@ -390,9 +408,8 @@ const processors = {
           cc += 5; },
   /* LDY nn, X   */ 0xb4: (read) => {
 	  const nn = read(pc + 1);
-	  const r = nn + ry;
 
-	  ry = read(r);
+	  ry = rpzx(read, nn);
 
 	  fnu(ry);
 	  fzu(ry);
@@ -400,9 +417,8 @@ const processors = {
           cc += 4; },
   /* LDA nn, X   */ 0xb5: (read) => {
 	  const nn = read(pc + 1);
-	  const r = (nn + rx) & 0xff;
 
-	  ra = read(r);
+	  ra = rpzx(read, nn);
 
 	  fnu(ra);
 	  fzu(ra);
@@ -410,9 +426,8 @@ const processors = {
           cc += 4; },
   /* LDX nn, X   */ 0xb6: (read) => {
 	  const nn = read(pc + 1);
-	  const r = (nn + rx) & 0xff;
 
-	  rx = read(r);
+	  rx = rpzx(read, nn);
 
 	  fnu(rx);
 	  fzu(rx);
@@ -457,8 +472,9 @@ const processors = {
           cc += 5; },
    /* DEC nn, X   */ 0xd6: (read, write) => {
 	  nn = read(pc + 1);
-	  v = (read((nn + rx) & 0xff) - 1) & 0xff;
-	  write(nn, v);
+
+	  v = (rpzx(read, nn) - 1) & 0xff;
+	  write(pzx(nn), v);
 
 	  fnu(v);
 	  fzu(v);
@@ -468,13 +484,13 @@ const processors = {
   /* CMP #nn     */ 0xc9: (read) => { const nn = read(pc + 1); const r = (ra - nn) & 0xff; fc = fl(nn <= ra); fnu(r); fzu(r); pc += 2; cc += 2; },
   /* DEX         */ 0xca: () => { rx = (rx - 1) & 0xff; fnu(rx); fzu(rx); pc += 1; cc += 2; },
   /* BNE dd      */ 0xd0: (read) => { fz === 0 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
-  /* CMP nn, X   */ 0xd5: (read) => { const nn = read(pc + 1); const v = read((nn + rx) & 0xff); const r = (ra - v) & 0xff; fc = fl(v <= ra); fnu(r); fzu(r); pc += 2; cc += 4; },
+  /* CMP nn, X   */ 0xd5: (read) => { const nn = read(pc + 1); const v = rpzx(read, nn); const r = (ra - v) & 0xff; fc = fl(v <= ra); fnu(r); fzu(r); pc += 2; cc += 4; },
   /* CLD         */ 0xd8: () => { fd = 0; pc += 1; cc += 2; },
   /* CPX #nn     */ 0xe0: (read) => { const nn = read(pc + 1); const r = (rx - nn) & 0xff; fc = fl(nn <= rx); fnu(r); fzu(r); pc += 2; cc += 2; },
   /* SBC (nn, X) */ 0xe1: (read) => {
 	  const nn = read(pc + 1)
 
-	  const v0 = indirx(read, nn)
+	  const v0 = rindirx(read, nn)
 
 	  const v = fd ? b2d(v0) : tcd(v0);
 
@@ -526,11 +542,11 @@ const processors = {
 
 	  pc += 2;
           cc += 2; },
-  /* INC nn      */ 0xe6: (read, write) => { const nn = read(pc + 1) & 0xff; const r = read(nn) + 1; write(nn, r); fnu(r); fzu(r); pc += 2; cc += 5; },
+  /* INC nn      */ 0xe6: (read, write) => { const nn = read(pc + 1) & 0xff; const r = (read(nn) + 1) & 0xff; write(nn, r); fnu(r); fzu(r); pc += 2; cc += 5; },
   /* INX         */ 0xe8: () => { rx = (rx + 1) & 0xff; fnu(rx); fzu(rx); pc += 1; cc += 2; },
   /* NOP         */ 0xea: () => { pc += 1; cc += 2; },
   /* BEQ dd      */ 0xf0: (read) => { fz === 1 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
-  /* INC nn, X   */ 0xf6: (read, write) => { const nn = read(pc + 1) & 0xff; const r = read((nn + rx) & 0xff) + 1; write(nn, r); fnu(r); fzu(r); pc += 2; cc += 5; },
+  /* INC nn, X   */ 0xf6: (read, write) => { const nn = read(pc + 1) & 0xff; const r = (rpzx(read, nn) + 1) & 0xff; write(pzx(nn), r); fnu(r); fzu(r); pc += 2; cc += 5; },
   /* CLD         */ 0xf8: () => { fd = 0; pc += 1; cc += 2; },
 }
 
@@ -569,7 +585,8 @@ const process = async (input) => {
   let isKilled = false;
 
   document.addEventListener("chrom", () => { isKilled = true; isBreak = false; });
-  document.addEventListener("continue", () => { isContinue = true; });
+  document.addEventListener("continue", () => { isContinue = true; isStep = false; });
+  document.addEventListener("step", () => { isBreakout = true; isStep = true });
 
   const mem = romAsMem(input.length === 4_092 ? input : input.concat(input));
 
@@ -704,36 +721,38 @@ const process = async (input) => {
 
     const isWaiting = (w > 0);
 
-
     if (!isWSync && !isWaiting) {
       isContinue = false;
-      while (breakpoints.has(pc) && !isContinue) {
-              document.dispatchEvent(new Event("break"));
-	      pstatus = {
-		pc,
-		rx,
-		ry,
-		ra,
-		sp,
-		fc,
-		fz,
-		fv,
-		fn,
-		fd,
-		fi,
-		intim: mem[INTIM],
-		instat: mem[INSTAT],
-		interval,
-		isVSync,
-		isWSync,
+      
+      let propagated = false;
+      while (!isBreakout && ((breakpoints.has(pc) && !isContinue) || isStep)) {
+	      if (!propagated) {
+	        pstatus = {
+	          pc,
+	          rx,
+	          ry,
+	          ra,
+	          sp,
+	          fc,
+	          fz,
+	          fv,
+	          fn,
+	          fd,
+	          fi,
+	          intim: mem[INTIM],
+	          instat: mem[INSTAT],
+	          memory: mem,
+	          timerCounter,
+	          interval,
+	          isVSync,
+	          isWSync,
+	        }
+                document.dispatchEvent(new Event("break"));
+	        propagated = true;
 	      }
-              console.log("BREAK", pc.toString(16));
               await sleep(100);
       }
-
-      if (breakpoints.has(pc) && isContinue) {
-          console.log("III");
-      }
+      isBreakout = false;
 
       const o = read(pc)
       dbg("pc", pc.toString(16), "o", o.toString(16));
