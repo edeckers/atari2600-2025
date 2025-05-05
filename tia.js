@@ -117,11 +117,11 @@ function updateScreen(read, tt) {
      return;
    }
 
-   (psz === 1) && drawCopy(16);
-   (psz === 2) && drawCopy(32);
-   (psz === 3) && (drawCopy(16), drawCopy(32));
-   (psz === 4) && drawCopy(56);
-   (psz === 6) && (drawCopy(16), drawCopy(32), drawCopy(56));
+   // (psz === 1) && drawCopy(16);
+   // (psz === 2) && drawCopy(32);
+   // (psz === 3) && (drawCopy(16), drawCopy(32));
+   // (psz === 4) && drawCopy(56);
+   // (psz === 6) && (drawCopy(16), drawCopy(32), drawCopy(56));
  }
 
  (x >= resp0x) && dp(GRP0, resp0x, COLUP0, NUSIZ0);

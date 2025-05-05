@@ -242,11 +242,9 @@ const processors = {
   /* ADC nn      */ 0x65: (read) => {
 	  const nn = read(pc + 1);
 
-	  const v0 = read(nn) & 0xff;
+	  const v = read(nn) & 0xff;
 
-	  const v = fd ? b2d(v0) : tcd(v0);
-
-	  const r0 = fd ? b2d(ra) + fc + b2d(v) : ra + fc + v;
+	  const r0 = fd ? b2d(ra) + fc + b2d(v) : tcd(ra) + fc + tcd(v);
 	  const r = fd ? d2b(r0) : r0;
 
 	  ra = r & 0xff;
@@ -262,10 +260,7 @@ const processors = {
   /* ADC #nn     */ 0x69: (read) => {
 	  const nn = read(pc + 1);
 
-	  const v = fd ? b2d(nn) : tcd(nn);
-
-	  const r0 = fd ? b2d(ra) + fc + b2d(v) : ra + fc + v;
-	  const r = fd ? d2b(r0) : r0;
+	  const r = fd ? b2d(ra) + fc + b2d(nn) : tcd(ra) + fc + tcd(nn);
 
 	  ra = r & 0xff;
 
@@ -281,12 +276,9 @@ const processors = {
   /* ADC nn, X   */ 0x75: (read) => {
 	  const nn = read(pc + 1);
 
-	  const v0 = rpzx(read, nn);
+	  const v = rpzx(read, nn);
 
-	  const v = fd ? b2d(v0) : tcd(v0);
-
-	  const r0 = fd ? b2d(ra) + fc + b2d(v) : ra + fc + v;
-	  const r = fd ? d2b(r0) : r0;
+	  const r = fd ? b2d(ra) + fc + b2d(v) : tcd(ra) + fc + tcd(v);
 
 	  ra = r & 0xff;
 
@@ -300,12 +292,9 @@ const processors = {
   /* ADC nnnn, Y */ 0x79: (read) => {
 	  const nnnn = word(read, pc + 1);
 
-	  const v0 = read((nnnn + ry) & 0xffff) & 0xff;
+	  const v = read((nnnn + ry) & 0xffff) & 0xff;
 
-	  const v = fd ? b2d(v0) : tcd(v0);
-
-	  const r0 = fd ? b2d(ra) + fc + b2d(v) : ra + fc + v;
-	  const r = fd ? d2b(r0) : r0;
+	  const r = fd ? b2d(ra) + fc + b2d(v) : tcd(ra) + fc + tcd(v);
 
 	  ra = r & 0xff;
 
@@ -757,8 +746,8 @@ const process = async (input) => {
 	          fn,
 	          fd,
 	          fi,
-		  grp0: mem[GRP0],
-		  grp1: mem[GRP1],
+		  p0: mem[GRP0],
+		  p1: mem[GRP1],
 		  x,
 		  y,
 	          intim: mem[INTIM],
