@@ -559,16 +559,35 @@ const process = async (input) => {
 
   const mem = romAsMem(input.length === 4_096 ? input : input.concat(input));
 
+  const nrml = (addr) => {
+    if (addr & 0x1000) { // ROM
+      // console.log("ROM", addr.toString(16));
+      return addr & 0x1fff; 
+    } else if ((addr & 0x1080) === 0x00) { // TIA
+      // console.log("TIA", addr.toString(16));
+      return addr & 0x7f;
+    } else if ((addr & 0x1280) === 0x80) { // PIA
+      // console.log("PIA", addr.toString(16));
+      return addr & 0xff;
+    } else if ((addr & 0x1280) === 0x280) { // IO
+      // console.log("IO", addr.toString(16));
+      return addr;
+    }
+
+    return addr;
+  }
   const read = (addr) => {
-    if (addr === INTIM) {
+    const naddr = nrml(addr);
+
+    if (naddr === INTIM) {
       if (mem[INSTAT] & 0x40) { // Restart interval
 	mem[INSTAT] &= 0xbf;
       }
-    } else if (addr === INSTAT) {
+    } else if (naddr === INSTAT) {
       mem[INSTAT] &= 0xbf; // Reset bit 6 on read instat
     }
 
-    return mem[addr];
+    return mem[naddr];
   }
 
   // FIXME I Don't think this is correct: REFPx can change after writing GRPx
@@ -576,11 +595,12 @@ const process = async (input) => {
   const setGrp1 = (v0) => { mem[GRP1] = (mem[REFP1] & 0x08) ? rev8(v0) : v0; }
 
   const write = (addr, v) => {
-     dbg("write", addr.toString(16), v);
+     const naddr = nrml(addr);
+     dbg("write", naddr.toString(16), v);
 
      // STROBES, i.e. won't be actually stored and return early
-     if (addr === WSYNC) { isWSync = true; return; }
-     if (addr === RESP0) { isRESP0 = true;
+     if (naddr === WSYNC) { isWSync = true; return; }
+     if (naddr === RESP0) { isRESP0 = true;
 	     const y = Math.floor(s / 228);
 	     // if ([
 	     //         132, 146, 159, 172, 185, 30, 51, 68, 81, 94, 107, 120].indexOf(y) > -1) {
@@ -588,21 +608,21 @@ const process = async (input) => {
 	     // }
 
 	     return; }
-     if (addr === RESP1) { isRESP1 = true; return; }
-     if (addr === RESM0) { isRESM0 = true; return; }
-     if (addr === RESM1) { isRESM1 = true; return; }
-     if (addr === RESBL) { isRESBL = true; return; }
+     if (naddr === RESP1) { isRESP1 = true; return; }
+     if (naddr === RESM0) { isRESM0 = true; return; }
+     if (naddr === RESM1) { isRESM1 = true; return; }
+     if (naddr === RESBL) { isRESBL = true; return; }
 
-     if (addr === HMOVE) { isHMOVE = true; return; }
-     if (addr === HMCLR) { isHMCLR = true; return; }
+     if (naddr === HMOVE) { isHMOVE = true; return; }
+     if (naddr === HMCLR) { isHMCLR = true; return; }
 
-     if (addr === TIM1T)  { interval = 1;     timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
-     if (addr === TIM8T)  { interval = 8;     timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
-     if (addr === TIM64T) { interval = 64;    timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
-     if (addr === T1024T) { interval = 1_024; timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
+     if (naddr === TIM1T)  { interval = 1;     timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
+     if (naddr === TIM8T)  { interval = 8;     timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
+     if (naddr === TIM64T) { interval = 64;    timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
+     if (naddr === T1024T) { interval = 1_024; timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
 
      // SPECIAL CASES with extra actions
-     if (addr === VSYNC) {
+     if (naddr === VSYNC) {
 	 newIsVsync = (v & 0x02) === 0x02;
 
 	 isVSyncHi = (isVSync && !newIsVsync);
@@ -610,7 +630,7 @@ const process = async (input) => {
 	 isVSync = newIsVsync;
      }
 
-     if (addr === GRP0) {
+     if (naddr === GRP0) {
        if (mem[VDELP1] & 0x01) { setGrp1(GRP1_DELAYED); }
        if (mem[VDELP0] & 0x01) { GRP0_DELAYED = v; return; }
 
@@ -618,7 +638,7 @@ const process = async (input) => {
        return; // Do not store bc delayed write, reversing, etc
      }
 
-     if (addr === GRP1) {
+     if (naddr === GRP1) {
        if (mem[VDELP0] & 0x01) { setGrp0(GRP0_DELAYED); }
        if (mem[VDELP1] & 0x01) { GRP1_DELAYED = v; return; }
 
@@ -627,10 +647,10 @@ const process = async (input) => {
      }
 
      // UPDATE MEMORY
-     mem[addr] = v;
+     mem[naddr] = v;
 
      // POST PROCESSING, i.e. update helper registers and the like
-     if (pfs.has(addr)) {
+     if (pfs.has(naddr)) {
        const pf0 = read(PF0) & 0xff;
        const pf1 = read(PF1) & 0xff;
        const pf2 = read(PF2) & 0xff;
