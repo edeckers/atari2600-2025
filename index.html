@@ -45,6 +45,8 @@
 		     document.getElementById("instat").innerHTML = pstatus.instat.toString(2);
 		     document.getElementById("interval").innerHTML = pstatus.interval.toString(10);
 		     document.getElementById("timerCounter").innerHTML = pstatus.timerCounter.toString(10);
+		     document.getElementById("xpos").innerHTML = pstatus.x.toString(10);
+		     document.getElementById("ypos").innerHTML = pstatus.y.toString(10);
 		   }
 
 		   const loadMemory = () => {
@@ -160,6 +162,30 @@
                        startRom();
 		     });
 
+		     document.getElementById("xConditionLower").addEventListener("change", (event) => {
+			const value = parseInt(event.target.value, 10) || undefined;
+
+			bpConditional.x.lower = value;
+		     });
+		     document.getElementById("xConditionUpper").addEventListener("change", (event) => {
+			const value = parseInt(event.target.value, 10) || undefined;
+
+			bpConditional.x.upper = value;
+		     });
+		     document.getElementById("yConditionLower").addEventListener("change", (event) => {
+			const value = parseInt(event.target.value, 10) || undefined;
+
+			bpConditional.y.lower = value;
+		     });
+		     document.getElementById("yConditionUpper").addEventListener("change", (event) => {
+			const value = parseInt(event.target.value, 10) || undefined;
+
+			bpConditional.y.upper = value;
+		     });
+
+
+
+
                      startRom();
 
 		     document.addEventListener("draw", () => { frc++; });
@@ -211,16 +237,26 @@
 	    <div style="position: fixed; left: 30%;">
 	      <div style="display: flex; flex-direction: column; font-family: courier;">
 		<div id="debuginfo">
+		  <div>CPU</div>
 		  <div>RX: <span id="rx">0</span></div>
 		  <div>RY: <span id="ry">0</span></div>
 		  <div>RA: <span id="ra">0</span></div>
 		  <div>SP: <span id="sp">0</span></div>
 		  <div>PC: <span id="pc">0</span></div>
 		  <div>Flags: <span id="fx">0</span></div>
+		  <div>Timer</div>
 		  <div>Intim: <span id="intim">0</span></div>
 		  <div>Instat: <span id="instat">0</span></div>
 		  <div>Interval: <span id="interval">0</span></div>
 		  <div>TimerCounter: <span id="timerCounter">0</span></div>
+		  <div>TIA</div>
+		  <div>Xpos: <span id="xpos">0</span></div>
+		  <div>Ypos: <span id="ypos">0</span></div>
+		</div>
+		<div>
+		  <div>Breakpoint conditionals</div>
+		  <div>X: <input type="text" id="xConditionLower" value=""> - <input type="text" id="xConditionUpper" value=""></div>
+		  <div>Y: <input type="text" id="yConditionLower" value=""> - <input type="text" id="yConditionUpper" value=""></div>
 		</div>
 		<div id="memory" style="font-family: courier;"></div>
 		<div style="display: flex; gap: 10px;">
