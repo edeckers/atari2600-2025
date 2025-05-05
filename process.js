@@ -515,13 +515,15 @@ const processors = {
           cc += 3; },
   /* INC nn      */ 0xe6: (read, write) => { const nn = read(pc + 1) & 0xff; const r = (read(nn) + 1) & 0xff; write(nn, r); fnu(r); fzu(r); pc += 2; cc += 5; },
   /* INX         */ 0xe8: () => { rx = (rx + 1) & 0xff; fnu(rx); fzu(rx); pc += 1; cc += 2; },
-  /* ISC nn      */ 0xe7: (read) => {  // UNDOCUMENTED
+  /* ISC nn      */ 0xe7: (read, write) => {  // UNDOCUMENTED
 	  // https://www.masswerk.at/nowgobang/2021/6502-illegal-opcodes
 	  const nn = read(pc + 1);
 
 	  const nn0  = read(nn);
 
 	  const v = (nn0 + 1) & 0xff; // INC
+
+	  write(nn, v);
 
 	  fnu(v);
 	  fzu(v);
@@ -612,6 +614,7 @@ const process = async (input) => {
     return mem[addr];
   }
 
+  // FIXME I Don't think this is correct: REFPx can change after writing GRPx
   const setGrp0 = (v0) => { mem[GRP0] = (mem[REFP0] & 0x08) ? rev8(v0) : v0; }
   const setGrp1 = (v0) => { mem[GRP1] = (mem[REFP1] & 0x08) ? rev8(v0) : v0; }
 
@@ -754,6 +757,8 @@ const process = async (input) => {
 	          fn,
 	          fd,
 	          fi,
+		  grp0: mem[GRP0],
+		  grp1: mem[GRP1],
 		  x,
 		  y,
 	          intim: mem[INTIM],

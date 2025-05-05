@@ -47,6 +47,8 @@
 		     document.getElementById("timerCounter").innerHTML = pstatus.timerCounter.toString(10);
 		     document.getElementById("xpos").innerHTML = pstatus.x.toString(10);
 		     document.getElementById("ypos").innerHTML = pstatus.y.toString(10);
+		     document.getElementById("p0").innerHTML = pstatus.p0.toString(2);
+		     document.getElementById("p1").innerHTML = pstatus.p1.toString(2);
 		   }
 
 		   const loadMemory = () => {
@@ -252,6 +254,8 @@
 		  <div>TIA</div>
 		  <div>Xpos: <span id="xpos">0</span></div>
 		  <div>Ypos: <span id="ypos">0</span></div>
+		  <div>P0: <span id="p0">0</span></div>
+		  <div>P1: <span id="p1">0</span></div>
 		</div>
 		<div>
 		  <div>Breakpoint conditionals</div>
