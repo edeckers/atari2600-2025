@@ -1,4 +1,4 @@
-const [W, H] = [160, 192];
+const [W, H] = [161, 193];
 
 const vb = 228 * (3 + 37);
 const hb = 68;
@@ -51,11 +51,11 @@ function updateScreen(read, tt) {
  if (isRESM1) { resm1x_ = Math.max((tt % 228) - hb, 3); resm1x = resm1x_; isRESM1 = false; }
  if (isRESBL) { resblx_ = Math.max((tt % 228) - hb, 3); resblx = resblx_; isRESBL = false; }
  if (isHMOVE) { 
-	 resp0x += (tcd4((read(HMP0) >> 4) & 0xf) * -1) % 160;
-	 resp1x += (tcd4((read(HMP1) >> 4) & 0xf) * -1) % 160;
-	 resm0x += (tcd4((read(HMM0) >> 4) & 0xf) * -1) % 160;
-	 resm1x += (tcd4((read(HMM1) >> 4) & 0xf) * -1) % 160;
-	 resblx += (tcd4((read(HMBL) >> 4) & 0xf) * -1) % 160;
+	 resp0x = (resp0x + (tcd4((read(HMP0) >> 4) & 0xf) * -1)) % 160;
+	 resp1x = (resp1x + (tcd4((read(HMP1) >> 4) & 0xf) * -1)) % 160;
+	 resm0x = (resm0x + (tcd4((read(HMM0) >> 4) & 0xf) * -1)) % 160;
+	 resm1x = (resm1x + (tcd4((read(HMM1) >> 4) & 0xf) * -1)) % 160;
+	 resblx = (resblx + (tcd4((read(HMBL) >> 4) & 0xf) * -1)) % 160;
 
 	 isHMOVE = false; }
 
@@ -72,7 +72,6 @@ function updateScreen(read, tt) {
 
  const y = Math.floor(d / 228);
  const x = (d % 228) - hb;
-
  const p = (y * W) + x;
 
  const o = p * 4;
@@ -127,7 +126,7 @@ function updateScreen(read, tt) {
  }
 
  (x >= resp0x) && dp(GRP0, resp0x, COLUP0, NUSIZ0);
-// (x >= resp1x) && dp(GRP1, resp1x, COLUP1, NUSIZ1);
+ (x >= resp1x) && dp(GRP1, resp1x, COLUP1, NUSIZ1);
  // (x >= resm0x) && dp(1, resm0x, COLUP0, NUSIZ0);
  // (x >= resm1x) && dp(1, resm1x, COLUP1, NUSIZ1);
  // (x >= resblx) && dp(1, resblx, COLUPF, NUSIZ0);
@@ -151,5 +150,21 @@ function drawer() {
 	  ctx.putImageData(new ImageData(screen, W, H), 0, 0);
 	  document.dispatchEvent(new Event("draw")); }
 
-  return draw;
+  const cross = (x, y) => {
+	  ctx.lineWidth = 1;
+	  ctx.strokeStyle = "#00ff00";
+
+	  ctx.beginPath();
+	  ctx.moveTo(x, 0);
+	  ctx.lineTo(x, H);
+	  ctx.stroke();
+
+          ctx.beginPath();
+	  ctx.moveTo(0, y);
+	  ctx.lineTo(W, y);
+	  ctx.stroke();
+  }
+
+
+  return [draw, cross];
 }

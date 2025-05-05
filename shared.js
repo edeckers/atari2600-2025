@@ -147,6 +147,8 @@ let pstatus = {
   fi: 0,
   p0: 0,
   p1: 0,
+  p0x: 0,
+  p1x: 0,
   intim: 0,
   instat: 0,
   interval: 1,
