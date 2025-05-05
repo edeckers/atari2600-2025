@@ -116,7 +116,7 @@
                             cx.push(c);
                           }
 
-			  const offset = parseInt(src.substr(0, 4), 16);
+			  const offset = parseInt(src.substr(0, 4), 16) + 1;
 			  for (let i = 0; i < cx.length; i++) {
 			    const c = cx[i];
 			    const a = (offset + (i * cs)).toString(16).padStart(4, "0");

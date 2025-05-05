@@ -92,6 +92,7 @@ const d2b = (d) => {
 
 // https://www.pagetable.com/c64ref/6502/?tab=3#(a8),Y
 const indiry = (read, nn) => {
+
   const o = read(nn) + ry;
   const l = o % 0xff;
   const c = fl(l < o);
@@ -385,6 +386,7 @@ const processors = {
 	  const nn = read(pc + 1)
 
 	  ra = rindiry(read, nn);
+          // if (pc === 0xf910) { debugger; }
 	  // if (nn === 0x87) {
 	  //   console.log(
 	  //           "indiry",
