@@ -48,8 +48,10 @@
 		     document.getElementById("timerCounter").innerHTML = pstatus.timerCounter.toString(10);
 		     document.getElementById("xpos").innerHTML = pstatus.x.toString(10);
 		     document.getElementById("ypos").innerHTML = pstatus.y.toString(10);
-		     document.getElementById("p0").innerHTML = pstatus.p0.toString(2);
-		     document.getElementById("p1").innerHTML = pstatus.p1.toString(2);
+		     document.getElementById("p0").innerHTML = pstatus.p0.toString(2).padStart(8, "0");
+		     document.getElementById("p1").innerHTML = pstatus.p1.toString(2).padStart(8, "0");
+		     document.getElementById("p0x").innerHTML = pstatus.p0x.toString(10);
+		     document.getElementById("p1x").innerHTML = pstatus.p1x.toString(10);
 		   }
 
 		   const loadMemory = () => {
@@ -82,6 +84,7 @@
 
 		       if (address === pstatus.pc) {
 			 line.style.background = "#00ff00";
+                         document.getElementById(`${line.id}`).scrollIntoView({ /*behavior: "smooth",*/ block: "nearest" });
 		       } else {
 			 line.style.background = "none";
 		       }
@@ -93,14 +96,36 @@
 
 		     const asm = [];
 		     for (const line of lines) {
-			const [address, src] = line;
+			const [address, src, ax] = line;
 			const srcHtml = src.replaceAll(" ", "&nbsp;");
 
-			if (breakpoints.has(parseInt(address, 16))) {
-		          asm.push(`<div id="line-${address}"><span style="background: #ff0000; color: #fff;">${address}</span> ${srcHtml}</div>`);
-			} else {
-		          asm.push(`<div id="line-${address}">${address} ${srcHtml}</div>`);
+			if (!ax) {
+			  if (breakpoints.has(parseInt(address, 16))) {
+		            asm.push(`<div id="line-${address}"><span style="background: #ff0000; color: #fff;">${address}</span> ${srcHtml}</div>`);
+			  } else {
+		            asm.push(`<div id="line-${address}">${address} ${srcHtml}</div>`);
+			  }
+		        } else {
+                          asm.push(`<div class="blank">&nbsp;</div>`);
+                          asm.push(`<div id="line-${src}-data">.data ${src}</div>`);
+
+			  const cs = 8;
+			  const cx = [];
+			  for (let i = 0; i < ax.length; i += cs) {
+                            const c = ax.slice(i, i + cs);
+                            cx.push(c);
+                          }
+
+			  const offset = parseInt(src.substr(0, 4), 16);
+			  for (let i = 0; i < cx.length; i++) {
+			    const c = cx[i];
+			    const a = (offset + (i * cs)).toString(16).padStart(4, "0");
+				  asm.push(`<div id="line-${a}">${a} ${c.join(" ")}</div>`);
+			  }
+
+		          asm.push(`<div class="blank">&nbsp;</div>`);
 			}
+
 		     }
 
                      document.getElementById("source").innerHTML = asm.join("\n");
@@ -112,12 +137,7 @@
                      return loadFromBase64(rom);
 		   }
 
-		   const startRom = () => {
-		     console.log("startRom", romName);
-		     const romBytes = readRom();
-
-                     loadSource(romBytes);
-
+		   const clearState = () => {
 		     rx = 0;
 		     ry = 0;
 		     ra = 0;
@@ -133,6 +153,14 @@
                      fz = 0;
 
 		     pc = 0;
+		   }
+		   const startRom = () => {
+		     console.log("startRom", romName);
+		     const romBytes = readRom();
+
+                     loadSource(romBytes);
+
+		     clearState();
 
 		     // logSteps = 4_500;
 		     process(romBytes);
@@ -151,6 +179,13 @@
 		   }
 
 		   document.addEventListener("DOMContentLoaded", (event) => {
+		     // clearState();
+		     // const rt = async () => {
+		     //   await testAdc();
+		     //   await testSbc();
+		     // }
+
+		     // rt();
 		     document.getElementById("source").addEventListener("dblclick", (event) => {
 	               toggleBreakpoint(parseInt(event.target.innerHTML.slice(0, 4), 16));
 		     });
@@ -166,27 +201,25 @@
 		     });
 
 		     document.getElementById("xConditionLower").addEventListener("change", (event) => {
-			const value = parseInt(event.target.value, 10) || undefined;
+		        const value = parseInt(event.target.value, 10) || undefined;
 
-			bpConditional.x.lower = value;
+		        bpConditional.x.lower = value;
 		     });
 		     document.getElementById("xConditionUpper").addEventListener("change", (event) => {
-			const value = parseInt(event.target.value, 10) || undefined;
+		        const value = parseInt(event.target.value, 10) || undefined;
 
-			bpConditional.x.upper = value;
+		        bpConditional.x.upper = value;
 		     });
 		     document.getElementById("yConditionLower").addEventListener("change", (event) => {
-			const value = parseInt(event.target.value, 10) || undefined;
+		        const value = parseInt(event.target.value, 10) || undefined;
 
-			bpConditional.y.lower = value;
+		        bpConditional.y.lower = value;
 		     });
 		     document.getElementById("yConditionUpper").addEventListener("change", (event) => {
-			const value = parseInt(event.target.value, 10) || undefined;
+		        const value = parseInt(event.target.value, 10) || undefined;
 
-			bpConditional.y.upper = value;
+		        bpConditional.y.upper = value;
 		     });
-
-
 
 
                      startRom();
@@ -219,7 +252,8 @@
 	          <option value="kernel15">Kernel 15</option>
 	          <option value="kernel22">Kernel 22</option>
 	          <option value="demo3_8">Demo3_8</option>
-		  <option value="complexscene1" selected>complexscene1</option>
+		  <option value="bitmap" selected>bitmap</option>
+		  <option value="complexscene1">complexscene1</option>
 	          <option value="sethorizpos">sethorizpos</option>
 	          <option value="piatimer">piatimer</option>
 	          <option value="timing2">timing2</option>
@@ -232,11 +266,7 @@
 	        </select>
 	      </div>
 	    </div>
-	    <div>
-	      <div style="display: flex; flex-direction: column; font-family: courier; gap: 10px;">
-		<div id="source" style="font-family: courier;"></div>
-	      </div>
-	    </div>
+	    <div id="source" style="font-family: courier; overflow-y: scroll; max-height: 50vh; scrollbar-width: none;"></div>
 	    <div style="position: fixed; left: 30%;">
 	      <div style="display: flex; flex-direction: column; font-family: courier;">
 		<div id="debuginfo">
@@ -255,6 +285,8 @@
 		  <div>TIA</div>
 		  <div>Xpos: <span id="xpos">0</span></div>
 		  <div>Ypos: <span id="ypos">0</span></div>
+		  <div>P0X: <span id="p0x">-1</span></div>
+		  <div>P1X: <span id="p1x">-1</span></div>
 		  <div>P0: <span id="p0">0</span></div>
 		  <div>P1: <span id="p1">0</span></div>
 		</div>
