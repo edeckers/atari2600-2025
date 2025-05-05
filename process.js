@@ -381,15 +381,15 @@ const processors = {
 	  const nn = read(pc + 1)
 
 	  ra = rindiry(read, nn);
-	  if (nn === 0x87) { 
-	    console.log(
-		    "indiry",
-		    indiry(read, nn).toString(16),
-		    "ry", ry.toString(16),
-		    "ra", ra.toString(16),
-		    read(nn).toString(16),
-		    (read(nn + 1)).toString(16));
-	  }
+	  // if (nn === 0x87) { 
+	  //   console.log(
+	  //           "indiry",
+	  //           indiry(read, nn).toString(16),
+	  //           "ry", ry.toString(16),
+	  //           "ra", ra.toString(16),
+	  //           read(nn).toString(16),
+	  //           (read(nn + 1)).toString(16));
+	  // }
 
 	  fnu(ra);
 	  fzu(ra);
@@ -483,7 +483,7 @@ const processors = {
 
 	  const v = fd ? b2d(v0) : tcd(v0);
 
-	  const r0 = fd ? b2d(ra) + fc - 1 - b2d(v) : ra + fc - 1 - v;
+	  const r0 = fd ? b2d(ra) + fc - 1 - b2d(v) : tcd(ra) + fc - 1 - v;
 
 	  const r = fd ? d2b(r0) : r0;
 	  ra = r & 0xff;
@@ -502,7 +502,7 @@ const processors = {
 
 	  const v = fd ? b2d(nn0) : tcd(nn0);
 
-	  const r = fd ? b2d(ra) + fc - 1 - b2d(v) : ra + fc - 1 - v;
+	  const r = fd ? b2d(ra) + fc - 1 - b2d(v) : tcd(ra) + fc - 1 - v;
 
 	  ra = r & 0xff;
 
@@ -521,20 +521,19 @@ const processors = {
 
 	  const nn0  = read(nn);
 
-	  const v = fd ? b2d(nn0 + 1) : tcd(nn0 + 1); // INC
+	  const v = (nn0 + 1) & 0xff; // INC
 
-	  const v0 = v & 0xff;
+	  fnu(v);
+	  fzu(v);
 
-	  if (v0 < v) { fc = 1; } else { fc = 0; }
-
-	  const r = fd ? b2d(ra) + fc - 1 - b2d(v0) : ra + fc - 1 - v0; // SBC
+	  const r = fd ? b2d(ra) + fc - 1 - b2d(v) : tcd(ra) + fc - 1 - tcd(v); // SBC
 
 	  ra = r & 0xff;
 
 	  fnu(ra);
 	  fzu(ra);
 	  fv = fl(r !== ra);
-	  fc = fl(r >= 0);
+	  fc = fl(fd ? b2d(ra) >= 0 : tcd(ra) >= 0);
 
 	  pc += 2;
           cc += 5; },
@@ -543,7 +542,7 @@ const processors = {
 
 	  const v = fd ? b2d(nn) : tcd(nn);
 
-	  const r0 = fd ? b2d(ra) + fc - 1 - b2d(v) : ra + fc - 1 - v;
+	  const r0 = fd ? b2d(ra) + fc - 1 - b2d(v) : tcd(ra) + fc - 1 - v;
 
 	  const r = fd ? d2b(r0) : r0;
 
@@ -572,7 +571,6 @@ const processors = {
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const pfs = new Set([PF0, PF1, PF2]);
-const players = new Set([REFP0, REFP1, GRP0, GRP1]);
 
 const rev8 = (xs) => {
     let x0 = 0;
@@ -735,6 +733,14 @@ const process = async (input) => {
       
       let propagated = false;
       while (!isBreakout && ((breakpoints.has(pc) && !isContinue) || isStep)) {
+	      const x = (s % 228) - hb;
+	      const y = Math.floor((s - vb) / 228);
+
+	      if (bpConditional.x.lower !== undefined && (x < bpConditional.x.lower)) { break; }
+	      if (bpConditional.x.upper !== undefined && (x > bpConditional.x.upper)) { break; }
+	      if (bpConditional.y.lower !== undefined && (y < bpConditional.y.lower)) { break; }
+	      if (bpConditional.y.upper !== undefined && (y > bpConditional.y.upper)) { break; }
+
 	      if (!propagated) {
 	        pstatus = {
 	          pc,
@@ -748,6 +754,8 @@ const process = async (input) => {
 	          fn,
 	          fd,
 	          fi,
+		  x,
+		  y,
 	          intim: mem[INTIM],
 	          instat: mem[INSTAT],
 	          memory: mem,

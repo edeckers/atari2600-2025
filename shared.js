@@ -152,7 +152,14 @@ let pstatus = {
   timerCounter: 0,
   isVSync: false,
   isWSync: false,
+  x: -1,
+  y: -1,
 };
+
+let bpConditional = {
+  x: { lower: undefined, upper: undefined },
+  y: { lower: undefined, upper: undefined },
+}
         
 // https://www.randomterrain.com/atari-2600-memories-tia-color-charts.html#ntsc_pal_color_conversion
 const colors = {
