@@ -83,14 +83,16 @@ function updateScreen(read, tt) {
  // PLAYFIELD
  const isMirror = (read(CTRLPF) & 0x01) === 0x01;
 
- const isPfLeft = (x <= 80);
+ const pfPixel = Math.floor(x / 4);
+ const isPfLeft = (pfPixel < 20);
  const isScore = (read(CTRLPF) & 0x06) === 0x02;
 
- const pw = isPfLeft ?
-          Math.ceil((80 - x) / 4) :
-          Math.ceil((isMirror ? (x - 80) : (80 - (x - 80))) / 4);
 
- const pfBit = Math.pow(2, pw - 1);
+ const pw = isPfLeft ?
+   19 - pfPixel : // pixel value is inverted wrt PF
+   isMirror ? pfPixel - 20 : (20 - (pfPixel - 20)); // -20 for to shift to 0 offset
+
+ const pfBit = 1 << pw;
  const pfColor = isScore ? read(isPfLeft ? COLUP0 : COLUP1) : read(COLUPF);
 
  (pfBit & PF) && (v = pfColor);
@@ -117,11 +119,11 @@ function updateScreen(read, tt) {
      return;
    }
 
-   // (psz === 1) && drawCopy(16);
-   // (psz === 2) && drawCopy(32);
-   // (psz === 3) && (drawCopy(16), drawCopy(32));
-   // (psz === 4) && drawCopy(56);
-   // (psz === 6) && (drawCopy(16), drawCopy(32), drawCopy(56));
+   (psz === 1) && drawCopy(16);
+   (psz === 2) && drawCopy(32);
+   (psz === 3) && (drawCopy(16), drawCopy(32));
+   (psz === 4) && drawCopy(56);
+   (psz === 6) && (drawCopy(16), drawCopy(32), drawCopy(56));
  }
 
  (x >= resp0x) && dp(GRP0, resp0x, COLUP0, NUSIZ0);
