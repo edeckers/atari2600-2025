@@ -34,9 +34,9 @@
 		   }
 
 		   const loadDebugInfo = () => {
-		     document.getElementById("rx").innerHTML = pstatus.rx.toString(16);
-		     document.getElementById("ry").innerHTML = pstatus.ry.toString(16);
-		     document.getElementById("ra").innerHTML = pstatus.ra.toString(16);
+	             document.getElementById("rx").innerHTML = `$${pstatus.rx.toString(16).padStart(2, "0")} (${pstatus.rx.toString(2).padStart(8, "0")})`;
+		     document.getElementById("ry").innerHTML = `$${pstatus.ry.toString(16).padStart(2, "0")} (${pstatus.ry.toString(2).padStart(8, "0")})`;
+		     document.getElementById("ra").innerHTML = `$${pstatus.ra.toString(16).padStart(2, "0")} (${pstatus.ra.toString(2).padStart(8, "0")})`;
 		     document.getElementById("sp").innerHTML = pstatus.sp.toString(16);
 		     document.getElementById("pc").innerHTML = formatPc(pstatus.pc)
 

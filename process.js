@@ -179,7 +179,9 @@ const inc = (read, write, nn) => {
 }
 
 const dec = (read, write, nn) => {
-  const r = (read(nn) - 1) & 0xff;
+  const m = read(nn)
+  const r = (m - 1) & 0xff;
+  // (pc === 0xfc52)  && console.log("dec", nn.toString(16), "m", m.toString(16), "r", r.toString(16));
 
   write(nn, r);
 
@@ -419,10 +421,10 @@ const processors = {
 	  fzu(ra);
 	  pc += 2;
           cc += 4; },
-  /* LDX nn, X   */ 0xb6: (read) => {
+  /* LDX nn, Y   */ 0xb6: (read) => {
 	  const nn = read(pc + 1);
 
-	  rx = rpzx(read, nn);
+	  rx = rpzy(read, nn);
 
 	  fnu(rx);
 	  fzu(rx);
