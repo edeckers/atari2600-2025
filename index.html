@@ -154,6 +154,9 @@
 
 		     pc = 0;
 		   }
+
+		   let controller = undefined;
+		   let switches = undefined;;
 		   const startRom = () => {
 		     console.log("startRom", romName);
 		     const romBytes = readRom();
@@ -163,7 +166,12 @@
 		     clearState();
 
 		     // logSteps = 4_500;
-		     process(romBytes);
+		     const [process, ctrl, swch] = machine(romBytes);
+
+		     process();
+		
+		     controller = ctrl;
+		     switches = swch;
 		   }
                    
 		   const toggleBreakpoint = (address) => {
@@ -227,7 +235,35 @@
 		     document.addEventListener("draw", () => { frc++; });
 		     document.addEventListener("chrom", () => { startRom(); breakpoints.clear(); });
 		     document.addEventListener("break", () => { loadDebugInfo(); loadMemory(); updateHighlights(); });
-                   });
+
+		     document.addEventListener("keydown", (event) => {
+		       if (event.key === "w") { controller.mn(); return false; }
+		       if (event.key === "d") { controller.me(); return false; }
+		       if (event.key === "s") { controller.ms(); return false; }
+		       if (event.key === "a") { controller.mw(); return false; }
+
+		       if (event.code === "Space") { controller.fire(); return false; }
+
+		       if (event.key === "r") { switches.reset(); return false; }
+		       if (event.key === "q") { switches.select(); return false; }
+
+		       return false;
+		     });
+
+       		     document.addEventListener("keyup", (event) => {
+		       if (event.key === "w") { controller.mnc(); return false; }
+		       if (event.key === "d") { controller.mec(); return false; }
+		       if (event.key === "s") { controller.msc(); return false; }
+		       if (event.key === "a") { controller.mwc(); return false; }
+
+		       if (event.code === "Space") { controller.firec(); return false; }
+
+		       if (event.key === "r") { switches.resetc(); return false; }
+		       if (event.key === "q") { switches.selectc(); return false; }
+
+		       return false;
+		     });
+                    });
 
 		   var frc = 0; 
 		   

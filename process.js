@@ -554,7 +554,7 @@ const flip8 = (xs) => {
     return ~xs & 0xff;
 }
 let vSyncCount = 0;
-const process = async (input) => {
+const machine = (input) => {
   let isKilled = false;
 
   document.addEventListener("chrom", () => { isKilled = true; isBreak = false; });
@@ -667,6 +667,26 @@ const process = async (input) => {
 
   }
 
+  const controller = ({
+        mn:    () => mem[SWCHA] &= 0xef,
+	me:    () => mem[SWCHA] &= 0x7f,
+	ms:    () => mem[SWCHA] &= 0xdf,
+	mw:    () => mem[SWCHA] &= 0xbf,
+	fire:  () => mem[INTP4] &= 0x7f,
+	mnc:   () => mem[SWCHA] |= 0x10,
+	mec:   () => mem[SWCHA] |= 0x80,
+	msc:   () => mem[SWCHA] |= 0x20,
+	mwc:   () => mem[SWCHA] |= 0x40,
+	firec: () => mem[INTP4] |= 0x80,
+    });
+
+  const switches = ({
+	reset:   () => mem[SWCHB] &= 0xfe,
+	resetc:  () => mem[SWCHB] |= 0x01,
+	select:  () => mem[SWCHB] &= 0xfd,
+	selectc: () => mem[SWCHB] |= 0x02,
+  });
+
   const loadSwitches = () => {
     // SWCHB.0    Reset Button          (0=Pressed)
     // SWCHB.1    Select Button         (0=Pressed)
@@ -677,6 +697,9 @@ const process = async (input) => {
     // SWCHB.7    P1 Difficulty Switch  (0=Beginner (B), 1=Advanced (A))
 
     write(SWCHB, 0b00001011);
+    write(SWBCNT, 0x00);
+    write(SWCHA, 0b00000000);
+    write(SWACNT, 0xff);
   }
 
   loadSwitches();
@@ -713,113 +736,117 @@ const process = async (input) => {
    if (t0 < 0) { mem[INSTAT] |= 0xc0; mem[INTIM] = 0xff; timerCounter = 1; } else { mem[INTIM] = t0; timerCounter = interval; }
   }
 
-  while (!isKilled) {
-    w = Math.max(w - 1, 0);
-    w = isWSync ? 0 : w;
+  const process = async () => {
+    while (!isKilled) {
+      w = Math.max(w - 1, 0);
+      w = isWSync ? 0 : w;
 
-    const isWaiting = (w > 0);
+      const isWaiting = (w > 0);
 
-    if (!isWSync && !isWaiting) {
-      isContinue = false;
+      if (!isWSync && !isWaiting) {
+        isContinue = false;
 
-      let propagated = false;
-      while (!isBreakout && ((breakpoints.has(pc) && !isContinue) || isStep)) {
-	      const x = (s % 228) - hb;
-	      const y = Math.floor((s - vb) / 228);
+        let propagated = false;
+        while (!isBreakout && ((breakpoints.has(pc) && !isContinue) || isStep)) {
+                const x = (s % 228) - hb;
+                const y = Math.floor((s - vb) / 228);
 
-	      if (bpConditional.x.lower !== undefined && (x < bpConditional.x.lower)) { break; }
-	      if (bpConditional.x.upper !== undefined && (x > bpConditional.x.upper)) { break; }
-	      if (bpConditional.y.lower !== undefined && (y < bpConditional.y.lower)) { break; }
-	      if (bpConditional.y.upper !== undefined && (y > bpConditional.y.upper)) { break; }
+                if (bpConditional.x.lower !== undefined && (x < bpConditional.x.lower)) { break; }
+                if (bpConditional.x.upper !== undefined && (x > bpConditional.x.upper)) { break; }
+                if (bpConditional.y.lower !== undefined && (y < bpConditional.y.lower)) { break; }
+                if (bpConditional.y.upper !== undefined && (y > bpConditional.y.upper)) { break; }
 
-	      if (!propagated) {
-	        pstatus = {
-	          pc,
-	          rx,
-	          ry,
-	          ra,
-	          sp,
-	          fc,
-	          fz,
-	          fv,
-	          fn,
-	          fd,
-	          fi,
-		  p0: mem[GRP0],
-		  p1: mem[GRP1],
-		  p0x: resp0x,
-		  p1x: resp1x,
-		  x,
-		  y,
-	          intim: mem[INTIM],
-	          instat: mem[INSTAT],
-	          memory: mem,
-	          timerCounter,
-	          interval,
-	          isVSync,
-	          isWSync,
-	        }
-                document.dispatchEvent(new Event("break"));
-                updateScreen(read, s);
-                requestAnimationFrame(draw);
-                requestAnimationFrame(() => cross(x, y));
-	        propagated = true;
-	      }
-              await sleep(100);
+                if (!propagated) {
+                  pstatus = {
+                    pc,
+                    rx,
+                    ry,
+                    ra,
+                    sp,
+                    fc,
+                    fz,
+                    fv,
+                    fn,
+                    fd,
+                    fi,
+          	  p0: mem[GRP0],
+          	  p1: mem[GRP1],
+          	  p0x: resp0x,
+          	  p1x: resp1x,
+          	  x,
+          	  y,
+                    intim: mem[INTIM],
+                    instat: mem[INSTAT],
+                    memory: mem,
+                    timerCounter,
+                    interval,
+                    isVSync,
+                    isWSync,
+                  }
+                  document.dispatchEvent(new Event("break"));
+                  updateScreen(read, s);
+                  requestAnimationFrame(draw);
+                  requestAnimationFrame(() => cross(x, y));
+                  propagated = true;
+                }
+                await sleep(100);
+        }
+        isBreakout = false;
+
+        const o = read(pc)
+        dbg("pc", pc.toString(16), "o", o.toString(16));
+
+        const cc0 = cc;
+        const p = processors[o];
+        // const pc0 = pc;
+
+        try {
+         p(read, write);
+        } catch (e) {
+          if (o === 0xff) { return; } // Forced exit for debugging purposes
+          console.log(e, pc.toString(16), "o", o.toString(16))
+          debugger;
+          return;
+        }
+
+        // printAsm && tr(formatASM(toASM(mem, pc0)))
+
+        w = cc - cc0;
+
+        printState && printStates();
       }
-      isBreakout = false;
 
-      const o = read(pc)
-      dbg("pc", pc.toString(16), "o", o.toString(16));
+      for (let a = 0; a < 3; a++) {
+        updateScreen(read, s);
 
-      const cc0 = cc;
-      const p = processors[o];
-      // const pc0 = pc;
+        if (s % 228 === 0) {
+          isWSync = false;
+          w = 0;
+        }
 
-      try {
-       p(read, write);
-      } catch (e) {
-	if (o === 0xff) { return; } // Forced exit for debugging purposes
-        console.log(e, pc.toString(16), "o", o.toString(16))
-	debugger;
-	return;
+        if (isVSync || (s === (228 * 262))) {
+          requestAnimationFrame(draw);
+
+          const diff = new Date() - fs;
+          const delay = Math.max((1_000 / FPS) - diff, 0);
+          if (delay > 0) { await sleep(delay); }
+
+          fs = new Date();
+          s = 0;
+          clearScreen();
+          cc = 0;
+          // isVsyncHi = false;
+          isVSync = false;
+          break;
+        }
+
+        s++;
+        i++;
       }
 
-      // printAsm && tr(formatASM(toASM(mem, pc0)))
-
-      w = cc - cc0;
-
-      printState && printStates();
+      tickTimer();
     }
-
-    for (let a = 0; a < 3; a++) {
-      updateScreen(read, s);
-
-      if (s % 228 === 0) {
-	isWSync = false;
-	w = 0;
-      }
-
-      if (isVSync || (s === (228 * 262))) {
-        requestAnimationFrame(draw);
-
-	const diff = new Date() - fs;
-	const delay = Math.max((1_000 / FPS) - diff, 0);
-	if (delay > 0) { await sleep(delay); }
-
-	fs = new Date();
-        s = 0;
-	clearScreen();
-	cc = 0;
-	// isVsyncHi = false;
-	isVSync = false;
-	break;
-      }
-
-      s++;
-      i++;
-    }
-
-    tickTimer();
   }
+
+  return [process, controller, switches];
 }
