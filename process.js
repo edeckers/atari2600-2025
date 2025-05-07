@@ -488,6 +488,7 @@ const processors = {
 
 	  pc += 2;
           cc += 6; },
+  /* CPX nn      */ 0xe4: (read) => { const nn = read(pc + 1); const v0 = read(nn); const r = (rx - v0) & 0xff; fc = fl(rx >= v0); fnu(r); fzu(r); pc += 2; cc += 3; },
   /* SBC nn      */ 0xe5: (read) => {
 	  const nn = read(pc + 1);
 
