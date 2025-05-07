@@ -699,7 +699,7 @@ const machine = (input) => {
 
     write(SWCHB, 0b00001011);
     write(SWBCNT, 0x00);
-    write(SWCHA, 0b00000000);
+    write(SWCHA, 0xff);
     write(SWACNT, 0xff);
   }
 
