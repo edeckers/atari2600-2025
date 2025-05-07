@@ -122,7 +122,12 @@ TIM8T = 0x295;
 TIM64T = 0x296;
 T1024T = 0x297;
 
+INTP4 = 0x3c;
+
+SWCHA = 0x280;
+SWACNT = 0x281;
 SWCHB = 0x282; // .3 B/W (0) or Color (1)?
+SWBCNT = 0x283;
 
 isRESP0 = false;
 isRESP1 = false;
