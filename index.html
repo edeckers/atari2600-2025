@@ -52,6 +52,12 @@
 		     document.getElementById("p1").innerHTML = pstatus.p1.toString(2).padStart(8, "0");
 		     document.getElementById("p0x").innerHTML = pstatus.p0x.toString(10);
 		     document.getElementById("p1x").innerHTML = pstatus.p1x.toString(10);
+
+		     document.getElementById("pf0").innerHTML = pstatus.pf0.toString(2).padStart(8, "0");
+		     document.getElementById("pf1").innerHTML = pstatus.pf1.toString(2).padStart(8, "0");
+		     document.getElementById("pf2").innerHTML = pstatus.pf2.toString(2).padStart(8, "0");
+		     document.getElementById("pf").innerHTML = pstatus.pf.toString(2).padStart(20, "0");
+	             document.getElementById("ctrlpf").innerHTML = `$${pstatus.ctrlpf.toString(16).padStart(2, "0")} (${pstatus.ctrlpf.toString(2).padStart(8, "0")})`;
 		   }
 
 		   const loadMemory = () => {
@@ -306,28 +312,33 @@
 	    <div style="position: fixed; left: 30%;">
 	      <div style="display: flex; flex-direction: column; font-family: courier;">
 		<div id="debuginfo">
-		  <div>CPU</div>
+		  <div style="font-weight: bold;">CPU</div>
 		  <div>RX: <span id="rx">0</span></div>
 		  <div>RY: <span id="ry">0</span></div>
 		  <div>RA: <span id="ra">0</span></div>
 		  <div>SP: <span id="sp">0</span></div>
 		  <div>PC: <span id="pc">0</span></div>
 		  <div>Flags: <span id="fx">0</span></div>
-		  <div>Timer</div>
+		  <div style="font-weight: bold;">Timer</div>
 		  <div>Intim: <span id="intim">0</span></div>
 		  <div>Instat: <span id="instat">0</span></div>
 		  <div>Interval: <span id="interval">0</span></div>
 		  <div>TimerCounter: <span id="timerCounter">0</span></div>
-		  <div>TIA</div>
+		  <div style="font-weight: bold;">TIA</div>
 		  <div>Xpos: <span id="xpos">0</span></div>
 		  <div>Ypos: <span id="ypos">0</span></div>
 		  <div>P0X: <span id="p0x">-1</span></div>
 		  <div>P1X: <span id="p1x">-1</span></div>
 		  <div>P0: <span id="p0">0</span></div>
 		  <div>P1: <span id="p1">0</span></div>
+		  <div>PF0: <span id="pf0">0</span></div>
+		  <div>PF1: <span id="pf1">0</span></div>
+		  <div>PF2: <span id="pf2">0</span></div>
+		  <div>PF: <span id="pf">0</span></div>
+		  <div>CTRLPF: <span id="ctrlpf">0</span></div>
 		</div>
 		<div>
-		  <div>Breakpoint conditionals</div>
+		  <div style="font-weight: bold;">Conditionals</div>
 		  <div>X: <input type="text" id="xConditionLower" value=""> - <input type="text" id="xConditionUpper" value=""></div>
 		  <div>Y: <input type="text" id="yConditionLower" value=""> - <input type="text" id="yConditionUpper" value=""></div>
 		</div>
