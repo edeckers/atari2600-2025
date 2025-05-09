@@ -661,7 +661,7 @@ const machine = (input) => {
        const pf2 = read(PF2) & 0xff;
 
        const pf0rev = rev8(pf0) & 0xf;
-       const pf2rev = rev8(pf2);
+       const pf2rev = rev8(pf2) & 0xff;
 
        PF = ((pf0rev << 16) | (pf1 << 8) | pf2rev) & 0xffffffff;
      }
@@ -774,6 +774,11 @@ const machine = (input) => {
           	  p1: mem[GRP1],
           	  p0x: resp0x,
           	  p1x: resp1x,
+		  pf0: mem[PF0],
+		  pf1: mem[PF1],
+	          pf2: mem[PF2],
+		  pf: PF,
+		  ctrlpf: mem[CTRLPF],
           	  x,
           	  y,
                     intim: mem[INTIM],
