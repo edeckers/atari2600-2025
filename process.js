@@ -434,6 +434,9 @@ const processors = {
 	  const nnnn = word(read, pc + 1);
 	  ra = read(nnnn + ry);
 
+	  // FIXME ED Test page boundary -> add everywhere applicable
+	  if (((nnnn & 0xff) + (ry & 0xff)) > 0xff) { cc += 1; }
+
 	  fnu(ra);
 	  fzu(ra);
 	  pc += 3;
@@ -759,6 +762,7 @@ const machine = (input) => {
 
                 if (!propagated) {
                   pstatus = {
+		    cc,
                     pc,
                     rx,
                     ry,
@@ -770,17 +774,17 @@ const machine = (input) => {
                     fn,
                     fd,
                     fi,
-          	  p0: mem[GRP0],
-          	  p1: mem[GRP1],
-          	  p0x: resp0x,
-          	  p1x: resp1x,
-		  pf0: mem[PF0],
-		  pf1: mem[PF1],
-	          pf2: mem[PF2],
-		  pf: PF,
-		  ctrlpf: mem[CTRLPF],
-          	  x,
-          	  y,
+          	    p0: mem[GRP0],
+          	    p1: mem[GRP1],
+          	    p0x: resp0x,
+          	    p1x: resp1x,
+		    pf0: mem[PF0],
+		    pf1: mem[PF1],
+	            pf2: mem[PF2],
+		    pf: PF,
+		    ctrlpf: mem[CTRLPF],
+          	    x,
+          	    y,
                     intim: mem[INTIM],
                     instat: mem[INSTAT],
                     memory: mem,
@@ -818,8 +822,10 @@ const machine = (input) => {
         // printAsm && tr(formatASM(toASM(mem, pc0)))
 
         w = cc - cc0;
+      }
 
-        printState && printStates();
+      if (isWSync) {
+	cc = 2;
       }
 
       for (let a = 0; a < 3; a++) {

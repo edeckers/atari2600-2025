@@ -52,6 +52,7 @@
 		     document.getElementById("p1").innerHTML = pstatus.p1.toString(2).padStart(8, "0");
 		     document.getElementById("p0x").innerHTML = pstatus.p0x.toString(10);
 		     document.getElementById("p1x").innerHTML = pstatus.p1x.toString(10);
+	             document.getElementById("cc").innerHTML = `${pstatus.cc.toString(10)} (${pstatus.cc % 228})`;
 
 		     document.getElementById("pf0").innerHTML = pstatus.pf0.toString(2).padStart(8, "0");
 		     document.getElementById("pf1").innerHTML = pstatus.pf1.toString(2).padStart(8, "0");
@@ -325,6 +326,7 @@
 		  <div>Interval: <span id="interval">0</span></div>
 		  <div>TimerCounter: <span id="timerCounter">0</span></div>
 		  <div style="font-weight: bold;">TIA</div>
+		  <div>CC: <span id="cc">0</span></div>
 		  <div>Xpos: <span id="xpos">0</span></div>
 		  <div>Ypos: <span id="ypos">0</span></div>
 		  <div>P0X: <span id="p0x">-1</span></div>
