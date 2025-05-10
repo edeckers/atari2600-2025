@@ -1,7 +1,9 @@
 const [W, H] = [161, 193];
 
 const vb = 228 * (3 + 37);
-const hb = 68;
+
+// FIXME Registers and memory should actually only be updated once the computation is done, even better: step by step, add a stack
+const hb = 68 - /* compensate for status updated too early, 4 PIA * 3 TIA should do most of the time */ 12;
 
 const NUSIZ0 = 0x04;
 const NUSIZ1 = 0x05;
@@ -10,7 +12,6 @@ const COLUP1 = 0x07;
 const COLUPF = 0x08;
 const COLUBK = 0x09;
 const CTRLPF = 0x0a;
-
 
 const PF0 = 0x0d;
 const PF1 = 0x0e;
@@ -89,7 +90,7 @@ function updateScreen(read, tt) {
 
  const pw = isPfLeft ?
    19 - pfPixel : // pixel value is inverted wrt PF
-   isMirror ? pfPixel - 20 : (20 - (pfPixel - 20)); // -20 for to shift to 0 offset
+   isMirror ? pfPixel - 20 : (19 - (pfPixel - 20)); // -20 for to shift to 0 offset
 
  const pfBit = 1 << pw;
  const pfColor = isScore ? read(isPfLeft ? COLUP0 : COLUP1) : read(COLUPF);
