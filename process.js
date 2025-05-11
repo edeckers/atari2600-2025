@@ -126,24 +126,12 @@ const pzx = (nn) => {
   return (nn + rx) & 0xff;
 }
 
-const rpzx = (read, nn) => {
-  const addr = pzx(nn);
-
-  return read(addr);
-}
-
 const pzy = (nn) => {
   return (nn + ry) & 0xff;
 }
 
-const rpzy = (read, nn) => {
-  const addr = pzy(nn);
-
-  return read(addr);
-}
-
-const sbc = (nn) => {
-  const v = fd ? b2d(nn) : tcd(nn);
+const sbc = (m) => {
+  const v = fd ? b2d(m) : tcd(m);
 
   const r0 = fd ? b2d(ra) + fc - 1 - b2d(v) : tcd(ra) + fc - 1 - v;
 
@@ -157,8 +145,8 @@ const sbc = (nn) => {
   fc = fl(r >= 0);
 }
 
-const adc = (nn) => {
-  const r = fd ? b2d(ra) + fc + b2d(nn) : tcd(ra) + fc + tcd(nn);
+const adc = (m) => {
+  const r = fd ? b2d(ra) + fc + b2d(m) : tcd(ra) + fc + tcd(m);
 
   ra = r & 0xff;
 
@@ -169,25 +157,9 @@ const adc = (nn) => {
 }
 
 
-const inc = (read, write, nn) => {
-  const r = (read(nn) + 1) & 0xff;
+const inc = (write, m, a) => { const r = (m + 1) & 0xff; write(a, r); fnu(r); fzu(r); }
 
-  write(nn, r)
-
-  fnu(r);
-  fzu(r);
-}
-
-const dec = (read, write, nn) => {
-  const m = read(nn)
-  const r = (m - 1) & 0xff;
-  // (pc === 0xfc52)  && console.log("dec", nn.toString(16), "m", m.toString(16), "r", r.toString(16));
-
-  write(nn, r);
-
-  fnu(r);
-  fzu(r);
-}
+const dec = (write, m, a) => { const r = (m - 1) & 0xff; write(a, r); fnu(r); fzu(r); }
 
 const cim  = (fn) => (read, write) => { const nn   = read(pc + 1); fn(read, write, nn, -1); }
 const czp  = (fn) => (read, write) => { const nn   = read(pc + 1); fn(read, write, read(nn), nn); }
@@ -363,8 +335,8 @@ const processors = {
   /* CPY #nn     */ 0xc0: cim((_r, _w, m) => { const r = (ry - m) & 0xff; fc = fl(ry >= m); fnu(r); fzu(r); pc += 2; cc += 2; }),
   /* CPY nn      */ 0xc4: czp((_r, _w, m) => { const r = (ry - m) & 0xff; fc = fl(ry >= m); fnu(r); fzu(r); pc += 2; cc += 3; }),
   /* CMP nn      */ 0xc5: czp((_r, _w, m) => { const r = (ra - m) & 0xff; fc = fl(m <= ra); fnu(r); fzu(r); pc += 2; cc += 4; }),
-  /* DEC nn      */ 0xc6: czp((read, write, _m, a) => { dec(read, write, a); pc += 2; cc += 5; }),
-  /* DEC nn, X   */ 0xd6: czpx((read, write, _m, a) => { dec(read, write, a); pc += 2; cc += 6; }),
+  /* DEC nn      */ 0xc6: czp((_r, write, m, a) => { dec(write, m, a); pc += 2; cc += 5; }),
+  /* DEC nn, X   */ 0xd6: czpx((_r, write, m, a) => { dec(write, m, a); pc += 2; cc += 6; }),
   /* INY         */ 0xc8: () => { ry = (ry + 1) & 0xff; fnu(ry); fzu(ry); pc += 1; cc += 2; },
   /* CMP #nn     */ 0xc9: cim((_r, _w, m) => { const r = (ra - m) & 0xff; fc = fl(m <= ra); fnu(r); fzu(r); pc += 2; cc += 2; }),
   /* DEX         */ 0xca: () => { rx = (rx - 1) & 0xff; fnu(rx); fzu(rx); pc += 1; cc += 2; },
@@ -383,11 +355,11 @@ const processors = {
           cc += 6; },
   /* CPX nn      */ 0xe4: czp((_r, _w, m) => { const r = (rx - m) & 0xff; fc = fl(rx >= m); fnu(r); fzu(r); pc += 2; cc += 3; }),
   /* SBC nn      */ 0xe5: czp((_r, _w, m) => { sbc(m); pc += 2; cc += 3; }),
-  /* INC nn      */ 0xe6: czp((read, write, _m, a) => { inc(read, write, a); pc += 2; cc += 5; }),
+  /* INC nn      */ 0xe6: czp((_r, write, m, a) => { inc(write, m, a); pc += 2; cc += 5; }),
   /* INX         */ 0xe8: () => { rx = (rx + 1) & 0xff; fnu(rx); fzu(rx); pc += 1; cc += 2; },
-  /* ISC nn      */ 0xe7: czp((read, write, _m, a) => {  // UNDOCUMENTED
+  /* ISC nn      */ 0xe7: czp((read, write, m, a) => {  // UNDOCUMENTED
 	  // https://www.masswerk.at/nowgobang/2021/6502-illegal-opcodes
-	  inc(read, write, a);
+	  inc(write, m, a);
 
 	  const v = read(a);
 
@@ -398,7 +370,7 @@ const processors = {
   /* SBC #nn     */ 0xe9: cim((_r, _w, m) => { sbc(m); pc += 2; cc += 2; }),
   /* NOP         */ 0xea: () => { pc += 1; cc += 2; },
   /* BEQ dd      */ 0xf0: cim((_r, _w, m) => { fz === 1 && (pc += tcd(m), cc += 1); pc += 2; cc += 2; }),
-  /* INC nn, X   */ 0xf6: czpx((read, write, _m, a) => { inc(read, write, a); pc += 2; cc += 5; }),
+  /* INC nn, X   */ 0xf6: czpx((_r, write, m, a) => { inc(write, m, a); pc += 2; cc += 5; }),
   /* CLD         */ 0xf8: () => { fd = 0; pc += 1; cc += 2; },
 }
 
