@@ -238,7 +238,7 @@ const processors = {
   /* AND #nn     */ 0x29: cim((_r, _w, _nn, m) => { ra = ra & m; fnu(ra); fzu(ra); pc += 2; cc += 2; }),
   /* ROL A       */ 0x2a: () => { const ra0 = ((ra << 1) | fc) & 0xff; fc = ((ra & 0x80) >> 7); ra = ra0; fnu(ra); fzu(ra); pc += 1; cc += 2; },
   /* BMI dd      */ 0x30: (read) => { fn === 1 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
-  /* AND nn, X   */ 0x35: (read) => { const nn = read(pc + 1); ra = ra & rpzx(read, nn); fnu(ra); fzu(ra); pc += 2; cc += 4; },
+  /* AND nn, X   */ 0x35: czpx((_r, _w, _nn, m) => { ra = ra & m; fnu(ra); fzu(ra); pc += 2; cc += 4; }),
   /* SEC         */ 0x38: () => { fc = 1; pc++; cc += 2;},
   /* RTI         */ 0x40: (read) => {
 	  const st = popsp(read);
@@ -268,15 +268,7 @@ const processors = {
   /* ADC #nn     */ 0x69: cim((_r, _w, _nn, m) => { adc(m); pc += 2; cc += 2; }),
   /* ROR A       */ 0x6a: () => { const ra0 = ((ra >> 1) | (fc << 7)) & 0xff; fc = ra & 0x01; ra = ra0; fnu(ra); fzu(ra); pc += 1; cc += 2;},
   /* BVS dd      */ 0x70: (read) => { fv === 1 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
-  /* ADC nn, X   */ 0x75: (read) => {
-	  const nn = read(pc + 1);
-
-	  const v = rpzx(read, nn);
-
-	  adc(v)
-
-	  pc += 2;
-          cc += 4; },
+  /* ADC nn, X   */ 0x75: czpx((_r, _w, _nn, m) => { adc(m); pc += 2; cc += 4; }),
   /* ADC nnnn, Y */ 0x79: (read) => {
 	  const nnnn = word(read, pc + 1);
 
@@ -296,8 +288,8 @@ const processors = {
   /* STX nn      */ 0x86: czp((_r, write, _nn, _m, a) => { write(a, rx & 0xff); pc += 2; cc += 3; }),
   /* TXA         */ 0x8a: () => { ra = rx; fnu(ra); fzu(ra); pc += 1; cc += 2; },
   /* BCC dd      */ 0x90: (read) => { fc === 0 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
-  /* STY nn, X   */ 0x94: (read, write) => { const nn = read(pc + 1); write(pzx(nn), ry & 0xff); pc += 2; cc += 4; },
-  /* STA nn, X   */ 0x95: (read, write) => { const nn = read(pc + 1); write(pzx(nn), ra & 0xff); pc += 2; cc += 4; },
+  /* STY nn, X   */ 0x94: czpx((_r, write, _nn, _m, a) => { write(a, ry & 0xff); pc += 2; cc += 4; }),
+  /* STA nn, X   */ 0x95: czpx((_r, write, _nn, _m, a) => { write(a, ra & 0xff); pc += 2; cc += 4; }),
   /* STX nn, Y   */ 0x96: (read, write) => { const nn = read(pc + 1); write(pzy(nn), rx & 0xff); pc += 2; cc += 4; },
   /* TYA         */ 0x98: () => { ra = ry; fnu(ra); fzu(ra); pc += 1; cc += 2; },
   /* STA nnnn, Y */ 0x99: (read, write) => {
@@ -337,24 +329,8 @@ const processors = {
 	  fzu(ra);
 	  pc += 2;
           cc += 5; },
-  /* LDY nn, X   */ 0xb4: (read) => {
-	  const nn = read(pc + 1);
-
-	  ry = rpzx(read, nn);
-
-	  fnu(ry);
-	  fzu(ry);
-	  pc += 2;
-          cc += 4; },
-  /* LDA nn, X   */ 0xb5: (read) => {
-	  const nn = read(pc + 1);
-
-	  ra = rpzx(read, nn);
-
-	  fnu(ra);
-	  fzu(ra);
-	  pc += 2;
-          cc += 4; },
+  /* LDY nn, X   */ 0xb4: czpx((_r, _w, _nn, m) => { ry = m; fnu(ry); fzu(ry); pc += 2; cc += 4; }),
+  /* LDA nn, X   */ 0xb5: czpx((_r, _w, _nn, m) => { ra = m; fnu(ra); fzu(ra); pc += 2; cc += 4; }),
   /* LDX nn, Y   */ 0xb6: (read) => {
 	  const nn = read(pc + 1);
 
@@ -396,18 +372,12 @@ const processors = {
   /* CPY nn      */ 0xc4: czp((_r, _w, _nn, m) => { const r = (ry - m) & 0xff; fc = fl(ry >= m); fnu(r); fzu(r); pc += 2; cc += 3; }),
   /* CMP nn      */ 0xc5: czp((_r, _w, _nn, m) => { const r = (ra - m) & 0xff; fc = fl(m <= ra); fnu(r); fzu(r); pc += 2; cc += 4; }),
   /* DEC nn      */ 0xc6: czp((read, write, _nn, _m, a) => { dec(read, write, a); pc += 2; cc += 5; }),
-  /* DEC nn, X   */ 0xd6: (read, write) => {
-	  const nn = read(pc + 1);
-
-	  dec(read, write, pzx(read, nn));
-
-	  pc += 2;
-          cc += 6; },
+  /* DEC nn, X   */ 0xd6: czpx((read, write, _nn, _m, a) => { dec(read, write, a); pc += 2; cc += 6; }),
   /* INY         */ 0xc8: () => { ry = (ry + 1) & 0xff; fnu(ry); fzu(ry); pc += 1; cc += 2; },
   /* CMP #nn     */ 0xc9: cim((_r, _w, _nn, m) => { const r = (ra - m) & 0xff; fc = fl(m <= ra); fnu(r); fzu(r); pc += 2; cc += 2; }),
   /* DEX         */ 0xca: () => { rx = (rx - 1) & 0xff; fnu(rx); fzu(rx); pc += 1; cc += 2; },
   /* BNE dd      */ 0xd0: (read) => { fz === 0 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
-  /* CMP nn, X   */ 0xd5: (read) => { const nn = read(pc + 1); const v = rpzx(read, nn); const r = (ra - v) & 0xff; fc = fl(v <= ra); fnu(r); fzu(r); pc += 2; cc += 4; },
+  /* CMP nn, X   */ 0xd5: czpx((_r, _w, _nn, m) => { const r = (ra - m) & 0xff; fc = fl(m <= ra); fnu(r); fzu(r); pc += 2; cc += 4; }),
   /* CLD         */ 0xd8: () => { fd = 0; pc += 1; cc += 2; },
   /* CPX #nn     */ 0xe0: cim((_r, _w, _nn, m) => { const r = (rx - m) & 0xff; fc = fl(rx >= m); fnu(r); fzu(r); pc += 2; cc += 2; }),
   /* SBC (nn, X) */ 0xe1: (read) => {
@@ -436,7 +406,7 @@ const processors = {
   /* SBC #nn     */ 0xe9: cim((_r, _w, _nn, m) => { sbc(m); pc += 2; cc += 2; }),
   /* NOP         */ 0xea: () => { pc += 1; cc += 2; },
   /* BEQ dd      */ 0xf0: (read) => { fz === 1 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
-  /* INC nn, X   */ 0xf6: (read, write) => { const nn = read(pc + 1) & 0xff; inc(read, write, pzx(read, nn)); pc += 2; cc += 5; },
+  /* INC nn, X   */ 0xf6: czpx((read, write, _nn, _m, a) => { inc(read, write, a); pc += 2; cc += 5; }),
   /* CLD         */ 0xf8: () => { fd = 0; pc += 1; cc += 2; },
 }
 
