@@ -122,13 +122,10 @@ const rindirx = (read, nn) => {
   return read(addr) & 0xffff;
 }
 
-const pzx = (nn) => {
-  return (nn + rx) & 0xff;
-}
-
-const pzy = (nn) => {
-  return (nn + ry) & 0xff;
-}
+const pzx = (nn) => { return (nn + rx) & 0xff; }
+const pzy = (nn) => { return (nn + ry) & 0xff; }
+const absx = (nnnn) => { return (nnnn + rx) & 0xffff; }
+const absy = (nnnn) => { return (nnnn + ry) & 0xffff; }
 
 const sbc = (m) => {
   const v = fd ? b2d(m) : tcd(m);
@@ -161,12 +158,15 @@ const inc = (write, m, a) => { const r = (m + 1) & 0xff; write(a, r); fnu(r); fz
 
 const dec = (write, m, a) => { const r = (m - 1) & 0xff; write(a, r); fnu(r); fzu(r); }
 
-const cim  = (fn) => (read, write) => { const nn   = read(pc + 1); fn(read, write, nn, -1); }
-const czp  = (fn) => (read, write) => { const nn   = read(pc + 1); fn(read, write, read(nn), nn); }
-const czpx = (fn) => (read, write) => { const nn   = read(pc + 1); const a = pzx(nn); fn(read, write, read(a), a); }
-const czpy = (fn) => (read, write) => { const nn   = read(pc + 1); const a = pzy(nn); fn(read, write, read(a), a); }
-const cabs = (fn) => (read, write) => { const nnnn = word(read, pc + 1); fn(read, write, read(nnnn), nnnn); }
+const cim  = (f) => (read, write) => { const nn   = read(pc + 1); f(read, write, nn, -1); }
+const czp  = (f) => (read, write) => { const nn   = read(pc + 1); f(read, write, read(nn), nn); }
+const czpx = (f) => (read, write) => { const nn   = read(pc + 1); const a = pzx(nn); f(read, write, read(a), a); }
+const czpy = (f) => (read, write) => { const nn   = read(pc + 1); const a = pzy(nn); f(read, write, read(a), a); }
+const cabs = (f) => (read, write) => { const nnnn = word(read, pc + 1); f(read, write, read(nnnn), nnnn); }
+const cabsx = (f) => (read, write) => { const nnnn = word(read, pc + 1); const a = absx(nnnn); f(read, write, read(a), a); }
+const cabsy = (f) => (read, write) => { const nnnn = word(read, pc + 1); const a = absy(nnnn); f(read, write, read(a), a); }
 
+	  
 const processors = {
   /* BRK         */ 0x00: (read, write) => {
 	  // console.log("BRK", "PC", pc.toString(16));
@@ -193,16 +193,7 @@ const processors = {
   /* ORA nnnn    */ 0x0d: cabs((_r, _w, m) => { ra |= m; fn = fnu(ra); fz = fzu(ra); pc += 3; cc += 4; }),
   /* BPL dd      */ 0x10: cim((_r, _w, m) => { fn === 0 && (pc += tcd(m), cc += 1); pc += 2; cc += 2; }),
   /* CLC         */ 0x18: () => { fc = 0; pc += 1; cc += 2; },
-  /* ORA nnnn, X */ 0x1d: (read) => {
-	  const nnnn = word(read, pc + 1);
-
-	  ra |= read((nnnn + rx) & 0xffff);
-
-	  fn = fnu(ra);
-	  fz = fzu(ra);
-
-	  pc += 3;
-          cc += 4; },
+  /* ORA nnnn, X */ 0x1d: cabsx((_r, _w, m) => { ra |= m; fn = fnu(ra); fz = fzu(ra); pc += 3; cc += 4; }),
   /* JSR nnnn    */ 0x20: cabs((_r, write, _m, a) => { const ret = pc + 3; pshsp(write, (ret >> 8) & 0xff); pshsp(write, ret & 0xff); pc = a; cc += 6; }),
   /* BIT nn      */ 0x24: czp((_r, _w, m) => { const r = ra & m; fnu(m); fzu(r); fv = fl(m & 0x40); pc += 2; cc += 3; }),
   /* BIT nnnn    */ 0x2c: cabs((_r, _w, m) => { const r = ra & m; fnu(m); fzu(r); fv = fl(m & 0x40); pc += 3; cc += 3; }),
@@ -235,21 +226,13 @@ const processors = {
   /* LSR nnnn    */ 0x4e: cabs((_r, _w, m) => { const r = m >> 1; fc = m & 0x01; ra = r; fnu(ra); fzu(ra); pc += 3; cc += 6; }),
   /* BVC dd      */ 0x50: cim((_r, _w, m) => { fv === 0 && (pc += tcd(m), cc += 1); pc += 2; cc += 2; }),
   /* RTS         */ 0x60: (read) => { l = popsp(read); h = popsp(read); pc = ((h << 8) + l) & 0xffff; cc += 6; },
-  /* ADC nn      */ 0x65: czp((_r, _w, m) => { const v = m & 0xff;  adc(v);  pc += 2; cc += 3; }),
+  /* ADC nn      */ 0x65: czp((_r, _w, m) => { adc(m); pc += 2; cc += 3; }),
   /* PLA         */ 0x68: (read) => { ra = popsp(read); fnu(ra); fzu(ra); pc += 1; cc += 4; },
   /* ADC #nn     */ 0x69: cim((_r, _w, m) => { adc(m); pc += 2; cc += 2; }),
   /* ROR A       */ 0x6a: () => { const ra0 = ((ra >> 1) | (fc << 7)) & 0xff; fc = ra & 0x01; ra = ra0; fnu(ra); fzu(ra); pc += 1; cc += 2;},
   /* BVS dd      */ 0x70: cim((_r, _w, m) => { fv === 1 && (pc += tcd(m), cc += 1); pc += 2; cc += 2; }),
   /* ADC nn, X   */ 0x75: czpx((_r, _w, m) => { adc(m); pc += 2; cc += 4; }),
-  /* ADC nnnn, Y */ 0x79: (read) => {
-	  const nnnn = word(read, pc + 1);
-
-	  const v = read((nnnn + ry) & 0xffff) & 0xff;
-
-	  adc(v)
-
-	  pc += 3;
-          cc += 4; },
+  /* ADC nnnn, Y */ 0x79: cabsy((_r, _w, m) => { adc(m); pc += 3; cc += 4; }),
   /* SEI         */ 0x78: () => { fi = 1; pc++; cc += 2;},
   /* STY nn      */ 0x84: czp((_r, write, _m, a) => { write(a, ry & 0xff); pc += 2; cc += 3; }),
   /* STA nn      */ 0x85: czp((_r, write, _m, a) => { write(a, ra & 0xff); pc += 2; cc += 3; }),
@@ -264,12 +247,7 @@ const processors = {
   /* STA nn, X   */ 0x95: czpx((_r, write, _m, a) => { write(a, ra & 0xff); pc += 2; cc += 4; }),
   /* STX nn, Y   */ 0x96: czpy((_r, write, _m, a) => { write(a, rx & 0xff); pc += 2; cc += 4; }),
   /* TYA         */ 0x98: () => { ra = ry; fnu(ra); fzu(ra); pc += 1; cc += 2; },
-  /* STA nnnn, Y */ 0x99: (read, write) => {
-	  const nnnn = word(read, pc + 1);
-
-	  write(nnnn + ry, ra & 0xff);
-
-	  pc += 3; cc += 5; },
+  /* STA nnnn, Y */ 0x99: cabsy((_r, write, _m, a) => { write(a, ra & 0xff); pc += 3; cc += 5; }),
   /* TXS         */ 0x9a: () => { sp = rx; pc += 1; cc += 2; },
   /* LDY #nn     */ 0xa0: cim((_r, _w, m) => { ry = m; fnu(ry); fzu(ry); pc += 2; cc += 2; }),
   /* LDX #nn     */ 0xa2: cim((_r, _w, m) => { rx = m; fnu(rx); fzu(rx); pc += 2; cc += 2; }),
@@ -304,34 +282,17 @@ const processors = {
   /* LDY nn, X   */ 0xb4: czpx((_r, _w, m) => { ry = m; fnu(ry); fzu(ry); pc += 2; cc += 4; }),
   /* LDA nn, X   */ 0xb5: czpx((_r, _w, m) => { ra = m; fnu(ra); fzu(ra); pc += 2; cc += 4; }),
   /* LDX nn, Y   */ 0xb6: czpy((_r, _w, m) => { rx = m; fnu(rx); fzu(rx); pc += 2; cc += 4; }),
-  /* LDA nnnn, Y */ 0xb9: (read) => {
-	  const nnnn = word(read, pc + 1);
-	  ra = read(nnnn + ry);
-
+  /* LDA nnnn, Y */ 0xb9: cabsy((_r, _w, m, a) => { ra = m; 
 	  // FIXME ED Test page boundary -> add everywhere applicable
-	  if (((nnnn & 0xff) + (ry & 0xff)) > 0xff) { cc += 1; }
+	  if (((a & 0xff) + (ry & 0xff)) > 0xff) { cc += 1; }
 
 	  fnu(ra);
 	  fzu(ra);
 	  pc += 3;
-          cc += 4; },
+          cc += 4; }),
   /* TSX         */ 0xba: () => { rx = sp; fnu(rx); fzu(rx); pc += 1; cc += 2; },
-  /* LDA nnnn, X */ 0xbd: (read) => {
-	  const nnnn = word(read, pc + 1);
-	  ra = read((nnnn + rx) & 0xffff);
-
-	  fnu(ra);
-	  fzu(ra);
-	  pc += 3;
-          cc += 4; },
-  /* LDX nnnn, Y */ 0xbe: (read) => {
-	  const nnnn = word(read, pc + 1);
-	  rx = read(nnnn + ry);
-
-	  fnu(rx);
-	  fzu(rx);
-	  pc += 3;
-          cc += 4; },
+  /* LDA nnnn, X */ 0xbd: cabsx((_r, _w, m) => { ra = m; fnu(ra); fzu(ra); pc += 3; cc += 4; }),
+  /* LDX nnnn, Y */ 0xbe: cabsy((_r, _w, m) => { rx = m; fnu(rx); fzu(rx); pc += 3; cc += 4; }),
   /* CPY #nn     */ 0xc0: cim((_r, _w, m) => { const r = (ry - m) & 0xff; fc = fl(ry >= m); fnu(r); fzu(r); pc += 2; cc += 2; }),
   /* CPY nn      */ 0xc4: czp((_r, _w, m) => { const r = (ry - m) & 0xff; fc = fl(ry >= m); fnu(r); fzu(r); pc += 2; cc += 3; }),
   /* CMP nn      */ 0xc5: czp((_r, _w, m) => { const r = (ra - m) & 0xff; fc = fl(m <= ra); fnu(r); fzu(r); pc += 2; cc += 4; }),
