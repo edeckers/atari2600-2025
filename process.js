@@ -127,6 +127,17 @@ const pzy = (nn) => { return (nn + ry) & 0xff; }
 const absx = (nnnn) => { return (nnnn + rx) & 0xffff; }
 const absy = (nnnn) => { return (nnnn + ry) & 0xffff; }
 
+const adc = (m) => {
+  const r = fd ? b2d(ra) + fc + b2d(m) : tcd(ra) + fc + tcd(m);
+
+  ra = r & 0xff;
+
+  fnu(ra);
+  fzu(ra);
+  fv = fl(r !== ra);
+  fc = fl(fd ? r > 99 : r > 0xff);
+}
+
 const sbc = (m) => {
   const v = fd ? b2d(m) : tcd(m);
 
@@ -142,49 +153,36 @@ const sbc = (m) => {
   fc = fl(r >= 0);
 }
 
-const adc = (m) => {
-  const r = fd ? b2d(ra) + fc + b2d(m) : tcd(ra) + fc + tcd(m);
+const cim   = (f) => (read, write) => { const nn   = read(pc + 1);                             f(read, write, nn,         NaN);  }
+const czp   = (f) => (read, write) => { const nn   = read(pc + 1);                             f(read, write, read(nn),   nn);   }
+const czpx  = (f) => (read, write) => { const nn   = read(pc + 1); const a = pzx(nn);          f(read, write, read(a),    a);    }
+const czpy  = (f) => (read, write) => { const nn   = read(pc + 1); const a = pzy(nn);          f(read, write, read(a),    a);    }
+const cabs  = (f) => (read, write) => { const nnnn = word(read, pc + 1);                       f(read, write, read(nnnn), nnnn); }
+const cabsx = (f) => (read, write) => { const nnnn = word(read, pc + 1); const a = absx(nnnn); f(read, write, read(a),    a);    }
+const cabsy = (f) => (read, write) => { const nnnn = word(read, pc + 1); const a = absy(nnnn); f(read, write, read(a),    a);    }
+const cinx  = (f) => (read, write) => { const nn   = read(pc + 1); const a = indirx(read, nn); f(read, write, read(a),    a);    }
+const ciny  = (f) => (read, write) => { const nn   = read(pc + 1); const a = indiry(read, nn); f(read, write, read(a),    a);    }
+const no    = (f) => (read, write) => { f(read, write); }
 
-  ra = r & 0xff;
-
-  fnu(ra);
-  fzu(ra);
-  fv = fl(r !== ra);
-  fc = fl(fd ? r > 99 : r > 0xff);
-}
-
-
-const cim   = (f) => (read, write) => { const nn   = read(pc + 1); f(read, write, nn, -1); }
-const czp   = (f) => (read, write) => { const nn   = read(pc + 1); f(read, write, read(nn), nn); }
-const czpx  = (f) => (read, write) => { const nn   = read(pc + 1); const a = pzx(nn); f(read, write, read(a), a); }
-const czpy  = (f) => (read, write) => { const nn   = read(pc + 1); const a = pzy(nn); f(read, write, read(a), a); }
-const cabs  = (f) => (read, write) => { const nnnn = word(read, pc + 1); f(read, write, read(nnnn), nnnn); }
-const cabsx = (f) => (read, write) => { const nnnn = word(read, pc + 1); const a = absx(nnnn); f(read, write, read(a), a); }
-const cabsy = (f) => (read, write) => { const nnnn = word(read, pc + 1); const a = absy(nnnn); f(read, write, read(a), a); }
-const cinx  = (f) => (read, write) => { const nn   = read(pc + 1); const a = indirx(read, nn); f(read, write, read(a), a); }
-const ciny  = (f) => (read, write) => { const nn   = read(pc + 1); const a = indiry(read, nn); f(read, write, read(a), a); }
-const no = (f) => (read, write) => { f(read, write); }
-
-const and = (m) => { ra = ra & m; fnu(ra); fzu(ra); }
-const cmp = (m) => { const r = (ra - m) & 0xff; fc = fl(ra >= m); fnu(r); fzu(r); }
-const cpy = (m) => { const r = (ry - m) & 0xff; fc = fl(ry >= m); fnu(r); fzu(r); }
-const cpx = (m) => { const r = (rx - m) & 0xff; fc = fl(rx >= m); fnu(r); fzu(r); }
+const and = (m) =>           { ra = ra & m; fnu(ra); fzu(ra); }
+const cmp = (m) =>           { const r = (ra - m) & 0xff; fc = fl(ra >= m); fnu(r); fzu(r); }
+const cpy = (m) =>           { const r = (ry - m) & 0xff; fc = fl(ry >= m); fnu(r); fzu(r); }
+const cpx = (m) =>           { const r = (rx - m) & 0xff; fc = fl(rx >= m); fnu(r); fzu(r); }
 const dec = (write, m, a) => { const r = (m - 1) & 0xff; write(a, r); fnu(r); fzu(r); }
-const eor = (m) => { ra ^= m; fnu(ra); fzu(ra); }
+const eor = (m) =>           { ra ^= m; fnu(ra); fzu(ra); }
 const inc = (write, m, a) => { const r = (m + 1) & 0xff; write(a, r); fnu(r); fzu(r); }
-const lda = (m) => { ra = m; fnu(ra); fzu(ra); } 
-const ldx = (m) => { rx = m; fnu(rx); fzu(rx); }
-const ldy = (m) => { ry = m; fnu(ry); fzu(ry); }
-const ora = (m) => { ra |= m; fnu(ra); fzu(ra); }
-const sta = (write, a) => { write(a, ra & 0xff); }
-const stx = (write, a) => { write(a, rx & 0xff); }
-const sty = (write, a) => { write(a, ry & 0xff); }
-
+const lda = (m) =>           { ra = m; fnu(ra); fzu(ra); } 
+const ldx = (m) =>           { rx = m; fnu(rx); fzu(rx); }
+const ldy = (m) =>           { ry = m; fnu(ry); fzu(ry); }
+const ora = (m) =>           { ra |= m; fnu(ra); fzu(ra); }
+const sta = (write, a) =>    { write(a, ra & 0xff); }
+const stx = (write, a) =>    { write(a, rx & 0xff); }
+const sty = (write, a) =>    { write(a, ry & 0xff); }
 
 const cj = (condition, m) => { condition && (pc += tcd(m), cc += 1); }
 
 const processors = {
-  /* BRK         */ 0x00: (read, write) => {
+  /* BRK         */ 0x00: (read, write) =>            {
 	  _fb = 1;
 
 	  pshsp(write, (pc >> 8) & 0xff);
@@ -400,14 +398,7 @@ const machine = (input) => {
 
      // STROBES, i.e. won't be actually stored and return early
      if (naddr === WSYNC) { isWSync = true; return; }
-     if (naddr === RESP0) { isRESP0 = true;
-	     const y = Math.floor(s / 228);
-	     // if ([
-	     //         132, 146, 159, 172, 185, 30, 51, 68, 81, 94, 107, 120].indexOf(y) > -1) {
-	     //    console.log("resp0", y, s % 228);
-	     // }
-
-	     return; }
+     if (naddr === RESP0) { isRESP0 = true; return; }
      if (naddr === RESP1) { isRESP1 = true; return; }
      if (naddr === RESM0) { isRESM0 = true; return; }
      if (naddr === RESM1) { isRESM1 = true; return; }
@@ -517,15 +508,6 @@ const machine = (input) => {
   let fs = new Date();
 
   const tickTimer = () => {
-   // if (mem[INSTAT] & 0x40) { // Don't read() -> side-effect
-   //   const t0 = mem[INTIM] - 1;
-   //   if (t0 < 0) {
-   //     mem[INSTAT] |= 0xc0; // Set timer underflow
-   //     mem[INTIM] = 0xff;
-   //   } else { mem[INTIM] = t0 & 0xff; }
-   //   return;
-   // }
-
    if (timerCounter > 0) { timerCounter--; return; }
 
    const t0 = mem[INTIM] - 1;
