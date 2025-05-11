@@ -150,7 +150,6 @@ const branches = new Set([
 ]);
 
 const jumps = new Set([
-  0x00, // BRK
   0x4c, // JMP
 ]);
 
@@ -214,10 +213,14 @@ const scan = (input) => {
 	const target = (pc + tcd(romread(ix, pc + 1, 1)) + 2) & 0xffff;
 	
         follow(ix, target);
+      } else if (operator === 0x00) { // BRK
+	const target = romread(ix, 0xfffe, 2);
+
+	follow(ix, target);
       } else if (operator === 0x20) {
 	const target = romread(ix, pc + 1, l)
 
-        follow(ix, target);	// console.log("JSR", target.toString(16));
+        follow(ix, target);
       } else if (stops.has(operator)) {
 	return;
       }
