@@ -290,7 +290,7 @@ const processors = {
   /* BCC dd      */ 0x90: (read) => { fc === 0 && (pc += tcd(read(pc + 1)), cc += 1); pc += 2; cc += 2; },
   /* STY nn, X   */ 0x94: czpx((_r, write, _nn, _m, a) => { write(a, ry & 0xff); pc += 2; cc += 4; }),
   /* STA nn, X   */ 0x95: czpx((_r, write, _nn, _m, a) => { write(a, ra & 0xff); pc += 2; cc += 4; }),
-  /* STX nn, Y   */ 0x96: (read, write) => { const nn = read(pc + 1); write(pzy(nn), rx & 0xff); pc += 2; cc += 4; },
+  /* STX nn, Y   */ 0x96: czpy((_r, write, _nn, _m, a) => { write(a, rx & 0xff); pc += 2; cc += 4; }),
   /* TYA         */ 0x98: () => { ra = ry; fnu(ra); fzu(ra); pc += 1; cc += 2; },
   /* STA nnnn, Y */ 0x99: (read, write) => {
 	  const nnnn = word(read, pc + 1);
@@ -331,15 +331,7 @@ const processors = {
           cc += 5; },
   /* LDY nn, X   */ 0xb4: czpx((_r, _w, _nn, m) => { ry = m; fnu(ry); fzu(ry); pc += 2; cc += 4; }),
   /* LDA nn, X   */ 0xb5: czpx((_r, _w, _nn, m) => { ra = m; fnu(ra); fzu(ra); pc += 2; cc += 4; }),
-  /* LDX nn, Y   */ 0xb6: (read) => {
-	  const nn = read(pc + 1);
-
-	  rx = rpzy(read, nn);
-
-	  fnu(rx);
-	  fzu(rx);
-	  pc += 2;
-          cc += 4; },
+  /* LDX nn, Y   */ 0xb6: czpy((_r, _w, _nn, m) => { rx = m; fnu(rx); fzu(rx); pc += 2; cc += 4; }),
   /* LDA nnnn, Y */ 0xb9: (read) => {
 	  const nnnn = word(read, pc + 1);
 	  ra = read(nnnn + ry);
