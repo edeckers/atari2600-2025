@@ -153,16 +153,17 @@ const sbc = (m) => {
   fc = fl(r >= 0);
 }
 
-const cim   = (f) => (read, write) => { const nn   = read(pc + 1);                             f(read, write, nn,         NaN);  }
-const czp   = (f) => (read, write) => { const nn   = read(pc + 1);                             f(read, write, read(nn),   nn);   }
-const czpx  = (f) => (read, write) => { const nn   = read(pc + 1); const a = pzx(nn);          f(read, write, read(a),    a);    }
-const czpy  = (f) => (read, write) => { const nn   = read(pc + 1); const a = pzy(nn);          f(read, write, read(a),    a);    }
-const cabs  = (f) => (read, write) => { const nnnn = word(read, pc + 1);                       f(read, write, read(nnnn), nnnn); }
-const cabsx = (f) => (read, write) => { const nnnn = word(read, pc + 1); const a = absx(nnnn); f(read, write, read(a),    a);    }
-const cabsy = (f) => (read, write) => { const nnnn = word(read, pc + 1); const a = absy(nnnn); f(read, write, read(a),    a);    }
-const cinx  = (f) => (read, write) => { const nn   = read(pc + 1); const a = indirx(read, nn); f(read, write, read(a),    a);    }
-const ciny  = (f) => (read, write) => { const nn   = read(pc + 1); const a = indiry(read, nn); f(read, write, read(a),    a);    }
-const no    = (f) => (read, write) => { f(read, write); }
+const cim   = (f) => (read, write) => { const nn   = read(pc + 1);                             f(read, write, nn,               NaN);  }
+const czp   = (f) => (read, write) => { const nn   = read(pc + 1);                             f(read, write, read(nn),         nn);   }
+const czpx  = (f) => (read, write) => { const nn   = read(pc + 1); const a = pzx(nn);          f(read, write, read(a),          a);    }
+const czpy  = (f) => (read, write) => { const nn   = read(pc + 1); const a = pzy(nn);          f(read, write, read(a),          a);    }
+const cabs  = (f) => (read, write) => { const nnnn = word(read, pc + 1);                       f(read, write, read(nnnn),       nnnn); }
+const cabsx = (f) => (read, write) => { const nnnn = word(read, pc + 1); const a = absx(nnnn); f(read, write, read(a),          a);    }
+const cabsy = (f) => (read, write) => { const nnnn = word(read, pc + 1); const a = absy(nnnn); f(read, write, read(a),          a);    }
+const cin   = (f) => (read, write) => { const nnnn = word(read, pc + 1);                       f(read, write, word(read, nnnn), nnnn); }
+const cinx  = (f) => (read, write) => { const nn   = read(pc + 1); const a = indirx(read, nn); f(read, write, read(a),          a);    }
+const ciny  = (f) => (read, write) => { const nn   = read(pc + 1); const a = indiry(read, nn); f(read, write, read(a),          a);    }
+const no    = (f) => f
 
 const and = (m) =>           { ra = ra & m; fnu(ra); fzu(ra); }
 const cmp = (m) =>           { const r = (ra - m) & 0xff; fc = fl(ra >= m); fnu(r); fzu(r); }
@@ -214,6 +215,7 @@ const processors = {
   /* BMI dd      */ 0x30: cim((_r, _w, m) =>          { cj(fn === 1, m); pc += 2; cc += 2; }),
   /* AND nn, X   */ 0x35: czpx((_r, _w, m) =>         { and(m); pc += 2; cc += 4; }),
   /* SEC         */ 0x38: no(() =>                    { fc = 1; pc++; cc += 2; }),
+  /* AND nnnn, X */ 0x3d: cabsx((_r, _w, m) =>        { and(m); pc += 3; cc += 4; }),
   /* RTI         */ 0x40: no((read) =>                {
 	  const st = popsp(read);
 	  const l = popsp(read);
@@ -223,9 +225,7 @@ const processors = {
 
 	  p = (h << 8) + l;
 
-	  // console.log("RTI", "PC", pc.toString(16), "P", p.toString(16), read(0xffff) << 8, read(0xfffe));
-
-	  pc = p;
+	  pc = p + 2;
 
 	  cc += 6; }),
   /* EOR (nn, X) */ 0x41: cinx((_r, _w, m) =>         { eor(m); pc += 2; cc += 6; }),
@@ -234,6 +234,7 @@ const processors = {
   /* EOR #nn     */ 0x49: cim((_r, _w, m ) =>         { eor(m); pc += 2; cc += 2; }),
   /* LSR A       */ 0x4a: no(() =>                    { const ra0 = (ra >> 1) & 0xff; fc = ra & 0x01; ra = ra0; fnu(ra); fzu(ra); pc += 1; cc += 2; }),
   /* JMP nnnn    */ 0x4c: cabs((_r, _w, _m, a) =>     { pc = a; cc += 3; }),
+  /* JMP (nnnn)  */ 0x6c: cin((_r, _w, m) =>          { pc = m; cc += 5; }),
   /* LSR nnnn    */ 0x4e: cabs((_r, _w, m) =>         { const r = m >> 1; fc = m & 0x01; ra = r; fnu(ra); fzu(ra); pc += 3; cc += 6; }),
   /* BVC dd      */ 0x50: cim((_r, _w, m) =>          { cj(fv === 0, m); pc += 2; cc += 2; }),
   /* RTS         */ 0x60: no((read) =>                { l = popsp(read); h = popsp(read); pc = ((h << 8) + l) & 0xffff; cc += 6; }),
@@ -609,7 +610,7 @@ const machine = (input) => {
           isWSync = false;
           w = 0;
         }
-
+	
         if (isVSync || (s === (228 * 262))) {
           requestAnimationFrame(draw);
 
