@@ -70,7 +70,8 @@ let isContinue = false;
 let isStep = false;
 let isBreakout = false;
 
-const FPS = 100;
+// const FPS = 100;
+const FPS = 5000;
 // const FPS = 60;
 // const FPS = 30;
 
