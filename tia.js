@@ -3,7 +3,7 @@ const [W, H] = [161, 193];
 const vb = 228 * (3 + 37);
 
 // FIXME Registers and memory should actually only be updated once the computation is done, even better: step by step, add a stack
-const hb = 68 - /* compensate for status updated too early, 4 PIA * 3 TIA should do most of the time */ 12;
+const hb = 68 //- /* compensate for status updated too early, 4 PIA * 3 TIA should do most of the time */ 12;
 
 const NUSIZ0 = 0x04;
 const NUSIZ1 = 0x05;
