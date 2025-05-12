@@ -179,9 +179,7 @@ function go(cc_, f, ccx) {
     const f2 = f(read, write, q);
     const l = cc_ + ccx() + _pb;
 
-    for (let i = 0; i < l - 1; i++) {
-      yield;
-    }
+    for (let i = 0; i < l - 1; i++) { yield; }
     f2();
   }
 }
@@ -499,9 +497,7 @@ const machine = (input) => {
 
   dbg("entrypoint", pc.toString(16));
 
-  let i = 0;
   let s = (228 * (3 + 37)) + 68 + (228 / 2); // Middle of screen, first line - pretty random, other emulators seem to work that way
-  // let w = 0;
 
 
   let fs = new Date();
@@ -513,120 +509,111 @@ const machine = (input) => {
    if (t0 < 0) { mem[INSTAT] |= 0xc0; mem[INTIM] = 0xff; timerCounter = 1; } else { mem[INTIM] = t0; timerCounter = interval; }
   }
 
+  const step = async () => {
+    const isWaiting = action && !action.next().done;
+    
+    if (!isWSync && !isWaiting) {
+      isContinue = false;
+    
+      let propagated = false;
+      while (!isBreakout && ((breakpoints.has(pc) && !isContinue) || isStep)) {
+        const x = (s % 228) - hb;
+        const y = Math.floor((s - vb) / 228);
+    
+        if (bpConditional.x.lower !== undefined && (x < bpConditional.x.lower)) { break; }
+        if (bpConditional.x.upper !== undefined && (x > bpConditional.x.upper)) { break; }
+        if (bpConditional.y.lower !== undefined && (y < bpConditional.y.lower)) { break; }
+        if (bpConditional.y.upper !== undefined && (y > bpConditional.y.upper)) { break; }
+    
+        if (!propagated) {
+          pstatus = {
+            cc,
+            pc,
+            rx,
+            ry,
+            ra,
+            sp,
+            fc,
+            fz,
+            fv,
+            fn,
+            fd,
+            fi,
+            p0: mem[GRP0],
+            p1: mem[GRP1],
+            p0x: resp0x,
+            p1x: resp1x,
+            pf0: mem[PF0],
+            pf1: mem[PF1],
+            pf2: mem[PF2],
+            pf: PF,
+            ctrlpf: mem[CTRLPF],
+            x,
+            y,
+            intim: mem[INTIM],
+            instat: mem[INSTAT],
+            memory: mem,
+            timerCounter,
+            interval,
+            isVSync,
+            isWSync,
+          }
+          document.dispatchEvent(new Event("break"));
+          updateScreen(read, s);
+          requestAnimationFrame(draw);
+          requestAnimationFrame(() => cross(x, y));
+          propagated = true;
+        }
+        await sleep(100);
+      }
+      isBreakout = false;
+    
+      const o = read(pc)
+    
+      const p = processors[o];
+    
+      try {
+       action = p(read, write);
+      } catch (e) {
+        if (o === 0xff) { return; } // Forced exit for debugging purposes
+        console.log(e, pc.toString(16), "o", o.toString(16))
+        debugger;
+        return;
+      }
+    }
+    
+    tickTimer();
+  }
+
+  let t = 0;
   let action = undefined;
   const process = async () => {
     while (!isKilled) {
-      // w = Math.max(w - 1, 0);
-      // w = isWSync ? 0 : w;
+      if (t === 3) { t = 0; }
 
-      if ((s % 3) === 0) {
-        const isWaiting = action && !action.next().done;
+      (t === 0) && (step(), cc++);
 
-        if (!isWSync && !isWaiting) {
-          isContinue = false;
+      t++;
 
-          let propagated = false;
-          while (!isBreakout && ((breakpoints.has(pc) && !isContinue) || isStep)) {
-                  const x = (s % 228) - hb;
-                  const y = Math.floor((s - vb) / 228);
+      updateScreen(read, s);
 
-                  if (bpConditional.x.lower !== undefined && (x < bpConditional.x.lower)) { break; }
-                  if (bpConditional.x.upper !== undefined && (x > bpConditional.x.upper)) { break; }
-                  if (bpConditional.y.lower !== undefined && (y < bpConditional.y.lower)) { break; }
-                  if (bpConditional.y.upper !== undefined && (y > bpConditional.y.upper)) { break; }
+      if (s % 228 === 0) { isWSync = false; }
 
-                  if (!propagated) {
-                    pstatus = {
-          	    cc,
-                      pc,
-                      rx,
-                      ry,
-                      ra,
-                      sp,
-                      fc,
-                      fz,
-                      fv,
-                      fn,
-                      fd,
-                      fi,
-            	      p0: mem[GRP0],
-            	      p1: mem[GRP1],
-            	      p0x: resp0x,
-            	      p1x: resp1x,
-          	      pf0: mem[PF0],
-          	      pf1: mem[PF1],
-                      pf2: mem[PF2],
-          	      pf: PF,
-          	      ctrlpf: mem[CTRLPF],
-            	      x,
-            	      y,
-                      intim: mem[INTIM],
-                      instat: mem[INSTAT],
-                      memory: mem,
-                      timerCounter,
-                      interval,
-                      isVSync,
-                      isWSync,
-                    }
-                    document.dispatchEvent(new Event("break"));
-                    updateScreen(read, s);
-                    requestAnimationFrame(draw);
-                    requestAnimationFrame(() => cross(x, y));
-                    propagated = true;
-                  }
-                  await sleep(100);
-          }
-          isBreakout = false;
+      if (isVSync || (s === (228 * 262))) {
+        requestAnimationFrame(draw);
 
-          const o = read(pc)
+        const diff = new Date() - fs;
+        const delay = Math.max((1_000 / FPS) - diff, 0);
+        if (delay > 0) { await sleep(delay); }
 
-          const p = processors[o];
-
-          try {
-           action = p(read, write);
-          } catch (e) {
-            if (o === 0xff) { return; } // Forced exit for debugging purposes
-            console.log(e, pc.toString(16), "o", o.toString(16))
-            debugger;
-            return;
-          }
-
-          // printAsm && tr(formatASM(toASM(mem, pc0)))
-
-          // w = cc - cc0;
-        }
-
-        tickTimer();
+        fs = new Date();
+        s = 0;
+        clearScreen();
+        cc = 0;
+        isVSync = false;
       }
 
-      // for (let a = 0; a < 3; a++) {
-        updateScreen(read, s);
-
-        if (s % 228 === 0) {
-          isWSync = false;
-          // w = 0;
-        }
-
-        if (isVSync || (s === (228 * 262))) {
-          requestAnimationFrame(draw);
-
-          const diff = new Date() - fs;
-          const delay = Math.max((1_000 / FPS) - diff, 0);
-          if (delay > 0) { await sleep(delay); }
-
-          fs = new Date();
-          s = 0;
-          clearScreen();
-          cc = 0;
-          // isVsyncHi = false;
-          isVSync = false;
-          // break;
-        }
-
-        s++;
-      // }
-
-      
+      s++;
     }
   }
 

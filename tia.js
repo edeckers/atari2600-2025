@@ -2,8 +2,7 @@ const [W, H] = [161, 193];
 
 const vb = 228 * (3 + 37);
 
-// FIXME Registers and memory should actually only be updated once the computation is done, even better: step by step, add a stack
-const hb = 68 //- /* compensate for status updated too early, 4 PIA * 3 TIA should do most of the time */ 12;
+const hb = 68;
 
 const NUSIZ0 = 0x04;
 const NUSIZ1 = 0x05;
@@ -44,7 +43,6 @@ function updateScreen(read, tt) {
  const inScreen = !invb && !inover && !inhblank;
 
  const d = tt - vb;
-
 
  if (isRESP0) { resp0x_ = Math.max((tt % 228) - hb, 3); resp0x = resp0x_; isRESP0 = false; }
  if (isRESP1) { resp1x_ = Math.max((tt % 228) - hb, 3); resp1x = resp1x_; isRESP1 = false; }
