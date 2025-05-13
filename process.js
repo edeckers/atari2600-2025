@@ -112,6 +112,24 @@ const pzy = (nn) => { return (nn + ry) & 0xff; }
 const absx = (nnnn) => { return (nnnn + rx) & 0xffff; }
 const absy = (nnnn) => { return (nnnn + ry) & 0xffff; }
 
+const pb1y  = (read) => { const nn = read(pc + 1); return fl(((nn & 0xff) + (ry & 0xff) > 0xff)); }
+const pb2x  = (read) => { const nnnn = word(read, pc + 1); return fl((((nnnn & 0xff) + (rx & 0xff)) > 0xff)); }
+const pb2y  = (read) => { const nnnn = word(read, pc + 1); return fl((((nnnn & 0xff) + (ry & 0xff)) > 0xff)); }
+const cjt   = (read, v) => { const r0 = fl(v); const dd = read(pc + 1); const r1 = ((pc & 0xff) + tcd(dd)); return fl(r1 < 0 || r1 > 0xff) + r0; }
+
+const cjim  = (f) => (read, write) => { const nn   = read(pc + 1);                                    return () => f(read, write, nn);  }
+const cim   = (f) => (read, write) => { const nn   = read(pc + 1);                                    return () => f(read, write, nn);  }
+const czp   = (f) => (read, write) => { const nn   = read(pc + 1);                                    return () => f(read, write, read(nn),         nn);   }
+const czpx  = (f) => (read, write) => { const nn   = read(pc + 1);        const a = pzx(nn);          return () => f(read, write, read(a),          a);    }
+const czpy  = (f) => (read, write) => { const nn   = read(pc + 1);        const a = pzy(nn);          return () => f(read, write, read(a),          a);    }
+const cabs  = (f) => (read, write) => { const nnnn = word(read, pc + 1);                              return () => f(read, write, read(nnnn),       nnnn); }
+const cabsx = (f) => (read, write) => { const nnnn = word(read, pc + 1);  const a = absx(nnnn);       return () => f(read, write, read(a),          a);    }
+const cabsy = (f) => (read, write) => { const nnnn = word(read, pc + 1);  const a = absy(nnnn);       return () => f(read, write, read(a),          a);    }
+const cin   = (f) => (read, write) => { const nnnn = word(read, pc + 1);                              return () => f(read, write, word(read, nnnn), nnnn); }
+const cinx  = (f) => (read, write) => { const nn   = read(pc + 1);        const a = indirx(read, nn); return () => f(read, write, read(a),          a);    }
+const ciny  = (f) => (read, write) => { const nn   = read(pc + 1);        const a = indiry(read, nn); return () => f(read, write, read(a),          a);    }
+const no    = (f) => (read, write) => () => f(read, write);
+
 const adc = (m) => {
   const r = fd ? b2d(ra) + fc + b2d(m) : tcd(ra) + fc + tcd(m);
 
@@ -138,24 +156,6 @@ const sbc = (m) => {
   fc = fl(r >= 0);
 }
 
-const pb1y   = (read) => { const nn = read(pc + 1); return fl(((nn & 0xff) + (ry & 0xff) > 0xff)); }
-const pb2x   = (read) => { const nnnn = word(read, pc + 1); return fl((((nnnn & 0xff) + (rx & 0xff)) > 0xff)); }
-const pb2y   = (read) => { const nnnn = word(read, pc + 1); return fl((((nnnn & 0xff) + (ry & 0xff)) > 0xff)); }
-const cjt   = (read, v) => { const r0 = fl(v); const dd = read(pc + 1); const r1 = ((pc & 0xff) + tcd(dd)); return fl(r1 < 0 || r1 > 0xff) + r0; }
-
-const cjim  = (f) => (read, write) => { const nn   = read(pc + 1);                                    return () => f(read, write, nn);  }
-const cim   = (f) => (read, write) => { const nn   = read(pc + 1);                                    return () => f(read, write, nn);  }
-const czp   = (f) => (read, write) => { const nn   = read(pc + 1);                                    return () => f(read, write, read(nn),         nn);   }
-const czpx  = (f) => (read, write) => { const nn   = read(pc + 1);        const a = pzx(nn);          return () => f(read, write, read(a),          a);    }
-const czpy  = (f) => (read, write) => { const nn   = read(pc + 1);        const a = pzy(nn);          return () => f(read, write, read(a),          a);    }
-const cabs  = (f) => (read, write) => { const nnnn = word(read, pc + 1);                              return () => f(read, write, read(nnnn),       nnnn); }
-const cabsx = (f) => (read, write) => { const nnnn = word(read, pc + 1);  const a = absx(nnnn);       return () => f(read, write, read(a),          a);    }
-const cabsy = (f) => (read, write) => { const nnnn = word(read, pc + 1);  const a = absy(nnnn);       return () => f(read, write, read(a),          a);    }
-const cin   = (f) => (read, write) => { const nnnn = word(read, pc + 1);                              return () => f(read, write, word(read, nnnn), nnnn); }
-const cinx  = (f) => (read, write) => { const nn   = read(pc + 1);        const a = indirx(read, nn); return () => f(read, write, read(a),          a);    }
-const ciny  = (f) => (read, write) => { const nn   = read(pc + 1);        const a = indiry(read, nn); return () => f(read, write, read(a),          a);    }
-const no    = (f) => (read, write) => () => f(read, write);
-
 const and   = (m) =>           { ra = ra & m; fnu(ra); fzu(ra); }
 const cmp   = (m) =>           { const r = (ra - m) & 0xff; fc = fl(ra >= m); fnu(r); fzu(r); }
 const cpy   = (m) =>           { const r = (ry - m) & 0xff; fc = fl(ry >= m); fnu(r); fzu(r); }
@@ -173,20 +173,24 @@ const sty   = (write, a) =>    { write(a, ry & 0xff); }
 
 const cj    = (condition, m) => { condition && (pc += tcd(m)); }
 
-function go(cc_, f, ccx) {
+function go(b_, cc_, f, ccx) {
   if (!ccx) { ccx = () => 0; }
 
   return function* (read, write) {
     const f2 = f(read, write);
-    const l = cc_ + ccx(read);
 
-    for (let i = 0; i < l - 1; i++) { yield; }
+    // const b = Math.floor(b_ / 2); //  + ccx(read);
+    // const a = Math.max(0, cc_ - b_ + ccx(read) - 1);
+    const a = Math.max(0, cc_ - b_ + ccx(read));
+
+    for (let i = 0; i < b_ - 1; i++) { yield; }
     f2();
+    for (let i = 0; i < a; i++) { yield; }
   }
 }
 
 const processors = {
-  /* BRK         */ 0x00: go(7, no((read, write)               => {
+  /* BRK         */ 0x00: go(2, 7, no((read, write)               => {
 	  _fb = 1;
 
 	  pshsp(write, (pc >> 8) & 0xff);
@@ -198,26 +202,26 @@ const processors = {
 	  p = word(read, 0xfffe);
 
 	  pc = p; })),
-  /* ORA nn      */ 0x05: go(3, czp((_r, _w, m)                => { ora(m); pc += 2; })),
-  /* ASL nn      */ 0x06: go(5, czp((_r, write, m, a)          => { const r = (m << 1) & 0xff; write(a, r); fc = ((m & 0x80) >> 7); fnu(r); fzu(r); pc += 2; })),
-  /* PHP         */ 0x08: go(3, no((_r, write)                 => { pshsp(write, prstatus()); pc += 1; })),
-  /* ORA #nn     */ 0x09: go(2, cim((_r, _w, m)                => { ora(m); pc += 2; })),
-  /* ASL A       */ 0x0a: go(2, no(()                          => { const ra0 = (ra << 1) & 0xff; fc = ((ra & 0x80) >> 7); ra = ra0; fnu(ra); fzu(ra); pc += 1; })),
-  /* ORA nnnn    */ 0x0d: go(4, cabs((_r, _w, m)               => { ora(m); pc += 3; })),
-  /* BPL dd      */ 0x10: go(2, cjim((_r, _w, m, _a)           => { cj(fn === 0, m); pc += 2; }), (read) => cjt(read, fn === 0)),
-  /* CLC         */ 0x18: go(2, no(()                          => { fc = 0; pc += 1; })),
-  /* ORA nnnn, X */ 0x1d: go(4, cabsx((_r, _w, m)              => { ora(m); pc += 3; }), pb2x),
-  /* JSR nnnn    */ 0x20: go(6, cabs((_r, write, _m, a)        => { const ret = pc + 3; pshsp(write, (ret >> 8) & 0xff); pshsp(write, ret & 0xff); pc = a; })),
-  /* BIT nn      */ 0x24: go(3, czp((_r, _w, m)                => { const r = ra & m; fnu(m); fzu(r); fv = fl(m & 0x40); pc += 2; })),
-  /* BIT nnnn    */ 0x2c: go(3, cabs((_r, _w, m)               => { const r = ra & m; fnu(m); fzu(r); fv = fl(m & 0x40); pc += 3; })),
-  /* AND nn      */ 0x25: go(3, czp((_r, _w, m)                => { and(m); pc += 2; })),
-  /* AND #nn     */ 0x29: go(2, cim((_r, _w, m)                => { and(m); pc += 2; })),
-  /* ROL A       */ 0x2a: go(2, no(()                          => { const ra0 = ((ra << 1) | fc) & 0xff; fc = ((ra & 0x80) >> 7); ra = ra0; fnu(ra); fzu(ra); pc += 1; })),
-  /* BMI dd      */ 0x30: go(2, cjim((_r, _w, m)                => { cj(fn === 1, m); pc += 2; }), (read) => cjt(read, fn === 1)),
-  /* AND nn, X   */ 0x35: go(4, czpx((_r, _w, m)               => { and(m); pc += 2; })),
-  /* SEC         */ 0x38: go(2, no(()                          => { fc = 1; pc++; })),
-  /* AND nnnn, X */ 0x3d: go(4, cabsx((_r, _w, m)              => { and(m); pc += 3; }), pb2x),
-  /* RTI         */ 0x40: go(6, no((read)                      => {
+  /* ORA nn      */ 0x05: go(2, 3, czp((_r, _w, m)                => { ora(m); pc += 2; })),
+  /* ASL nn      */ 0x06: go(2, 5, czp((_r, write, m, a)          => { const r = (m << 1) & 0xff; write(a, r); fc = ((m & 0x80) >> 7); fnu(r); fzu(r); pc += 2; })),
+  /* PHP         */ 0x08: go(1, 3, no((_r, write)                 => { pshsp(write, prstatus()); pc += 1; })),
+  /* ORA #nn     */ 0x09: go(2, 2, cim((_r, _w, m)                => { ora(m); pc += 2; })),
+  /* ASL A       */ 0x0a: go(1, 2, no(()                          => { const ra0 = (ra << 1) & 0xff; fc = ((ra & 0x80) >> 7); ra = ra0; fnu(ra); fzu(ra); pc += 1; })),
+  /* ORA nnnn    */ 0x0d: go(3, 4, cabs((_r, _w, m)               => { ora(m); pc += 3; })),
+  /* BPL dd      */ 0x10: go(2, 2, cjim((_r, _w, m, _a)           => { cj(fn === 0, m); pc += 2; }), (read) => cjt(read, fn === 0)),
+  /* CLC         */ 0x18: go(1, 2, no(()                          => { fc = 0; pc += 1; })),
+  /* ORA nnnn, X */ 0x1d: go(3, 4, cabsx((_r, _w, m)              => { ora(m); pc += 3; }), pb2x),
+  /* JSR nnnn    */ 0x20: go(3, 6, cabs((_r, write, _m, a)        => { const ret = pc + 3; pshsp(write, (ret >> 8) & 0xff); pshsp(write, ret & 0xff); pc = a; })),
+  /* BIT nn      */ 0x24: go(2, 3, czp((_r, _w, m)                => { const r = ra & m; fnu(m); fzu(r); fv = fl(m & 0x40); pc += 2; })),
+  /* BIT nnnn    */ 0x2c: go(3, 3, cabs((_r, _w, m)               => { const r = ra & m; fnu(m); fzu(r); fv = fl(m & 0x40); pc += 3; })),
+  /* AND nn      */ 0x25: go(2, 3, czp((_r, _w, m)                => { and(m); pc += 2; })),
+  /* AND #nn     */ 0x29: go(2, 2, cim((_r, _w, m)                => { and(m); pc += 2; })),
+  /* ROL A       */ 0x2a: go(1, 2, no(()                          => { const ra0 = ((ra << 1) | fc) & 0xff; fc = ((ra & 0x80) >> 7); ra = ra0; fnu(ra); fzu(ra); pc += 1; })),
+  /* BMI dd      */ 0x30: go(2, 2, cjim((_r, _w, m)                => { cj(fn === 1, m); pc += 2; }), (read) => cjt(read, fn === 1)),
+  /* AND nn, X   */ 0x35: go(2, 4, czpx((_r, _w, m)               => { and(m); pc += 2; })),
+  /* SEC         */ 0x38: go(1, 2, no(()                          => { fc = 1; pc++; })),
+  /* AND nnnn, X */ 0x3d: go(3, 4, cabsx((_r, _w, m)              => { and(m); pc += 3; }), pb2x),
+  /* RTI         */ 0x40: go(1, 6, no((read)                      => {
 	  const st = popsp(read);
 	  const l = popsp(read);
 	  const h = popsp(read);
@@ -227,76 +231,76 @@ const processors = {
 	  p = (h << 8) + l;
 
 	  pc = p + 2; })),
-  /* EOR (nn, X) */ 0x41: go(6, cinx((_r, _w, m)               => { eor(m); pc += 2; })),
-  /* EOR nn      */ 0x45: go(3, czp((_r, _w, m)                => { eor(m); pc += 2; })),
-  /* PHA         */ 0x48: go(3, no((_r, write)                 => { pshsp(write, ra); pc += 1; })),
-  /* EOR #nn     */ 0x49: go(2, cim((_r, _w, m )               => { eor(m); pc += 2; })),
-  /* LSR A       */ 0x4a: go(2, no(()                          => { const ra0 = (ra >> 1) & 0xff; fc = ra & 0x01; ra = ra0; fnu(ra); fzu(ra); pc += 1; })),
-  /* JMP nnnn    */ 0x4c: go(3, cabs((_r, _w, _m, a)           => { pc = a; })),
-  /* JMP (nnnn)  */ 0x6c: go(5, cin((_r, _w, m)                => { pc = m; })),
-  /* LSR nnnn    */ 0x4e: go(6, cabs((_r, _w, m)               => { const r = m >> 1; fc = m & 0x01; ra = r; fnu(ra); fzu(ra); pc += 3; })),
-  /* BVC dd      */ 0x50: go(2, cjim((_r, _w, m)               => { cj(fv === 0, m); pc += 2; }), (read) => cjt(read, fv === 0)),
-  /* RTS         */ 0x60: go(6, no((read)                      => { l = popsp(read); h = popsp(read); pc = ((h << 8) + l) & 0xffff; })),
-  /* ADC nn      */ 0x65: go(3, czp((_r, _w, m)                => { adc(m); pc += 2; })),
-  /* PLA         */ 0x68: go(4, no((read)                      => { ra = popsp(read); fnu(ra); fzu(ra); pc += 1; })),
-  /* ADC #nn     */ 0x69: go(2, cim((_r, _w, m)                => { adc(m); pc += 2; })),
-  /* ROR A       */ 0x6a: go(2, no(()                          => { const ra0 = ((ra >> 1) | (fc << 7)) & 0xff; fc = ra & 0x01; ra = ra0; fnu(ra); fzu(ra); pc += 1; })),
-  /* BVS dd      */ 0x70: go(2, cjim((_r, _w, m)               => { cj(fv === 1, m); pc += 2; }), (read) => cjt(read, fv === 1)),
-  /* ADC nn, X   */ 0x75: go(4, czpx((_r, _w, m)               => { adc(m); pc += 2; })),
-  /* ADC nnnn, Y */ 0x79: go(4, cabsy((_r, _w, m)              => { adc(m); pc += 3; }), pb2y),
-  /* SEI         */ 0x78: go(2, no(()                          => { fi = 1; pc++; })),
-  /* STY nn      */ 0x84: go(3, czp((_r, write, _m, a)         => { sty(write, a); pc += 2; })),
-  /* STA nn      */ 0x85: go(3, czp((_r, write, _m, a)         => { sta(write, a); pc += 2; })),
-  /* DEY         */ 0x88: go(2, no(()                          => { ry = (ry - 1) & 0xff; fnu(ry); fzu(ry); pc += 1; })),
-  /* STY nnnn    */ 0x8c: go(4, cabs((_r, write, _m, a)        => { sty(write, a); pc += 3; })),
-  /* STA nnnn    */ 0x8d: go(4, cabs((_r, write, _m, a)        => { sta(write, a); pc += 3; })),
-  /* STX nnnn    */ 0x8e: go(4, cabs((_r, write, _m, a)        => { stx(write, a); pc += 3; })),
-  /* STX nn      */ 0x86: go(3, czp((_r, write, _m, a)         => { stx(write, a); pc += 2; })),
-  /* TXA         */ 0x8a: go(2, no(()                          => { ra = rx; fnu(ra); fzu(ra); pc += 1; })),
-  /* BCC dd      */ 0x90: go(2, cjim((_r, _w, m)                => { cj(fc === 0, m); pc += 2; }), (read) => cjt(read, fc === 0)),
-  /* STY nn, X   */ 0x94: go(4, czpx((_r, write, _m, a)        => { sty(write, a); pc += 2; })),
-  /* STA nn, X   */ 0x95: go(4, czpx((_r, write, _m, a)        => { sta(write, a); pc += 2; })),
-  /* STX nn, Y   */ 0x96: go(4, czpy((_r, write, _m, a)        => { stx(write, a); pc += 2; })),
-  /* TYA         */ 0x98: go(2, no(()                          => { ra = ry; fnu(ra); fzu(ra); pc += 1; })),
-  /* STA nnnn, Y */ 0x99: go(5, cabsy((_r, write, _m, a)       => { sta(write, a); pc += 3; })),
-  /* TXS         */ 0x9a: go(2, no(()                          => { sp = rx; pc += 1; })),
-  /* LDY #nn     */ 0xa0: go(2, cim((_r, _w, m)                => { ldy(m); pc += 2; })),
-  /* LDX #nn     */ 0xa2: go(2, cim((_r, _w, m)                => { ldx(m); pc += 2; })),
-  /* LDY nn      */ 0xa4: go(3, czp((_r, _w, m)                => { ldy(m); pc += 2; })),
-  /* LDA nn      */ 0xa5: go(3, czp((_r, _w, m)                => { lda(m); pc += 2; })),
-  /* LDX nn      */ 0xa6: go(3, czp((_r, _w, m)                => { ldx(m); pc += 2; })),
-  /* TAY         */ 0xa8: go(2, no(()                          => { ry = ra; fnu(ry); fzu(ry); pc += 1; })),
-  /* LDA #nn     */ 0xa9: go(2, cim((_r, _w, m)                => { lda(m); pc += 2; })),
-  /* TAX         */ 0xaa: go(2, no(()                          => { rx = ra; fnu(rx); fzu(rx); pc += 1; })),
-  /* LDY nnnn    */ 0xac: go(4, cabs((_r, _w, m)               => { ldy(m); pc += 3; })),
-  /* LDA nnnn    */ 0xad: go(4, cabs((_r, _w, m)               => { lda(m); pc += 3; })),
-  /* BCS dd      */ 0xb0: go(2, cjim((_r, _w, m)                => { cj(fc === 1, m); pc += 2; }), (read) => cjt(read, fc === 1)),
-  /* LDA (nn), Y */ 0xb1: go(5, ciny((_r, _w, m)               => { lda(m); pc += 2; }), pb1y),
-  /* LDY nn, X   */ 0xb4: go(4, czpx((_r, _w, m)               => { ldy(m); pc += 2; })),
-  /* LDA nn, X   */ 0xb5: go(4, czpx((_r, _w, m)               => { lda(m); pc += 2; })),
-  /* LDX nn, Y   */ 0xb6: go(4, czpy((_r, _w, m)               => { ldx(m); pc += 2; })),
-  /* LDA nnnn, Y */ 0xb9: go(4, cabsy((_r, _w, m, a)           => { lda(m); pc += 3; }), pb2y),
-  /* TSX         */ 0xba: go(2, no(()                          => { rx = sp; fnu(rx); fzu(rx); pc += 1; })),
-  /* LDA nnnn, X */ 0xbd: go(4, cabsx((_r, _w, m)              => { lda(m); pc += 3; }), pb2x),
-  /* LDX nnnn, Y */ 0xbe: go(4, cabsy((_r, _w, m)              => { ldx(m); pc += 3; }), pb2y),
-  /* CPY #nn     */ 0xc0: go(2, cim((_r, _w, m)                => { cpy(m); pc += 2; })),
-  /* CPY nn      */ 0xc4: go(3, czp((_r, _w, m)                => { cpy(m); pc += 2; })),
-  /* CMP nn      */ 0xc5: go(4, czp((_r, _w, m)                => { cmp(m); pc += 2; })),
-  /* DEC nn      */ 0xc6: go(5, czp((_r, write, m, a)          => { dec(write, m, a); pc += 2; })),
-  /* DEC nn, X   */ 0xd6: go(6, czpx((_r, write, m, a)         => { dec(write, m, a); pc += 2; })),
-  /* INY         */ 0xc8: go(2, no(()                          => { ry = (ry + 1) & 0xff; fnu(ry); fzu(ry); pc += 1; })),
-  /* CMP #nn     */ 0xc9: go(2, cim((_r, _w, m)                => { cmp(m); pc += 2; })),
-  /* DEX         */ 0xca: go(2, no(()                          => { rx = (rx - 1) & 0xff; fnu(rx); fzu(rx); pc += 1; })),
-  /* BNE dd      */ 0xd0: go(2, cjim((_r, _w, m)                => { cj(fz === 0, m); pc += 2; }), (read) => cjt(read, fz === 0)),
-  /* CMP nn, X   */ 0xd5: go(4, czpx((_r, _w, m)               => { cmp(m); pc += 2; })),
-  /* CLD         */ 0xd8: go(2, no(()                          => { fd = 0; pc += 1; })),
-  /* CPX #nn     */ 0xe0: go(2, cim((_r, _w, m)                => { cpx(m); pc += 2; })),
-  /* SBC (nn, X) */ 0xe1: go(6, cinx((_r, _w, m)               => { sbc(m); pc += 2; })),
-  /* CPX nn      */ 0xe4: go(3, czp((_r, _w, m)                => { cpx(m); pc += 2; })),
-  /* SBC nn      */ 0xe5: go(3, czp((_r, _w, m)                => { sbc(m); pc += 2; })),
-  /* INC nn      */ 0xe6: go(5, czp((_r, write, m, a)          => { inc(write, m, a); pc += 2; })),
-  /* INX         */ 0xe8: go(2, no(()                          => { rx = (rx + 1) & 0xff; fnu(rx); fzu(rx); pc += 1; })),
-  /* ISC nn      */ 0xe7: go(5, czp((read, write, m, a)        => {  // UNDOCUMENTED
+  /* EOR (nn, X) */ 0x41: go(2, 6, cinx((_r, _w, m)               => { eor(m); pc += 2; })),
+  /* EOR nn      */ 0x45: go(2, 3, czp((_r, _w, m)                => { eor(m); pc += 2; })),
+  /* PHA         */ 0x48: go(1, 3, no((_r, write)                 => { pshsp(write, ra); pc += 1; })),
+  /* EOR #nn     */ 0x49: go(2, 2, cim((_r, _w, m )               => { eor(m); pc += 2; })),
+  /* LSR A       */ 0x4a: go(1, 2, no(()                          => { const ra0 = (ra >> 1) & 0xff; fc = ra & 0x01; ra = ra0; fnu(ra); fzu(ra); pc += 1; })),
+  /* JMP nnnn    */ 0x4c: go(3, 3, cabs((_r, _w, _m, a)           => { pc = a; })),
+  /* JMP (nnnn)  */ 0x6c: go(3, 5, cin((_r, _w, m)                => { pc = m; })),
+  /* LSR nnnn    */ 0x4e: go(3, 6, cabs((_r, _w, m)               => { const r = m >> 1; fc = m & 0x01; ra = r; fnu(ra); fzu(ra); pc += 3; })),
+  /* BVC dd      */ 0x50: go(2, 2, cjim((_r, _w, m)               => { cj(fv === 0, m); pc += 2; }), (read) => cjt(read, fv === 0)),
+  /* RTS         */ 0x60: go(1, 6, no((read)                      => { l = popsp(read); h = popsp(read); pc = ((h << 8) + l) & 0xffff; })),
+  /* ADC nn      */ 0x65: go(2, 3, czp((_r, _w, m)                => { adc(m); pc += 2; })),
+  /* PLA         */ 0x68: go(1, 4, no((read)                      => { ra = popsp(read); fnu(ra); fzu(ra); pc += 1; })),
+  /* ADC #nn     */ 0x69: go(2, 2, cim((_r, _w, m)                => { adc(m); pc += 2; })),
+  /* ROR A       */ 0x6a: go(1, 2, no(()                          => { const ra0 = ((ra >> 1) | (fc << 7)) & 0xff; fc = ra & 0x01; ra = ra0; fnu(ra); fzu(ra); pc += 1; })),
+  /* BVS dd      */ 0x70: go(2, 2, cjim((_r, _w, m)               => { cj(fv === 1, m); pc += 2; }), (read) => cjt(read, fv === 1)),
+  /* ADC nn, X   */ 0x75: go(2, 4, czpx((_r, _w, m)               => { adc(m); pc += 2; })),
+  /* ADC nnnn, Y */ 0x79: go(3, 4, cabsy((_r, _w, m)              => { adc(m); pc += 3; }), pb2y),
+  /* SEI         */ 0x78: go(1, 2, no(()                          => { fi = 1; pc++; })),
+  /* STY nn      */ 0x84: go(2, 3, czp((_r, write, _m, a)         => { sty(write, a); pc += 2; })),
+  /* STA nn      */ 0x85: go(2, 3, czp((_r, write, _m, a)         => { sta(write, a); pc += 2; })),
+  /* DEY         */ 0x88: go(1, 2, no(()                          => { ry = (ry - 1) & 0xff; fnu(ry); fzu(ry); pc += 1; })),
+  /* STY nnnn    */ 0x8c: go(3, 4, cabs((_r, write, _m, a)        => { sty(write, a); pc += 3; })),
+  /* STA nnnn    */ 0x8d: go(3, 4, cabs((_r, write, _m, a)        => { sta(write, a); pc += 3; })),
+  /* STX nnnn    */ 0x8e: go(3, 4, cabs((_r, write, _m, a)        => { stx(write, a); pc += 3; })),
+  /* STX nn      */ 0x86: go(2, 3, czp((_r, write, _m, a)         => { stx(write, a); pc += 2; })),
+  /* TXA         */ 0x8a: go(1, 2, no(()                          => { ra = rx; fnu(ra); fzu(ra); pc += 1; })),
+  /* BCC dd      */ 0x90: go(2, 2, cjim((_r, _w, m)               => { cj(fc === 0, m); pc += 2; }), (read) => cjt(read, fc === 0)),
+  /* STY nn, X   */ 0x94: go(2, 4, czpx((_r, write, _m, a)        => { sty(write, a); pc += 2; })),
+  /* STA nn, X   */ 0x95: go(2, 4, czpx((_r, write, _m, a)        => { sta(write, a); pc += 2; })),
+  /* STX nn, Y   */ 0x96: go(2, 4, czpy((_r, write, _m, a)        => { stx(write, a); pc += 2; })),
+  /* TYA         */ 0x98: go(1, 2, no(()                          => { ra = ry; fnu(ra); fzu(ra); pc += 1; })),
+  /* STA nnnn, Y */ 0x99: go(3, 5, cabsy((_r, write, _m, a)       => { sta(write, a); pc += 3; })),
+  /* TXS         */ 0x9a: go(1, 2, no(()                          => { sp = rx; pc += 1; })),
+  /* LDY #nn     */ 0xa0: go(2, 2, cim((_r, _w, m)                => { ldy(m); pc += 2; })),
+  /* LDX #nn     */ 0xa2: go(2, 2, cim((_r, _w, m)                => { ldx(m); pc += 2; })),
+  /* LDY nn      */ 0xa4: go(2, 3, czp((_r, _w, m)                => { ldy(m); pc += 2; })),
+  /* LDA nn      */ 0xa5: go(2, 3, czp((_r, _w, m)                => { lda(m); pc += 2; })),
+  /* LDX nn      */ 0xa6: go(2, 3, czp((_r, _w, m)                => { ldx(m); pc += 2; })),
+  /* TAY         */ 0xa8: go(1, 2, no(()                          => { ry = ra; fnu(ry); fzu(ry); pc += 1; })),
+  /* LDA #nn     */ 0xa9: go(2, 2, cim((_r, _w, m)                => { lda(m); pc += 2; })),
+  /* TAX         */ 0xaa: go(1, 2, no(()                          => { rx = ra; fnu(rx); fzu(rx); pc += 1; })),
+  /* LDY nnnn    */ 0xac: go(3, 4, cabs((_r, _w, m)               => { ldy(m); pc += 3; })),
+  /* LDA nnnn    */ 0xad: go(3, 4, cabs((_r, _w, m)               => { lda(m); pc += 3; })),
+  /* BCS dd      */ 0xb0: go(2, 2, cjim((_r, _w, m)               => { cj(fc === 1, m); pc += 2; }), (read) => cjt(read, fc === 1)),
+  /* LDA (nn), Y */ 0xb1: go(2, 5, ciny((_r, _w, m)               => { lda(m); pc += 2; }), pb1y),
+  /* LDY nn, X   */ 0xb4: go(2, 4, czpx((_r, _w, m)               => { ldy(m); pc += 2; })),
+  /* LDA nn, X   */ 0xb5: go(2, 4, czpx((_r, _w, m)               => { lda(m); pc += 2; })),
+  /* LDX nn, Y   */ 0xb6: go(2, 4, czpy((_r, _w, m)               => { ldx(m); pc += 2; })),
+  /* LDA nnnn, Y */ 0xb9: go(3, 4, cabsy((_r, _w, m)              => { lda(m); pc += 3; }), pb2y),
+  /* TSX         */ 0xba: go(1, 2, no(()                          => { rx = sp; fnu(rx); fzu(rx); pc += 1; })),
+  /* LDA nnnn, X */ 0xbd: go(3, 4, cabsx((_r, _w, m)              => { lda(m); pc += 3; }), pb2x),
+  /* LDX nnnn, Y */ 0xbe: go(3, 4, cabsy((_r, _w, m)              => { ldx(m); pc += 3; }), pb2y),
+  /* CPY #nn     */ 0xc0: go(2, 2, cim((_r, _w, m)                => { cpy(m); pc += 2; })),
+  /* CPY nn      */ 0xc4: go(2, 3, czp((_r, _w, m)                => { cpy(m); pc += 2; })),
+  /* CMP nn      */ 0xc5: go(2, 4, czp((_r, _w, m)                => { cmp(m); pc += 2; })),
+  /* DEC nn      */ 0xc6: go(2, 5, czp((_r, write, m, a)          => { dec(write, m, a); pc += 2; })),
+  /* DEC nn, X   */ 0xd6: go(2, 6, czpx((_r, write, m, a)         => { dec(write, m, a); pc += 2; })),
+  /* INY         */ 0xc8: go(1, 2, no(()                          => { ry = (ry + 1) & 0xff; fnu(ry); fzu(ry); pc += 1; })),
+  /* CMP #nn     */ 0xc9: go(2, 2, cim((_r, _w, m)                => { cmp(m); pc += 2; })),
+  /* DEX         */ 0xca: go(1, 2, no(()                          => { rx = (rx - 1) & 0xff; fnu(rx); fzu(rx); pc += 1; })),
+  /* BNE dd      */ 0xd0: go(2, 2, cjim((_r, _w, m)                => { cj(fz === 0, m); pc += 2; }), (read) => cjt(read, fz === 0)),
+  /* CMP nn, X   */ 0xd5: go(2, 4, czpx((_r, _w, m)               => { cmp(m); pc += 2; })),
+  /* CLD         */ 0xd8: go(1, 2, no(()                          => { fd = 0; pc += 1; })),
+  /* CPX #nn     */ 0xe0: go(2, 2, cim((_r, _w, m)                => { cpx(m); pc += 2; })),
+  /* SBC (nn, X) */ 0xe1: go(2, 6, cinx((_r, _w, m)               => { sbc(m); pc += 2; })),
+  /* CPX nn      */ 0xe4: go(2, 3, czp((_r, _w, m)                => { cpx(m); pc += 2; })),
+  /* SBC nn      */ 0xe5: go(2, 3, czp((_r, _w, m)                => { sbc(m); pc += 2; })),
+  /* INC nn      */ 0xe6: go(2, 5, czp((_r, write, m, a)          => { inc(write, m, a); pc += 2; })),
+  /* INX         */ 0xe8: go(1, 2, no(()                          => { rx = (rx + 1) & 0xff; fnu(rx); fzu(rx); pc += 1; })),
+  /* ISC nn      */ 0xe7: go(2, 5, czp((read, write, m, a)        => {  // UNDOCUMENTED
 	  // https://www.masswerk.at/nowgobang/2021/6502-illegal-opcodes
 	  inc(write, m, a);
 
@@ -305,11 +309,11 @@ const processors = {
           sbc(v);
 
 	  pc += 2; })),
-  /* SBC #nn     */ 0xe9: go(2, cim((_r, _w, m)                => { sbc(m); pc += 2; })),
-  /* NOP         */ 0xea: go(2, no(()                          => { pc += 1; })),
-  /* BEQ dd      */ 0xf0: go(2, cjim((_r, _w, m)                => { cj(fz === 1, m); pc += 2; }), (read) => cjt(read, fz === 1)),
-  /* INC nn, X   */ 0xf6: go(5, czpx((_r, write, m, a)         => { inc(write, m, a); pc += 2; })),
-  /* CLD         */ 0xf8: go(2, no(()                          => { fd = 0; pc += 1; })),
+  /* SBC #nn     */ 0xe9: go(2, 2, cim((_r, _w, m)                => { sbc(m); pc += 2; })),
+  /* NOP         */ 0xea: go(1, 2, no(()                          => { pc += 1; })),
+  /* BEQ dd      */ 0xf0: go(2, 2, cjim((_r, _w, m)                => { cj(fz === 1, m); pc += 2; }), (read) => cjt(read, fz === 1)),
+  /* INC nn, X   */ 0xf6: go(2, 5, czpx((_r, write, m, a)         => { inc(write, m, a); pc += 2; })),
+  /* CLD         */ 0xf8: go(1, 2, no(()                          => { fd = 0; pc += 1; })),
 }
 
 
@@ -409,13 +413,7 @@ const machine = (input) => {
      if (naddr === T1024T) { interval = 1_024; timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
 
      // SPECIAL CASES with extra actions
-     if (naddr === VSYNC) {
-	 newIsVsync = (v & 0x02) === 0x02;
-
-	 isVSyncHi = (isVSync && !newIsVsync);
-
-	 isVSync = newIsVsync;
-     }
+     if (naddr === VSYNC) { isVSync = (v & 0x02) === 0x02; }
 
      if (naddr === GRP0) {
        if (mem[VDELP1] & 0x01) { setGrp1(GRP1_DELAYED); }
@@ -506,13 +504,8 @@ const machine = (input) => {
    const t0 = mem[INTIM] - 1;
    if (t0 < 0) { mem[INSTAT] |= 0xc0; mem[INTIM] = 0xff; timerCounter = 1; } else { mem[INTIM] = t0; timerCounter = interval; }
   }
-
-  const step = async () => {
-    const isWaiting = action && !action.next().done;
-    
-    if (!isWSync && !isWaiting) {
-      isContinue = false;
-    
+ 
+  const break_ = async () => {
       let propagated = false;
       while (!isBreakout && ((breakpoints.has(pc) && !isContinue) || isStep)) {
         const x = (s % 228) - hb;
@@ -565,22 +558,50 @@ const machine = (input) => {
         await sleep(100);
       }
       isBreakout = false;
-    
-      const o = read(pc)
-    
-      const p = processors[o];
-    
-      try {
-       action = p(read, write);
-      } catch (e) {
-        if (o === 0xff) { return; } // Forced exit for debugging purposes
-        console.log(e, pc.toString(16), "o", o.toString(16))
-        debugger;
-        return;
-      }
-    }
-    
+  }
+
+  const step = async () => {
     tickTimer();
+
+    const isWaiting = action && !action.next().done;
+    
+    if (isWSync || isWaiting) { return; }
+
+    isContinue = false;
+
+    await break_();
+
+    const o = read(pc)
+    
+    const p = processors[o];
+    
+    try {
+     action = p(read, write);
+    } catch (e) {
+      if (o === 0xff) { return; } // Forced exit for debugging purposes
+      console.log(e, pc.toString(16), "o", o.toString(16))
+      debugger;
+      return;
+    }
+  }
+
+  const tia_ = async () => {
+      updateScreen(read, s);
+
+      if (!isVSync && !(s === (228 * 262))) { return }
+
+      requestAnimationFrame(draw);
+
+      const diff = new Date() - fs;
+      const delay = Math.max((1_000 / FPS) - diff, 0);
+      if (delay > 0) { await sleep(delay); }
+
+      fs = new Date();
+      s = 0;
+      t = 0;
+      clearScreen();
+      cc = 0;
+      isVSync = false;
   }
 
   let fs = new Date();
@@ -591,26 +612,17 @@ const machine = (input) => {
     while (!isKilled) {
       if (t === 3) { t = 0; }
 
+      // PIA once every 3 cycles
       (t === 0) && (await step(), cc = (cc + 1) % 76);
 
-
-      updateScreen(read, s);
-
-      if (s % 228 === 0) { isWSync = false; }
-
-      if (isVSync || (s === (228 * 262))) {
-        requestAnimationFrame(draw);
-
-        const diff = new Date() - fs;
-        const delay = Math.max((1_000 / FPS) - diff, 0);
-        if (delay > 0) { await sleep(delay); }
-
-        fs = new Date();
-        s = 0;
-        clearScreen();
-        cc = 0;
-        isVSync = false;
+      // EOL -> process current operation immediately
+      if ((s % 228) === 0) { 
+	 isWSync = false;
+	 while (!action.next().done) { }
       }
+
+      // TIA every cycle
+      await tia_();
 
       t++;
       s++;
