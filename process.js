@@ -115,7 +115,7 @@ const absy = (nnnn) => { return (nnnn + ry) & 0xffff; }
 const pb1y  = (read) => { const nn = read(pc + 1); return fl(((nn & 0xff) + (ry & 0xff) > 0xff)); }
 const pb2x  = (read) => { const nnnn = word(read, pc + 1); return fl((((nnnn & 0xff) + (rx & 0xff)) > 0xff)); }
 const pb2y  = (read) => { const nnnn = word(read, pc + 1); return fl((((nnnn & 0xff) + (ry & 0xff)) > 0xff)); }
-const cjt   = (read, v) => { const r0 = fl(v); const dd = read(pc + 1); const r1 = ((pc & 0xff) + tcd(dd)); return fl(r1 < 0 || r1 > 0xff) + r0; }
+const cjt   = (read, c) => { const r0 = fl(c); const dd = read(pc + 1); const r1 = ((pc & 0xff) + tcd(dd)); return fl((r1 < 0) || (r1 > 0xff)) + r0; }
 
 const cjim  = (f) => (read, write) => { const nn   = read(pc + 1);                                    return () => f(read, write, nn);  }
 const cim   = (f) => (read, write) => { const nn   = read(pc + 1);                                    return () => f(read, write, nn);  }
@@ -156,22 +156,24 @@ const sbc = (m) => {
   fc = fl(r >= 0);
 }
 
-const and   = (m) =>           { ra = ra & m; fnu(ra); fzu(ra); }
-const cmp   = (m) =>           { const r = (ra - m) & 0xff; fc = fl(ra >= m); fnu(r); fzu(r); }
-const cpy   = (m) =>           { const r = (ry - m) & 0xff; fc = fl(ry >= m); fnu(r); fzu(r); }
-const cpx   = (m) =>           { const r = (rx - m) & 0xff; fc = fl(rx >= m); fnu(r); fzu(r); }
-const dec   = (write, m, a) => { const r = (m - 1) & 0xff; write(a, r); fnu(r); fzu(r); }
-const eor   = (m) =>           { ra ^= m; fnu(ra); fzu(ra); }
-const inc   = (write, m, a) => { const r = (m + 1) & 0xff; write(a, r); fnu(r); fzu(r); }
-const lda   = (m) =>           { ra = m; fnu(ra); fzu(ra); }
-const ldx   = (m) =>           { rx = m; fnu(rx); fzu(rx); }
-const ldy   = (m) =>           { ry = m; fnu(ry); fzu(ry); }
-const ora   = (m) =>           { ra |= m; fnu(ra); fzu(ra); }
-const sta   = (write, a) =>    { write(a, ra & 0xff); }
-const stx   = (write, a) =>    { write(a, rx & 0xff); }
-const sty   = (write, a) =>    { write(a, ry & 0xff); }
+const and = (m) =>           { ra = ra & m; fnu(ra); fzu(ra); }
+const cmp = (m) =>           { const r = (ra - m) & 0xff; fc = fl(ra >= m); fnu(r); fzu(r); }
+const cpy = (m) =>           { const r = (ry - m) & 0xff; fc = fl(ry >= m); fnu(r); fzu(r); }
+const cpx = (m) =>           { const r = (rx - m) & 0xff; fc = fl(rx >= m); fnu(r); fzu(r); }
+const dec = (write, m, a) => { const r = (m - 1) & 0xff; write(a, r); fnu(r); fzu(r); }
+const eor = (m) =>           { ra ^= m; fnu(ra); fzu(ra); }
+const inc = (write, m, a) => { const r = (m + 1) & 0xff; write(a, r); fnu(r); fzu(r); }
+const lda = (m) =>           { ra = m; fnu(ra); fzu(ra); }
+const ldx = (m) =>           { rx = m; fnu(rx); fzu(rx); }
+const ldy = (m) =>           { ry = m; fnu(ry); fzu(ry); }
+const ora = (m) =>           { ra |= m; fnu(ra); fzu(ra); }
+const sta = (write, a) =>    { write(a, ra & 0xff); }
+const stx = (write, a) =>    { write(a, rx & 0xff); }
+const sty = (write, a) =>    { write(a, ry & 0xff); }
 
-const cj    = (condition, m) => { condition && (pc += tcd(m)); }
+const cj  = (condition, m) => { condition && (pc += tcd(m)); }
+
+let w = 0;
 
 function go(b_, cc_, f, ccx) {
   if (!ccx) { ccx = () => 0; }
@@ -179,13 +181,25 @@ function go(b_, cc_, f, ccx) {
   return function* (read, write) {
     const f2 = f(read, write);
 
-    // const b = Math.floor(b_ / 2); //  + ccx(read);
-    // const a = Math.max(0, cc_ - b_ + ccx(read) - 1);
-    const a = Math.max(0, cc_ - b_ + ccx(read));
+    // const a = Math.max(0, cc_ - b_);
 
-    for (let i = 0; i < b_ - 1; i++) { yield; }
+    // for (let i = 0; i < b_ - 1; i++) { yield; }
+    // READ OP + OPER
+    // for (let i = 0; i < b_; i++) { yield; }
+    for (let i = 0; i < cc_ - 2; i++) { yield; }
+    for (let i = 0; i < ccx(read); i++) { yield; }
     f2();
-    for (let i = 0; i < a; i++) { yield; }
+    yield;
+
+    
+
+    // PAGE JUMPS, ETC
+    // reading param might take an extra cc bc page bounds -> BEFORE?
+    // if jump might take extra cc -> AFTER?
+
+    // APPLY CHANGES
+    // for (let i = 0; i < a; i++) { yield; }
+    // for (let i = 0; i < a; i++) { yield; }
   }
 }
 
@@ -209,6 +223,7 @@ const processors = {
   /* ASL A       */ 0x0a: go(1, 2, no(()                          => { const ra0 = (ra << 1) & 0xff; fc = ((ra & 0x80) >> 7); ra = ra0; fnu(ra); fzu(ra); pc += 1; })),
   /* ORA nnnn    */ 0x0d: go(3, 4, cabs((_r, _w, m)               => { ora(m); pc += 3; })),
   /* BPL dd      */ 0x10: go(2, 2, cjim((_r, _w, m, _a)           => { cj(fn === 0, m); pc += 2; }), (read) => cjt(read, fn === 0)),
+  /* ORA nn, X   */ 0x15: go(2, 4, czpx((_r, _w, m)               => { ora(m); pc += 2; })),
   /* CLC         */ 0x18: go(1, 2, no(()                          => { fc = 0; pc += 1; })),
   /* ORA nnnn, X */ 0x1d: go(3, 4, cabsx((_r, _w, m)              => { ora(m); pc += 3; }), pb2x),
   /* JSR nnnn    */ 0x20: go(3, 6, cabs((_r, write, _m, a)        => { const ret = pc + 3; pshsp(write, (ret >> 8) & 0xff); pshsp(write, ret & 0xff); pc = a; })),
@@ -217,7 +232,7 @@ const processors = {
   /* AND nn      */ 0x25: go(2, 3, czp((_r, _w, m)                => { and(m); pc += 2; })),
   /* AND #nn     */ 0x29: go(2, 2, cim((_r, _w, m)                => { and(m); pc += 2; })),
   /* ROL A       */ 0x2a: go(1, 2, no(()                          => { const ra0 = ((ra << 1) | fc) & 0xff; fc = ((ra & 0x80) >> 7); ra = ra0; fnu(ra); fzu(ra); pc += 1; })),
-  /* BMI dd      */ 0x30: go(2, 2, cjim((_r, _w, m)                => { cj(fn === 1, m); pc += 2; }), (read) => cjt(read, fn === 1)),
+  /* BMI dd      */ 0x30: go(2, 2, cjim((_r, _w, m)               => { cj(fn === 1, m); pc += 2; }), (read) => cjt(read, fn === 1)),
   /* AND nn, X   */ 0x35: go(2, 4, czpx((_r, _w, m)               => { and(m); pc += 2; })),
   /* SEC         */ 0x38: go(1, 2, no(()                          => { fc = 1; pc++; })),
   /* AND nnnn, X */ 0x3d: go(3, 4, cabsx((_r, _w, m)              => { and(m); pc += 3; }), pb2x),
@@ -291,7 +306,7 @@ const processors = {
   /* INY         */ 0xc8: go(1, 2, no(()                          => { ry = (ry + 1) & 0xff; fnu(ry); fzu(ry); pc += 1; })),
   /* CMP #nn     */ 0xc9: go(2, 2, cim((_r, _w, m)                => { cmp(m); pc += 2; })),
   /* DEX         */ 0xca: go(1, 2, no(()                          => { rx = (rx - 1) & 0xff; fnu(rx); fzu(rx); pc += 1; })),
-  /* BNE dd      */ 0xd0: go(2, 2, cjim((_r, _w, m)                => { cj(fz === 0, m); pc += 2; }), (read) => cjt(read, fz === 0)),
+  /* BNE dd      */ 0xd0: go(2, 2, cjim((_r, _w, m)               => { cj(fz === 0, m); pc += 2; }), (read) => cjt(read, fz === 0)),
   /* CMP nn, X   */ 0xd5: go(2, 4, czpx((_r, _w, m)               => { cmp(m); pc += 2; })),
   /* CLD         */ 0xd8: go(1, 2, no(()                          => { fd = 0; pc += 1; })),
   /* CPX #nn     */ 0xe0: go(2, 2, cim((_r, _w, m)                => { cpx(m); pc += 2; })),
@@ -311,7 +326,7 @@ const processors = {
 	  pc += 2; })),
   /* SBC #nn     */ 0xe9: go(2, 2, cim((_r, _w, m)                => { sbc(m); pc += 2; })),
   /* NOP         */ 0xea: go(1, 2, no(()                          => { pc += 1; })),
-  /* BEQ dd      */ 0xf0: go(2, 2, cjim((_r, _w, m)                => { cj(fz === 1, m); pc += 2; }), (read) => cjt(read, fz === 1)),
+  /* BEQ dd      */ 0xf0: go(2, 2, cjim((_r, _w, m)               => { cj(fz === 1, m); pc += 2; }), (read) => cjt(read, fz === 1)),
   /* INC nn, X   */ 0xf6: go(2, 5, czpx((_r, write, m, a)         => { inc(write, m, a); pc += 2; })),
   /* CLD         */ 0xf8: go(1, 2, no(()                          => { fd = 0; pc += 1; })),
 }
@@ -508,6 +523,8 @@ const machine = (input) => {
   const break_ = async () => {
       let propagated = false;
       while (!isBreakout && ((breakpoints.has(pc) && !isContinue) || isStep)) {
+	if (isWSync) { isBreakout = false; return; }
+	if (isVSync) { isBreakout = false; return; }
         const x = (s % 228) - hb;
         const y = Math.floor((s - vb) / 228);
     
@@ -515,6 +532,7 @@ const machine = (input) => {
         if (bpConditional.x.upper !== undefined && (x > bpConditional.x.upper)) { break; }
         if (bpConditional.y.lower !== undefined && (y < bpConditional.y.lower)) { break; }
         if (bpConditional.y.upper !== undefined && (y > bpConditional.y.upper)) { break; }
+	if (isStep) { while (action && !action.next().done) { } }
     
         if (!propagated) {
           pstatus = {
@@ -560,7 +578,7 @@ const machine = (input) => {
       isBreakout = false;
   }
 
-  const step = async () => {
+  const step = () => {
     tickTimer();
 
     const isWaiting = action && !action.next().done;
@@ -568,8 +586,6 @@ const machine = (input) => {
     if (isWSync || isWaiting) { return; }
 
     isContinue = false;
-
-    await break_();
 
     const o = read(pc)
     
@@ -581,20 +597,16 @@ const machine = (input) => {
       if (o === 0xff) { return; } // Forced exit for debugging purposes
       console.log(e, pc.toString(16), "o", o.toString(16))
       debugger;
-      return;
+      throw e;
     }
   }
 
-  const tia_ = async () => {
+  const tia_ = () => {
       updateScreen(read, s);
 
       if (!isVSync && !(s === (228 * 262))) { return }
 
       requestAnimationFrame(draw);
-
-      const diff = new Date() - fs;
-      const delay = Math.max((1_000 / FPS) - diff, 0);
-      if (delay > 0) { await sleep(delay); }
 
       fs = new Date();
       s = 0;
@@ -613,16 +625,20 @@ const machine = (input) => {
       if (t === 3) { t = 0; }
 
       // PIA once every 3 cycles
-      (t === 0) && (await step(), cc = (cc + 1) % 76);
+      (t === 0) && ( await break_(), step(), cc = (cc + 1) % 76);
 
       // EOL -> process current operation immediately
       if ((s % 228) === 0) { 
 	 isWSync = false;
-	 while (!action.next().done) { }
+	 // while (!action.next().done) { }
       }
 
+      const diff = new Date() - fs;
+      const delay = Math.max((1_000 / FPS) - diff, 0);
+      if (delay > 0) { await sleep(delay); }
+
       // TIA every cycle
-      await tia_();
+      tia_();
 
       t++;
       s++;
