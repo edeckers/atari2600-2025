@@ -380,10 +380,9 @@ const machine = (input) => {
 
   const nrml = (addr) => {
     if (addr & 0x1000) { // ROM
-      // console.log("ROM", addr.toString(16));
+      // 
       return addr & 0x1fff;
     } else if ((addr & 0x1080) === 0x00) { // TIA
-      // console.log("TIA", addr.toString(16));
       return addr & 0x7f;
     } else if ((addr & 0x1280) === 0x80) { // PIA
       // console.log("PIA", addr.toString(16));
@@ -414,10 +413,14 @@ const machine = (input) => {
   const setGrp1 = (v0) => { mem[GRP1] = (mem[REFP1] & 0x08) ? rev8(v0) : v0; }
 
   const write = (addr, v) => {
-     const naddr = nrml(addr);
-     dbg("write", naddr.toString(16), v);
+     const naddr = addr; // nrml(addr);
+
+     if (naddr === CXP0FB && v === 0) { return }
+     if (naddr === CXP1FB && v === 0) { return }
 
      // STROBES, i.e. won't be actually stored and return early
+     if (naddr === CXCLR) { mem[CXP0FB] = 0; mem[CXP1FB] = 0; return; }
+
      if (naddr === WSYNC) { isWSync = true; return; }
      if (naddr === RESP0) { isRESP0 = true; return; }
      if (naddr === RESP1) { isRESP1 = true; return; }
@@ -554,7 +557,7 @@ const machine = (input) => {
     
         if (!propagated) {
           document.dispatchEvent(new Event("break"));
-          updateScreen(read, s);
+          updateScreen(read, write, s);
           requestAnimationFrame(draw);
           requestAnimationFrame(() => cross(x, y));
           propagated = true;
@@ -588,7 +591,7 @@ const machine = (input) => {
   }
 
   const tia_ = () => {
-      updateScreen(read, s);
+      updateScreen(read, write, s);
 
       if (!isVSync && !(s === (228 * 262))) { return }
 
@@ -608,6 +611,9 @@ const machine = (input) => {
   let action = undefined;
   const process = async () => {
     while (!isKilled) {
+      // TIA every cycle
+      tia_();
+
       if (t === 3) { t = 0; }
 
       // PIA once every 3 cycles
@@ -616,15 +622,14 @@ const machine = (input) => {
       // EOL -> process current operation immediately
       if ((s % 228) === 0) { 
 	 isWSync = false;
-	 // while (!action.next().done) { }
+         mem[CXCLR] = 0; // clear collisions per line
+	 while (!action.next().done) { }
       }
 
       const diff = new Date() - fs;
       const delay = Math.max((1_000 / FPS) - diff, 0);
       if (delay > 0) { await sleep(delay); }
 
-      // TIA every cycle
-      tia_();
 
       t++;
       s++;

@@ -35,7 +35,7 @@ function clearScreen() {
  screen = new Uint8ClampedArray(arrayBuffer);
 }
 
-function updateScreen(read, tt) {
+function updateScreen(read, write, tt) {
  const invb = tt <= vb;
  const inover = tt > (228 * (262 - 30));
  const inhblank = ((tt % 228) <= hb);
@@ -95,9 +95,13 @@ function updateScreen(read, tt) {
 
  (pfBit & PF) && (v = pfColor);
 
+ const px_= [false, false];
+ const mx_= [false, false];
+ let bl_ = false;
+
  // PLAYERS
- const dp = (grp, rp, colup, nusiz) => {
-   const psz = read(nusiz) & 7
+ const dp = (pid, rp) => {
+   const psz = read(NUSIZ0 + pid) & 7
    const isCopy = ((psz !== 5) && (psz !== 7)); // 5 and 7 are for wides
    const size = (psz === 7) ? 4 : ((psz === 5) ? 2 : 1); // 5 = 2x, 7 = 4x
 
@@ -108,14 +112,15 @@ function updateScreen(read, tt) {
      if (q < 0) { return; }
      if (q > 8) { return; }
 
-     v = (read(grp) & Math.pow(2, 8 - q)) ? read(colup) : v;
+     const drawMe = ((read(GRP0 + pid) & Math.pow(2, 8 - q)) > 0);
+     if (drawMe) {
+       px_[pid] = true;
+       v = read(COLUP0 + pid); }
    }
 
    drawCopy(0);
    
-   if (!isCopy) {
-     return;
-   }
+   if (!isCopy) { return; }
 
    (psz === 1) && drawCopy(16);
    (psz === 2) && drawCopy(32);
@@ -124,11 +129,33 @@ function updateScreen(read, tt) {
    (psz === 6) && (drawCopy(16), drawCopy(32), drawCopy(56));
  }
 
- (x >= resp0x) && dp(GRP0, resp0x, COLUP0, NUSIZ0);
- (x >= resp1x) && dp(GRP1, resp1x, COLUP1, NUSIZ1);
- // (x >= resm0x) && dp(1, resm0x, COLUP0, NUSIZ0);
- // (x >= resm1x) && dp(1, resm1x, COLUP1, NUSIZ1);
- // (x >= resblx) && dp(1, resblx, COLUPF, NUSIZ0);
+ // BALL
+ const bl = (colup) => {
+   if ((x - resblx) > 1) { return; }
+
+   bl_ = (read(ENABL) & 0x02) === 0x02;
+   if (bl_) { v = read(colup); }
+ }
+
+ // MISSILES
+ const mssl = (mid, resm, colup) => {
+   if ((x - resm) > 1) { return; }
+   mx_[mid] = (read(ENAM0) & 0x02) === 0x02;
+   if (mx_[mid]) { v = read(colup); }
+ }
+
+
+ (x >= resp0x) && dp(0, resp0x);
+ (x >= resp1x) && dp(1, resp1x);
+ (x >= resm0x) && mssl(0, resm0x, COLUP0);
+ (x >= resm1x) && mssl(1, resm1x, COLUP1);
+ (x >= resblx) && bl(COLUPF);
+
+ // fl(px_[0] && bl_) && console.log("IIIII", x, y);
+ write(CXP0FB, fl(px_[0] && bl_) << 6);
+ // write(CXP1FB, fl(px_[1] && bl_) << 6);
+ // write(CXP0FB, 1 << 6);
+ // write(CXP1FB, 1 << 6);
 
  // VBLANK
  v = (read(VBLANK) & 0x02) ? 0x00 : v;
