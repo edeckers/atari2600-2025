@@ -247,16 +247,16 @@
 
 		     document.addEventListener("keydown", (event) => {
 		       if (event.key === "w") { controller.mn(); return false; }
-		       if (event.key === "d") { controller.me(); console.log(info().memory[0xb2].toString(16)); return false; }
+		       if (event.key === "d") { controller.me(); return false; }
 		       if (event.key === "s") { controller.ms(); return false; }
-		       if (event.key === "a") { controller.mw(); console.log(info().memory[0xb2].toString(16)); return false; }
+		       if (event.key === "a") { controller.mw(); return false; }
 
 		       if (event.code === "Space") { controller.fire(); return false; }
 
 		       if (event.key === "ArrowUp") { controller.mn1(); return false; }
-		       if (event.key === "ArrowRight") { controller.me1(); console.log(info().memory[0xb3].toString(16)); return false; }
+		       if (event.key === "ArrowRight") { controller.me1(); return false; }
 		       if (event.key === "ArrowDown") { controller.ms1(); return false; }
-		       if (event.key === "ArrowLeft") { controller.mw1(); console.log(info().memory[0xb3].toString(16)); return false; }
+		       if (event.key === "ArrowLeft") { controller.mw1(); return false; }
 
 		       if (event.code === "Ctrl") { controller.fire1(); return false; }
 

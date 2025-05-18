@@ -378,12 +378,18 @@ const machine = (input) => {
 
   const mem = romAsMem(input.length === 4_096 ? input : input.concat(input));
 
-  const nrml = (addr) => {
+  const nrml = (addr, r) => {
     if (addr & 0x1000) { // ROM
-      // 
       return addr & 0x1fff;
     } else if ((addr & 0x1080) === 0x00) { // TIA
-      return addr & 0x7f;
+      const _a = addr & 0x3f;
+	
+      // FIXME This is probably not correct:
+      //       TIA has read and write addresses, some of them
+      //       which overlap, such as 0C (REFP1) and 0c (INPT4).
+      //       Only the action differs. We move reads to 0xyz
+      //       to mirror 0x3z
+      return r ? (_a | 0x30) : _a;
     } else if ((addr & 0x1280) === 0x80) { // PIA
       // console.log("PIA", addr.toString(16));
       return addr & 0xff;
@@ -394,8 +400,9 @@ const machine = (input) => {
 
     return addr;
   }
+
   const read = (addr) => {
-    const naddr = nrml(addr);
+    const naddr = nrml(addr, true);
 
     if (naddr === INTIM) {
       if (mem[INSTAT] & 0x40) { // Restart interval
@@ -405,6 +412,12 @@ const machine = (input) => {
       mem[INSTAT] &= 0xbf; // Reset bit 6 on read instat
     }
 
+     // if (naddr === 0x32) { return 0xff; }
+
+    // if (naddr === 0x32) {
+    //     (mem[naddr] !== 0) && console.log("WWW", mem[naddr].toString(16));
+    // }
+
     return mem[naddr];
   }
 
@@ -412,14 +425,19 @@ const machine = (input) => {
   const setGrp0 = (v0) => { mem[GRP0] = (mem[REFP0] & 0x08) ? rev8(v0) : v0; }
   const setGrp1 = (v0) => { mem[GRP1] = (mem[REFP1] & 0x08) ? rev8(v0) : v0; }
 
-  const write = (addr, v) => {
-     const naddr = addr; // nrml(addr);
+  const cxclr = () => {mem[CXP0FB] = 0; mem[CXP1FB] = 0;}
 
-     if (naddr === CXP0FB && v === 0) { return }
-     if (naddr === CXP1FB && v === 0) { return }
+  const write = (addr, v) => {
+     const naddr = nrml(addr);
+
+     if ((naddr === CXP0FB)) { return; }
+     if ((naddr === CXP1FB)) { return; }
 
      // STROBES, i.e. won't be actually stored and return early
-     if (naddr === CXCLR) { mem[CXP0FB] = 0; mem[CXP1FB] = 0; return; }
+     if (naddr === CXCLR) { cxclr(); return; }
+
+     if (naddr === INPT4) { return; }
+     if (naddr === INPT5) { return; }
 
      if (naddr === WSYNC) { isWSync = true; return; }
      if (naddr === RESP0) { isRESP0 = true; return; }
@@ -460,9 +478,9 @@ const machine = (input) => {
 
      // POST PROCESSING, i.e. update helper registers and the like
      if (pfs.has(naddr)) {
-       const pf0 = read(PF0) & 0xff;
-       const pf1 = read(PF1) & 0xff;
-       const pf2 = read(PF2) & 0xff;
+       const pf0 = mem[PF0] & 0xff;
+       const pf1 = mem[PF1] & 0xff;
+       const pf2 = mem[PF2] & 0xff;
 
        const pf0rev = rev8(pf0) & 0xf;
        const pf2rev = rev8(pf2) & 0xff;
@@ -473,28 +491,31 @@ const machine = (input) => {
   }
 
   const controller = ({
+	// P0
         mn:    () => mem[SWCHA] &= 0xef,
 	me:    () => mem[SWCHA] &= 0x7f,
 	ms:    () => mem[SWCHA] &= 0xdf,
 	mw:    () => mem[SWCHA] &= 0xbf,
-	fire:  () => mem[INTP4] &= 0x7f,
+	fire:  () => mem[INPT4] &= 0x7f,
 
 	mnc:   () => mem[SWCHA] |= 0x10,
 	mec:   () => mem[SWCHA] |= 0x80,
 	msc:   () => mem[SWCHA] |= 0x20,
 	mwc:   () => mem[SWCHA] |= 0x40,
-	firec: () => mem[INTP4] |= 0x80,
+	firec: () => mem[INPT4] |= 0x80,
 
+	// P1
         mn1:    () => mem[SWCHA] &= 0xfe,
 	me1:    () => mem[SWCHA] &= 0xf7,
 	ms1:    () => mem[SWCHA] &= 0xfd,
 	mw1:    () => mem[SWCHA] &= 0xfb,
-	fire1:  () => mem[INTP4] &= 0xf7,
+	fire1:  () => mem[INPT5] &= 0x7f,
+
 	mnc1:   () => mem[SWCHA] |= 0x01,
 	mec1:   () => mem[SWCHA] |= 0x08,
 	msc1:   () => mem[SWCHA] |= 0x02,
 	mwc1:   () => mem[SWCHA] |= 0x04,
-	firec1: () => mem[INTP4] |= 0x08,
+	firec1: () => mem[INPT5] |= 0x80,
     });
 
   const switches = ({
@@ -513,10 +534,12 @@ const machine = (input) => {
     // SWCHB.6    P0 Difficulty Switch  (0=Beginner (B), 1=Advanced (A))
     // SWCHB.7    P1 Difficulty Switch  (0=Beginner (B), 1=Advanced (A))
 
-    write(SWCHB, 0b00001011);
-    write(SWBCNT, 0x00);
-    write(SWCHA, 0xff);
-    write(SWACNT, 0xff);
+    mem[SWCHB]  = 0b00001011;
+    mem[SWBCNT] = 0x00;
+    mem[SWCHA]  = 0xff;
+    mem[SWACNT] = 0xff;
+    mem[INPT4]  = 0xff;
+    mem[INPT5]  = 0xff;
   }
 
   loadSwitches();
@@ -557,7 +580,7 @@ const machine = (input) => {
     
         if (!propagated) {
           document.dispatchEvent(new Event("break"));
-          updateScreen(read, write, s);
+          updateScreen(mem, s);
           requestAnimationFrame(draw);
           requestAnimationFrame(() => cross(x, y));
           propagated = true;
@@ -591,7 +614,7 @@ const machine = (input) => {
   }
 
   const tia_ = () => {
-      updateScreen(read, write, s);
+      updateScreen(mem, s);
 
       if (!isVSync && !(s === (228 * 262))) { return }
 
@@ -610,6 +633,7 @@ const machine = (input) => {
   let t = 0;
   let action = undefined;
   const process = async () => {
+    // let a = 0;
     while (!isKilled) {
       // TIA every cycle
       tia_();
@@ -622,20 +646,22 @@ const machine = (input) => {
       // EOL -> process current operation immediately
       if ((s % 228) === 0) { 
 	 isWSync = false;
-         mem[CXCLR] = 0; // clear collisions per line
 	 while (!action.next().done) { }
+         // write(CXCLR, 0); // clear collisions per line
+	 // cxclr();
       }
 
-      const diff = new Date() - fs;
-      const delay = Math.max((1_000 / FPS) - diff, 0);
-      if (delay > 0) { await sleep(delay); }
+      if (isVSync || (s === (228 * 262))) { // Delay every frame; move to appropriate place
+	// if (a < 5) { a++; continue; }
 
+        const diff = new Date() - fs;
+        const delay = Math.max((1_000 / FPS) - diff, 0);
+        if (delay > 0) { await sleep(delay); }
+      }
 
       t++;
       s++;
     }
-
-
   }
 
   const info = () => {

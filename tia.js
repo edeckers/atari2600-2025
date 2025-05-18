@@ -35,10 +35,13 @@ function clearScreen() {
  screen = new Uint8ClampedArray(arrayBuffer);
 }
 
-function updateScreen(read, write, tt) {
+function updateScreen(mem, tt) {
  const invb = tt <= vb;
  const inover = tt > (228 * (262 - 30));
  const inhblank = ((tt % 228) <= hb);
+
+ const read = (m) => mem[m];
+ const write = (m, v) => { mem[m] = v; }
  
  const inScreen = !invb && !inover && !inhblank;
 
@@ -93,7 +96,9 @@ function updateScreen(read, write, tt) {
  const pfBit = 1 << pw;
  const pfColor = isScore ? read(isPfLeft ? COLUP0 : COLUP1) : read(COLUPF);
 
- (pfBit & PF) && (v = pfColor);
+ const pf_ = (pfBit & PF) > 0;
+
+ pf_ && (v = pfColor);
 
  const px_= [false, false];
  const mx_= [false, false];
@@ -140,7 +145,7 @@ function updateScreen(read, write, tt) {
  // MISSILES
  const mssl = (mid, resm, colup) => {
    if ((x - resm) > 1) { return; }
-   mx_[mid] = (read(ENAM0) & 0x02) === 0x02;
+   mx_[mid] = (read(ENAM0 + mid) & 0x02) === 0x02;
    if (mx_[mid]) { v = read(colup); }
  }
 
@@ -152,10 +157,44 @@ function updateScreen(read, write, tt) {
  (x >= resblx) && bl(COLUPF);
 
  // fl(px_[0] && bl_) && console.log("IIIII", x, y);
- write(CXP0FB, fl(px_[0] && bl_) << 6);
- // write(CXP1FB, fl(px_[1] && bl_) << 6);
- // write(CXP0FB, 1 << 6);
- // write(CXP1FB, 1 << 6);
+ const px0bl = (px_[0] && bl_) ? 0x40 : 0x00;
+ const px0pf = (px_[0] && pf_) ? 0x80 : 0x00;
+ const cxp0bf_ = px0bl | px0pf;
+
+ cxp0bf_ && write(CXP0FB, cxp0bf_);
+
+ const px1bl = (px_[1] && bl_) ? 0x40 : 0x00;
+ const px1pf = (px_[1] && pf_) ? 0x80 : 0x00;
+ const cxp1bf_ = px1bl | px1pf;
+
+ cxp1bf_ && write(CXP1FB, cxp1bf_);
+
+ const cxblpf_ = ((bl_ && pf_) ? 0x80 : 0x00);
+ cxblpf_ && write(CXBLPF, cxblpf_);
+
+ const px0m0 = ((mx_[0] && px_[0]) ? 0x40 : 0x00);
+ const px1m0 = ((mx_[0] && px_[1]) ? 0x80 : 0x00);
+ const cxm0p_ = px0m0 | px1m0;
+
+ cxm0p_ && write(CXM0P, cxm0p_);
+
+ const px0m1 = ((mx_[1] && px_[0]) ? 0x40 : 0x00);
+ const px1m1 = ((mx_[1] && px_[1]) ? 0x80 : 0x00);
+ const cxm1p_ = px0m1 | px1m1
+
+ cxm1p_ && write(CXM1P, cxm1p_);
+
+ const m0pf = ((mx_[0] && pf_) ? 0x80 : 0x00);
+ const m0bl = ((mx_[0] && bl_) ? 0x40 : 0x00);
+ const cxm0fb_ = m0pf | m0bl;
+
+ cxm0fb_ && write(CXM0FB, cxm0fb_);
+
+ const m1pf = ((mx_[1] && pf_) ? 0x80 : 0x00);
+ const m1bl = ((mx_[1] && bl_) ? 0x40 : 0x00);
+ const cxm1fb_ = m1pf | m1bl;
+
+ cxm1fb_ && write(CXM1FB, cxm1fb_);
 
  // VBLANK
  v = (read(VBLANK) & 0x02) ? 0x00 : v;
@@ -173,22 +212,22 @@ function drawer() {
   const ctx = canvas.getContext("2d");
   
   const draw = () => {
-	  ctx.putImageData(new ImageData(screen, W, H), 0, 0);
-	  document.dispatchEvent(new Event("draw")); }
+    ctx.putImageData(new ImageData(screen, W, H), 0, 0);
+    document.dispatchEvent(new Event("draw")); }
 
   const cross = (x, y) => {
-	  ctx.lineWidth = 1;
-	  ctx.strokeStyle = "#00ff00";
-
-	  ctx.beginPath();
-	  ctx.moveTo(x, 0);
-	  ctx.lineTo(x, H);
-	  ctx.stroke();
-
-          ctx.beginPath();
-	  ctx.moveTo(0, y);
-	  ctx.lineTo(W, y);
-	  ctx.stroke();
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "#00ff00";
+    
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, H);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(W, y);
+    ctx.stroke();
   }
 
 
