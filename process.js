@@ -553,38 +553,6 @@ const machine = (input) => {
 	if (isStep) { while (action && !action.next().done) { } }
     
         if (!propagated) {
-          pstatus = {
-            cc,
-            pc,
-            rx,
-            ry,
-            ra,
-            sp,
-            fc,
-            fz,
-            fv,
-            fn,
-            fd,
-            fi,
-            p0: mem[GRP0],
-            p1: mem[GRP1],
-            p0x: resp0x,
-            p1x: resp1x,
-            pf0: mem[PF0],
-            pf1: mem[PF1],
-            pf2: mem[PF2],
-            pf: PF,
-            ctrlpf: mem[CTRLPF],
-            x,
-            y,
-            intim: mem[INTIM],
-            instat: mem[INSTAT],
-            memory: mem,
-            timerCounter,
-            interval,
-            isVSync,
-            isWSync,
-          }
           document.dispatchEvent(new Event("break"));
           updateScreen(read, s);
           requestAnimationFrame(draw);
@@ -661,7 +629,47 @@ const machine = (input) => {
       t++;
       s++;
     }
+
+
   }
 
-  return [process, controller, switches];
+  const info = () => {
+    const x = (s % 228) - hb;
+    const y = Math.floor((s - vb) / 228);
+
+    return ({
+      cc,
+      pc,
+      rx,
+      ry,
+      ra,
+      sp,
+      fc,
+      fz,
+      fv,
+      fn,
+      fd,
+      fi,
+      p0: mem[GRP0],
+      p1: mem[GRP1],
+      p0x: resp0x,
+      p1x: resp1x,
+      pf0: mem[PF0],
+      pf1: mem[PF1],
+      pf2: mem[PF2],
+      pf: PF,
+      ctrlpf: mem[CTRLPF],
+      x,
+      y,
+      intim: mem[INTIM],
+      instat: mem[INSTAT],
+      memory: mem,
+      timerCounter,
+      interval,
+      isVSync,
+      isWSync,
+    });
+  }
+
+  return [process, controller, switches, info];
 }

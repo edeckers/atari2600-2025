@@ -6,7 +6,7 @@ const logLevel = 1;
 
 const error = (data) => { logLevel <= 3 && console.error(data); }
 const warn = (data) => { logLevel <= 2 && console.warn(data); }
-const info = (data) => { logLevel <= 1 && console.info(data); }
+// const info = (data) => { logLevel <= 1 && console.info(data); }
 const dbg = (data) => { logLevel === 0 && console.debug(data); }
 
  // (v & 0x80) ? ((~v & 0x7f) + 1) & 0xff : v & 0xff;
@@ -139,37 +139,37 @@ isRESBL = false;
 isHMOVE = false;
 isHMCLR = false;
 
-let pstatus = {
-  pc: 0,
-  rx: 0,
-  ry: 0,
-  ra: 0,
-  sp: 0,
-  fc: 0,
-  fz: 0,
-  fv: 0,
-  fn: 0,
-  fd: 0,
-  fi: 0,
-  p0: 0,
-  p1: 0,
-  pf0: 0,
-  pf1: 0,
-  pf2: 0,
-  pf: 0,
-  ctrlpf: 0,
-  p0x: 0,
-  p1x: 0,
-  intim: 0,
-  instat: 0,
-  interval: 1,
-  memory: new Uint8Array(0x10000),
-  timerCounter: 0,
-  isVSync: false,
-  isWSync: false,
-  x: -1,
-  y: -1,
-};
+// let pstatus = {
+//   pc: 0,
+//   rx: 0,
+//   ry: 0,
+//   ra: 0,
+//   sp: 0,
+//   fc: 0,
+//   fz: 0,
+//   fv: 0,
+//   fn: 0,
+//   fd: 0,
+//   fi: 0,
+//   p0: 0,
+//   p1: 0,
+//   pf0: 0,
+//   pf1: 0,
+//   pf2: 0,
+//   pf: 0,
+//   ctrlpf: 0,
+//   p0x: 0,
+//   p1x: 0,
+//   intim: 0,
+//   instat: 0,
+//   interval: 1,
+//   memory: new Uint8Array(0x10000),
+//   timerCounter: 0,
+//   isVSync: false,
+//   isWSync: false,
+//   x: -1,
+//   y: -1,
+// };
 
 let bpConditional = {
   x: { lower: undefined, upper: undefined },

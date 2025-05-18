@@ -33,7 +33,7 @@
 	             document.dispatchEvent(new Event("chrom"));
 		   }
 
-		   const loadDebugInfo = () => {
+		   const loadDebugInfo = (pstatus) => {
 	             document.getElementById("rx").innerHTML = `$${pstatus.rx.toString(16).padStart(2, "0")} (${pstatus.rx.toString(2).padStart(8, "0")})`;
 		     document.getElementById("ry").innerHTML = `$${pstatus.ry.toString(16).padStart(2, "0")} (${pstatus.ry.toString(2).padStart(8, "0")})`;
 		     document.getElementById("ra").innerHTML = `$${pstatus.ra.toString(16).padStart(2, "0")} (${pstatus.ra.toString(2).padStart(8, "0")})`;
@@ -61,7 +61,7 @@
 	             document.getElementById("ctrlpf").innerHTML = `$${pstatus.ctrlpf.toString(16).padStart(2, "0")} (${pstatus.ctrlpf.toString(2).padStart(8, "0")})`;
 		   }
 
-		   const loadMemory = () => {
+		   const loadMemory = (pstatus) => {
 		     const memoryEl = document.getElementById("memory");
 
 		     const columns = []
@@ -84,7 +84,7 @@
 		     }
 		   }
 
-		   const updateHighlights = () => {
+		   const updateHighlights = (pstatus) => {
 		     const lines = document.querySelectorAll("#source div[id^='line-']");
 		     for (const line of lines) {
 		       const address = parseInt(line.id.slice(5), 16);
@@ -144,41 +144,43 @@
                      return loadFromBase64(rom);
 		   }
 
-		   const clearState = () => {
-		     rx = 0;
-		     ry = 0;
-		     ra = 0;
-		     sp = 0xff;
+		   // const clearState = () => {
+		   //   rx = 0;
+		   //   ry = 0;
+		   //   ra = 0;
+		   //   sp = 0xff;
 
-		     fc = 0;
-                     fc = 0;
-                     fn = 0;
-                     fi = 0;
-                     fd = 0;
-                     _fb = 0;
-                     fv = 0;
-                     fz = 0;
+		   //   fc = 0;
+                   //   fc = 0;
+                   //   fn = 0;
+                   //   fi = 0;
+                   //   fd = 0;
+                   //   _fb = 0;
+                   //   fv = 0;
+                   //   fz = 0;
 
-		     pc = 0;
-		   }
+		   //   pc = 0;
+		   // }
 
 		   let controller = undefined;
 		   let switches = undefined;;
+		   let info = undefined;
 		   const startRom = () => {
 		     console.log("startRom", romName);
 		     const romBytes = readRom();
 
                      loadSource(romBytes);
 
-		     clearState();
+		     // clearState();
 
 		     // logSteps = 4_500;
-		     const [process, ctrl, swch] = machine(romBytes);
+		     const [process, ctrl, swch, nfo] = machine(romBytes);
 
 		     process();
 		
 		     controller = ctrl;
 		     switches = swch;
+		     info = nfo;
 		   }
                    
 		   const toggleBreakpoint = (address) => {
@@ -241,20 +243,20 @@
 
 		     document.addEventListener("draw", () => { frc++; });
 		     document.addEventListener("chrom", () => { startRom(); breakpoints.clear(); });
-		     document.addEventListener("break", () => { loadDebugInfo(); loadMemory(); updateHighlights(); });
+		     document.addEventListener("break", () => { const pstatus = info(); loadDebugInfo(pstatus); loadMemory(pstatus); updateHighlights(pstatus); });
 
 		     document.addEventListener("keydown", (event) => {
 		       if (event.key === "w") { controller.mn(); return false; }
-		       if (event.key === "d") { controller.me(); return false; }
+		       if (event.key === "d") { controller.me(); console.log(info().memory[0xb2].toString(16)); return false; }
 		       if (event.key === "s") { controller.ms(); return false; }
-		       if (event.key === "a") { controller.mw(); return false; }
+		       if (event.key === "a") { controller.mw(); console.log(info().memory[0xb2].toString(16)); return false; }
 
 		       if (event.code === "Space") { controller.fire(); return false; }
 
 		       if (event.key === "ArrowUp") { controller.mn1(); return false; }
-		       if (event.key === "ArrowRight") { controller.me1(); console.log("e"); return false; }
+		       if (event.key === "ArrowRight") { controller.me1(); console.log(info().memory[0xb3].toString(16)); return false; }
 		       if (event.key === "ArrowDown") { controller.ms1(); return false; }
-		       if (event.key === "ArrowLeft") { controller.mw1(); console.log("w"); return false; }
+		       if (event.key === "ArrowLeft") { controller.mw1(); console.log(info().memory[0xb3].toString(16)); return false; }
 
 		       if (event.code === "Ctrl") { controller.fire1(); return false; }
 
