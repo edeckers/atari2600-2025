@@ -131,7 +131,8 @@ const ciny  = (f) => (read, write) => { const nn   = read(pc + 1);        const 
 const no    = (f) => (read, write) => () => f(read, write);
 
 const adc = (m) => {
-  const r = fd ? b2d(ra) + fc + b2d(m) : tcd(ra) + fc + tcd(m);
+  // const r = fd ? b2d(ra) + fc + b2d(m) : tcd(ra) + fc + tcd(m);
+  const r = fd ? b2d(ra) + fc + b2d(m) : ra + fc + m;
 
   ra = r & 0xff;
 
@@ -142,9 +143,12 @@ const adc = (m) => {
 }
 
 const sbc = (m) => {
-  const v = fd ? b2d(m) : tcd(m);
+  // const v = fd ? b2d(m) : tcd(m);
 
-  const r0 = fd ? b2d(ra) + fc - 1 - b2d(v) : tcd(ra) + fc - 1 - v;
+  // const r0 = fd ? b2d(ra) + fc - 1 - b2d(v) : tcd(ra) + fc - 1 - v;
+  const v = fd ? b2d(m) : m;
+
+  const r0 = fd ? b2d(ra) + fc - 1 - b2d(v) : ra + fc - 1 - v;
 
   const r = fd ? d2b(r0) : r0;
 
@@ -153,7 +157,7 @@ const sbc = (m) => {
   fnu(ra);
   fzu(ra);
   fv = fl(r !== ra);
-  fc = fl(r >= 0);
+  fc = fl(tcd(r) >= 0);
 }
 
 const and = (m) =>           { ra = ra & m; fnu(ra); fzu(ra); }
