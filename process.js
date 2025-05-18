@@ -132,13 +132,14 @@ const no    = (f) => (read, write) => () => f(read, write);
 
 const adc = (m) => {
   // const r = fd ? b2d(ra) + fc + b2d(m) : tcd(ra) + fc + tcd(m);
+  const ra0 = ra & 0xff;
   const r = fd ? b2d(ra) + fc + b2d(m) : ra + fc + m;
 
   ra = r & 0xff;
 
   fnu(ra);
   fzu(ra);
-  fv = fl(r !== ra);
+  fv = fl((ra0 & 0x80) !== (ra & 0x80));
   fc = fl(fd ? r > 99 : r > 0xff);
 }
 
@@ -146,6 +147,7 @@ const sbc = (m) => {
   // const v = fd ? b2d(m) : tcd(m);
 
   // const r0 = fd ? b2d(ra) + fc - 1 - b2d(v) : tcd(ra) + fc - 1 - v;
+  const ra0 = ra & 0xff;
   const v = fd ? b2d(m) : m;
 
   const r0 = fd ? b2d(ra) + fc - 1 - b2d(v) : ra + fc - 1 - v;
@@ -156,7 +158,7 @@ const sbc = (m) => {
 
   fnu(ra);
   fzu(ra);
-  fv = fl(r !== ra);
+  fv = fl((ra0 & 0x80) !== (ra & 0x80));
   fc = fl(tcd(r) >= 0);
 }
 
@@ -473,11 +475,23 @@ const machine = (input) => {
 	ms:    () => mem[SWCHA] &= 0xdf,
 	mw:    () => mem[SWCHA] &= 0xbf,
 	fire:  () => mem[INTP4] &= 0x7f,
+
 	mnc:   () => mem[SWCHA] |= 0x10,
 	mec:   () => mem[SWCHA] |= 0x80,
 	msc:   () => mem[SWCHA] |= 0x20,
 	mwc:   () => mem[SWCHA] |= 0x40,
 	firec: () => mem[INTP4] |= 0x80,
+
+        mn1:    () => mem[SWCHA] &= 0xfe,
+	me1:    () => mem[SWCHA] &= 0xf7,
+	ms1:    () => mem[SWCHA] &= 0xfd,
+	mw1:    () => mem[SWCHA] &= 0xfb,
+	fire1:  () => mem[INTP4] &= 0xf7,
+	mnc1:   () => mem[SWCHA] |= 0x01,
+	mec1:   () => mem[SWCHA] |= 0x08,
+	msc1:   () => mem[SWCHA] |= 0x02,
+	mwc1:   () => mem[SWCHA] |= 0x04,
+	firec1: () => mem[INTP4] |= 0x08,
     });
 
   const switches = ({
