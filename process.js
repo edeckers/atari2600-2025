@@ -620,7 +620,7 @@ const machine = (input) => {
 
       requestAnimationFrame(draw);
 
-      fs = new Date();
+      // fs = new Date();
       s = 0;
       t = 0;
       clearScreen();
@@ -628,9 +628,9 @@ const machine = (input) => {
       isVSync = false;
   }
 
-  let fs = new Date();
 
   let t = 0;
+  let u = 0;
   let action = undefined;
   const process = async () => {
     // let a = 0;
@@ -647,20 +647,13 @@ const machine = (input) => {
       if ((s % 228) === 0) { 
 	 isWSync = false;
 	 while (!action.next().done) { }
-         // write(CXCLR, 0); // clear collisions per line
-	 // cxclr();
       }
 
-      if (isVSync || (s === (228 * 262))) { // Delay every frame; move to appropriate place
-	// if (a < 5) { a++; continue; }
-
-        const diff = new Date() - fs;
-        const delay = Math.max((1_000 / FPS) - diff, 0);
-        if (delay > 0) { await sleep(delay); }
-      }
+      if (u === BLK) { await sleep(DLY); u = 0; }
 
       t++;
       s++;
+      u++;
     }
   }
 
