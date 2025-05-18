@@ -251,6 +251,13 @@
 
 		       if (event.code === "Space") { controller.fire(); return false; }
 
+		       if (event.key === "ArrowUp") { controller.mn1(); return false; }
+		       if (event.key === "ArrowRight") { controller.me1(); console.log("e"); return false; }
+		       if (event.key === "ArrowDown") { controller.ms1(); return false; }
+		       if (event.key === "ArrowLeft") { controller.mw1(); console.log("w"); return false; }
+
+		       if (event.code === "Ctrl") { controller.fire1(); return false; }
+
 		       if (event.key === "r") { switches.reset(); return false; }
 		       if (event.key === "q") { switches.select(); return false; }
 
@@ -264,6 +271,14 @@
 		       if (event.key === "a") { controller.mwc(); return false; }
 
 		       if (event.code === "Space") { controller.firec(); return false; }
+
+		       if (event.key === "ArrowUp") { controller.mnc1(); return false; }
+		       if (event.key === "ArrowRight") { controller.mec1(); return false; }
+		       if (event.key === "ArrowDown") { controller.msc1(); return false; }
+		       if (event.key === "ArrowLeft") { controller.mwc1(); return false; }
+
+		       if (event.code === "Ctrl") { controller.firec1(); return false; }
+
 
 		       if (event.key === "r") { switches.resetc(); return false; }
 		       if (event.key === "q") { switches.selectc(); return false; }
