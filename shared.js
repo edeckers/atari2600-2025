@@ -71,8 +71,8 @@ let isStep = false;
 let isBreakout = false;
 
 // const FPS = 100;
-const FPS = 50000;
-// const FPS = 60;
+// const FPS = 50000;
+const FPS = 60;
 // const FPS = 30;
 
 // helpers
@@ -117,8 +117,13 @@ HMOVE = 0x2a;
 HMCLR = 0x2b;
 CXCLR = 0x2c;
 
+CXM0P = 0x30;
+CXM1P = 0x31;
 CXP0FB = 0x32;
 CXP1FB = 0x33;
+CXM0FB = 0x34;
+CXM1FB = 0x35;
+CXBLPF = 0x36;
 
 INTIM = 0x284;
 INSTAT = 0x285;
@@ -127,7 +132,8 @@ TIM8T = 0x295;
 TIM64T = 0x296;
 T1024T = 0x297;
 
-INTP4 = 0x3c;
+INPT4 = 0x3c;
+INPT5 = 0x3d;
 
 SWCHA = 0x280;
 SWACNT = 0x281;
