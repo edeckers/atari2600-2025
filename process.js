@@ -197,7 +197,7 @@ function go(b_, cc_, f, ccx) {
     f2();
     yield;
 
-    
+
 
     // PAGE JUMPS, ETC
     // reading param might take an extra cc bc page bounds -> BEFORE?
@@ -383,7 +383,7 @@ const machine = (input) => {
       return addr & 0x1fff;
     } else if ((addr & 0x1080) === 0x00) { // TIA
       const _a = addr & 0x3f;
-	
+
       // FIXME This is probably not correct:
       //       TIA has read and write addresses, some of them
       //       which overlap, such as 0C (REFP1) and 0c (INPT4).
@@ -425,7 +425,13 @@ const machine = (input) => {
   const setGrp0 = (v0) => { mem[GRP0] = (mem[REFP0] & 0x08) ? rev8(v0) : v0; }
   const setGrp1 = (v0) => { mem[GRP1] = (mem[REFP1] & 0x08) ? rev8(v0) : v0; }
 
-  const cxclr = () => {mem[CXP0FB] = 0; mem[CXP1FB] = 0;}
+  const cxclr = () => { mem[CXM0P] = 0;
+                        mem[CXM1P] = 0;
+                        mem[CXP0FB] = 0;
+                        mem[CXP1FB] = 0;
+                        mem[CXM0FB] = 0;
+                        mem[CXM1FB] = 0;
+                        mem[CXBLPF] = 0; }
 
   const write = (addr, v) => {
      const naddr = nrml(addr);
@@ -563,7 +569,7 @@ const machine = (input) => {
    const t0 = mem[INTIM] - 1;
    if (t0 < 0) { mem[INSTAT] |= 0xc0; mem[INTIM] = 0xff; timerCounter = 1; } else { mem[INTIM] = t0; timerCounter = interval; }
   }
- 
+
   const break_ = async () => {
       let propagated = false;
       while (!isBreakout && ((breakpoints.has(pc) && !isContinue) || isStep)) {
@@ -571,13 +577,13 @@ const machine = (input) => {
 	if (isVSync) { isBreakout = false; return; }
         const x = (s % 228) - hb;
         const y = Math.floor((s - vb) / 228);
-    
+
         if (bpConditional.x.lower !== undefined && (x < bpConditional.x.lower)) { break; }
         if (bpConditional.x.upper !== undefined && (x > bpConditional.x.upper)) { break; }
         if (bpConditional.y.lower !== undefined && (y < bpConditional.y.lower)) { break; }
         if (bpConditional.y.upper !== undefined && (y > bpConditional.y.upper)) { break; }
 	if (isStep) { while (action && !action.next().done) { } }
-    
+
         if (!propagated) {
           document.dispatchEvent(new Event("break"));
           updateScreen(mem, s);
@@ -594,15 +600,15 @@ const machine = (input) => {
     tickTimer();
 
     const isWaiting = action && !action.next().done;
-    
+
     if (isWSync || isWaiting) { return; }
 
     isContinue = false;
 
     const o = read(pc)
-    
+
     const p = processors[o];
-    
+
     try {
      action = p(read, write);
     } catch (e) {
@@ -620,7 +626,7 @@ const machine = (input) => {
 
       requestAnimationFrame(draw);
 
-      // fs = new Date();
+      fs = new Date();
       s = 0;
       t = 0;
       clearScreen();
@@ -635,6 +641,8 @@ const machine = (input) => {
   const process = async () => {
     // let a = 0;
     while (!isKilled) {
+      if (u === BLK) { await sleep(DLY);requestAnimationFrame(draw); u = 0; }
+
       // TIA every cycle
       tia_();
 
@@ -644,12 +652,11 @@ const machine = (input) => {
       (t === 0) && ( await break_(), step(), cc = (cc + 1) % 76);
 
       // EOL -> process current operation immediately
-      if ((s % 228) === 0) { 
+      if ((s % 228) === 0) {
 	 isWSync = false;
 	 while (!action.next().done) { }
       }
 
-      if (u === BLK) { await sleep(DLY); u = 0; }
 
       t++;
       s++;
