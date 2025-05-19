@@ -74,17 +74,17 @@ const word = (read, addr) => {
 }
 
 const b2d = (b) => {
- const h = Math.floor(b / 10);
- const l = (b % 10) & 0xf;
+ const h = (b & 0xf0) >> 4;
+ const l = (b & 0x0f);
 
- return (h << 4) + l;
+ return (h * 10) + l;
 }
 
 const d2b = (d) => {
- const h = (d >> 4) & 0xf;
- const l = d & 0xf;
+ const h = (Math.floor(d / 10)) & 0xf;
+ const l = (d % 10) & 0xf;
 
- return h * 10 + l;
+ return ((h << 4) + l) & 0xff;
 }
 
 // https://www.pagetable.com/c64ref/6502/?tab=3#(a8),Y
@@ -131,28 +131,50 @@ const ciny  = (f) => (read, write) => { const nn   = read(pc + 1);        const 
 const no    = (f) => (read, write) => () => f(read, write);
 
 const adc = (m) => {
-  // const r = fd ? b2d(ra) + fc + b2d(m) : tcd(ra) + fc + tcd(m);
   const ra0 = ra & 0xff;
-  const r = fd ? b2d(ra) + fc + b2d(m) : ra + fc + m;
+
+  if (fd) {
+    const r = b2d(ra) + fc + b2d(m);
+
+    ra = d2b(r % 100);
+
+    // In decimal mode, the N, V and Z flags are not consistent with the decimal result.
+    // https://www.pagetable.com/c64ref/6502/?tab=2#ADC
+    fnu(ra);
+    fzu(ra);
+    fv = fl((ra0 & 0x80) !== (ra & 0x80));
+    fc = fl(r > 99);
+    return
+  }
+
+  const r = ra + fc + m;
 
   ra = r & 0xff;
 
   fnu(ra);
   fzu(ra);
   fv = fl((ra0 & 0x80) !== (ra & 0x80));
-  fc = fl(fd ? r > 99 : r > 0xff);
+  fc = fl(r > 0xff);
 }
 
 const sbc = (m) => {
-  // const v = fd ? b2d(m) : tcd(m);
-
-  // const r0 = fd ? b2d(ra) + fc - 1 - b2d(v) : tcd(ra) + fc - 1 - v;
   const ra0 = ra & 0xff;
-  const v = fd ? b2d(m) : m;
 
-  const r0 = fd ? b2d(ra) + fc - 1 - b2d(v) : ra + fc - 1 - v;
+  if (fd) {
+    const r = b2d(ra) + fc - 1 - b2d(m);
 
-  const r = fd ? d2b(r0) : r0;
+    ra = d2b(r % 100);
+
+    // In decimal mode, the N, V and Z flags are not consistent with the decimal result.
+    // https://www.pagetable.com/c64ref/6502/?tab=2#ADC
+    fnu(ra);
+    fzu(ra);
+    fv = fl((ra0 & 0x80) !== (ra & 0x80));
+    fc = fl(r < 0);
+    return;
+  }
+
+  const r = tcd(ra) + fc - 1 - tcd(m);
 
   ra = r & 0xff;
 
@@ -334,7 +356,7 @@ const processors = {
   /* NOP         */ 0xea: go(1, 2, no(()                          => { pc += 1; })),
   /* BEQ dd      */ 0xf0: go(2, 2, cjim((_r, _w, m)               => { cj(fz === 1, m); pc += 2; }), (read) => cjt(read, fz === 1)),
   /* INC nn, X   */ 0xf6: go(2, 5, czpx((_r, write, m, a)         => { inc(write, m, a); pc += 2; })),
-  /* CLD         */ 0xf8: go(1, 2, no(()                          => { fd = 0; pc += 1; })),
+  /* SED         */ 0xf8: go(1, 2, no(()                          => { fd = 1; pc += 1; })),
 }
 
 
