@@ -75,9 +75,9 @@ let isBreakout = false;
 // const FPS = 60;
 // const FPS = 30;
 
-const HZ = (1_000_000 * 3.58) * 2;
+const HZ = (1_000_000 * 3) * 2;
 const FRM = 228 * 262; 
-const BLK = 2 * FRM;
+const BLK = FRM;
 const DLY = (BLK / HZ) * 1_000;
 
 // helpers
