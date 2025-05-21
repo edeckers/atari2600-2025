@@ -158,32 +158,8 @@ const adc = (m) => {
 }
 
 const sbc = (m) => {
-  const ra0 = ra & 0xff;
-
-  if (fd) {
-    const r = b2d(ra) + fc - 1 - b2d(m);
-
-    ra = d2b(r % 100);
-
-    // In decimal mode, the N, V and Z flags are not consistent with the decimal result.
-    // https://www.pagetable.com/c64ref/6502/?tab=2#ADC
-    fnu(ra);
-    fzu(ra);
-    fv = fl((ra0 & 0x80) !== (ra & 0x80));
-    fc = fl(r < 0);
-    return;
-  }
-
-  const r = tcd(ra) + fc - 1 - tcd(m);
-
-  ra = r & 0xff;
-
-  fnu(ra);
-  fzu(ra);
-  fv = fl((ra0 & 0x80) !== (ra & 0x80));
-  fc = fl(tcd(r) >= 0);
+  adc(~m & 0xff);
 }
-
 const and = (m) =>           { ra = ra & m; fnu(ra); fzu(ra); }
 const cmp = (m) =>           { const r = (ra - m) & 0xff; fc = fl(ra >= m); fnu(r); fzu(r); }
 const cpy = (m) =>           { const r = (ry - m) & 0xff; fc = fl(ry >= m); fnu(r); fzu(r); }
