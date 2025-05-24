@@ -70,7 +70,19 @@ function updateScreen(mem, tt) {
 
 	 isHMCLR = false; }
 
+ const resm0top0 = (read(RESMP0) & 0x02) === 0x02;
+ const resm1top1 = (read(RESMP1) & 0x02) === 0x02;
+ if (resm0top0) {
+   resm0x_ = resp0x_ + 3;
+   resm0x = resp0x + 3;;
+ }
+ if (resm1top1) {
+   resm1x_ = resp1x_ + 3;
+   resm1x = resp1x + 3;;
+ }
+
  if (!inScreen) { return; }
+
 
  const y = Math.floor(d / 228);
  const x = (d % 228) - hb;
@@ -104,6 +116,12 @@ function updateScreen(mem, tt) {
  const mx_= [false, false];
  let bl_ = false;
 
+ const grp = (pid) => {
+   const v = read(GRP0 + pid);
+
+   return (mem[REFP0 + pid] & 0x08) ? rev8(v) : v;
+ }
+
  // PLAYERS
  const dp = (pid, rp) => {
    const psz = read(NUSIZ0 + pid) & 7
@@ -117,7 +135,7 @@ function updateScreen(mem, tt) {
      if (q < 0) { return; }
      if (q > 8) { return; }
 
-     const drawMe = ((read(GRP0 + pid) & Math.pow(2, 8 - q)) > 0);
+     const drawMe = ((grp(pid) & Math.pow(2, 8 - q)) > 0);
      if (drawMe) {
        px_[pid] = true;
        v = read(COLUP0 + pid); }
@@ -144,7 +162,7 @@ function updateScreen(mem, tt) {
 
  // MISSILES
  const mssl = (mid, resm, colup) => {
-   if ((x - resm) > 1) { return; }
+   if ((x - resm) > 0) { return; }
    mx_[mid] = (read(ENAM0 + mid) & 0x02) === 0x02;
    if (mx_[mid]) { v = read(colup); }
  }
@@ -152,8 +170,8 @@ function updateScreen(mem, tt) {
 
  (x >= resp0x) && dp(0, resp0x);
  (x >= resp1x) && dp(1, resp1x);
- (x >= resm0x) && mssl(0, resm0x, COLUP0);
- (x >= resm1x) && mssl(1, resm1x, COLUP1);
+ (x >= resm0x) && mssl(0, resm0x, resm0top0 ? v : COLUP0);
+ (x >= resm1x) && mssl(1, resm1x, resm1top1 ? v : COLUP1);
  (x >= resblx) && bl(COLUPF);
 
  // fl(px_[0] && bl_) && console.log("IIIII", x, y);

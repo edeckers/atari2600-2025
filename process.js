@@ -315,6 +315,7 @@ const processors = {
   /* BNE dd      */ 0xd0: go(2, 2, cjim((_r, _w, m)               => { cj(fz === 0, m); pc += 2; }), (read) => cjt(read, fz === 0)),
   /* CMP nn, X   */ 0xd5: go(2, 4, czpx((_r, _w, m)               => { cmp(m); pc += 2; })),
   /* CLD         */ 0xd8: go(1, 2, no(()                          => { fd = 0; pc += 1; })),
+  /* CMP nnnn, Y */ 0xd9: go(3, 4, cabsy((_r, _w, m)              => { cmp(m); pc += 3; }), pb2y),
   /* CPX #nn     */ 0xe0: go(2, 2, cim((_r, _w, m)                => { cpx(m); pc += 2; })),
   /* SBC (nn, X) */ 0xe1: go(2, 6, cinx((_r, _w, m)               => { sbc(m); pc += 2; })),
   /* CPX nn      */ 0xe4: go(2, 3, czp((_r, _w, m)                => { cpx(m); pc += 2; })),
@@ -333,6 +334,7 @@ const processors = {
   /* SBC #nn     */ 0xe9: go(2, 2, cim((_r, _w, m)                => { sbc(m); pc += 2; })),
   /* NOP         */ 0xea: go(1, 2, no(()                          => { pc += 1; })),
   /* BEQ dd      */ 0xf0: go(2, 2, cjim((_r, _w, m)               => { cj(fz === 1, m); pc += 2; }), (read) => cjt(read, fz === 1)),
+  /* SBC nn, X   */ 0xf5: go(2, 4, czpx((_r, _w, m)               => { sbc(m); pc += 2; })),
   /* INC nn, X   */ 0xf6: go(2, 5, czpx((_r, write, m, a)         => { inc(write, m, a); pc += 2; })),
   /* SED         */ 0xf8: go(1, 2, no(()                          => { fd = 1; pc += 1; })),
 }
@@ -421,10 +423,6 @@ const machine = (input) => {
     return mem[naddr];
   }
 
-  // FIXME I Don't think this is correct: REFPx can change after writing GRPx
-  const setGrp0 = (v0) => { mem[GRP0] = (mem[REFP0] & 0x08) ? rev8(v0) : v0; }
-  const setGrp1 = (v0) => { mem[GRP1] = (mem[REFP1] & 0x08) ? rev8(v0) : v0; }
-
   const cxclr = () => { mem[CXM0P] = 0;
                         mem[CXM1P] = 0;
                         mem[CXP0FB] = 0;
@@ -452,6 +450,9 @@ const machine = (input) => {
      if (naddr === RESM1) { isRESM1 = true; return; }
      if (naddr === RESBL) { isRESBL = true; return; }
 
+     if (naddr === RESMP0) { isRESMP0 = true; return; }
+     if (naddr === RESMP1) { isRESMP1 = true; return; }
+
      if (naddr === HMOVE) { isHMOVE = true; return; }
      if (naddr === HMCLR) { isHMCLR = true; return; }
 
@@ -464,18 +465,18 @@ const machine = (input) => {
      if (naddr === VSYNC) { isVSync = (v & 0x02) === 0x02; }
 
      if (naddr === GRP0) {
-       if (mem[VDELP1] & 0x01) { setGrp1(GRP1_DELAYED); }
+       if (mem[VDELP1] & 0x01) { mem[GRP1] = GRP1_DELAYED; }
        if (mem[VDELP0] & 0x01) { GRP0_DELAYED = v; return; }
 
-       setGrp0(v);
+       mem[GRP0] = v;
        return; // Do not store bc delayed write, reversing, etc
      }
 
      if (naddr === GRP1) {
-       if (mem[VDELP0] & 0x01) { setGrp0(GRP0_DELAYED); }
+       if (mem[VDELP0] & 0x01) { mem[GRP0] = GRP0_DELAYED; }
        if (mem[VDELP1] & 0x01) { GRP1_DELAYED = v; return; }
 
-       setGrp1(v);
+       mem[GRP1] = v;
        return; // Do not store bc delayed write, reversing, etc
      }
 
@@ -493,7 +494,6 @@ const machine = (input) => {
 
        PF = ((pf0rev << 16) | (pf1 << 8) | pf2rev) & 0xffffffff;
      }
-
   }
 
   const controller = ({

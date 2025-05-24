@@ -22,12 +22,14 @@
                      "logo": logo,
 		     "combat": combat,
                      "frogger": frogger,
+		     "tennis": tennis,
 		     "tictactoe3d": tictactoe3d,
 		     "pongsports": pongsports,
                    };
 
 		   // let romName = "pongsports";
-		   let romName = "tictactoe3d";
+		   // let romName = "tictactoe3d";
+		   let romName = "tennis";
 		   // let romName = "frogger";
 
 		   const changeRom = (rn) => {
@@ -183,6 +185,9 @@
 		     controller = ctrl;
 		     switches = swch;
 		     info = nfo;
+
+                     // setInterval(() => ctrl.me(), 100);
+                     // setInterval(() => ctrl.mec(), 200);
 		   }
                    
 		   const toggleBreakpoint = (address) => {
@@ -324,7 +329,8 @@
 	          <option value="logo">Logo</option>
 	          <option value="combat">Combat</option>
 	          <option value="frogger">Frogger</option>
-	          <option value="tictactoe3d" selected>Tic Tac Toe 3D</option>
+	          <option value="tictactoe3d">Tic Tac Toe 3D</option>
+	          <option value="tennis" selected>Tennis</option>
 	          <option value="pongsports">Pong Sports</option>
 	        </select>
 	      </div>
