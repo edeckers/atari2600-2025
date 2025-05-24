@@ -118,6 +118,8 @@ HMM1 = 0x23;
 HMBL = 0x24;
 VDELP0 = 0x25;
 VDELP1 = 0x26;
+RESMP0 = 0x28;
+RESMP1 = 0x29;
 HMOVE = 0x2a;
 HMCLR = 0x2b;
 CXCLR = 0x2c;
@@ -150,6 +152,9 @@ isRESP1 = false;
 isRESM0 = false;
 isRESM1 = false;
 isRESBL = false;
+
+isRESMP0 = false;
+isRESMP1 = false;
 
 isHMOVE = false;
 isHMCLR = false;
