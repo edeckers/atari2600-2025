@@ -41,6 +41,7 @@ const operators = {
   "AND #nn": [0x29, 1],
   "AND nn": [0x25, 1],
   "AND nn, X": [0x35, 1],
+  "AND nnnn": [0x2d, 2],
   "AND nnnn, X": [0x3d, 2],
   "AND nnnn, Y": [0x39, 2],
   "ASL A": [0x0a, 0],
@@ -107,6 +108,7 @@ const operators = {
   "LSR nn, X": [0x56, 1],
   "LSR nnnn": [0x4e, 2],
   "NOP": [0xea, 0],
+  "NOP i": [0xc2, 1], // Illegal
   "ORA #nn": [0x09, 1],
   "ORA (nn, X)": [0x01, 1],
   "ORA nn": [0x05, 1],
@@ -128,6 +130,7 @@ const operators = {
   "SBC (nn, X)": [0xe1, 1],
   "SBC nn": [0xe5, 1],
   "SBC nn, X": [0xf5, 1],
+  "SBC nnnn": [0xed, 2],
   "SBC nnnn, Y": [0xf9, 2],
   "SBC nnnn, X": [0xfd, 2],
   "SEC": [0x38, 0],
@@ -232,6 +235,10 @@ const scan = (input) => {
         follow(ix, target);
       } else if (operator === 0x00) { // BRK
 	const target = romread(ix, 0xfffe, 2);
+	if (target === 0) {
+	  console.log("BRK with no target");
+	  return;
+	}
 
 	follow(ix, target);
       } else if (operator === 0x20) {
@@ -304,7 +311,7 @@ const decode = (input) => {
       ]
   }
 
-  let pc = ep(rom)
+  let pc = Math.min(...reachable);
 
   while (pc <= 0xffff) {
     if (!(reachable.has(pc))) {
