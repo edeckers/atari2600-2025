@@ -269,7 +269,7 @@
 		       if (event.key === "ArrowDown") { controller.ms1(); return false; }
 		       if (event.key === "ArrowLeft") { controller.mw1(); return false; }
 
-		       if (event.code === "Ctrl") { controller.fire1(); return false; }
+                       if (event.code.indexOf("Control") > -1) { controller.fire1(); return false; }
 
 		       if (event.key === "r") { switches.reset(); return false; }
 		       if (event.key === "q") { switches.select(); return false; }
@@ -290,8 +290,7 @@
 		       if (event.key === "ArrowDown") { controller.msc1(); return false; }
 		       if (event.key === "ArrowLeft") { controller.mwc1(); return false; }
 
-		       if (event.code === "Ctrl") { controller.firec1(); return false; }
-
+                       if (event.code.indexOf("Control") > -1) { controller.firec1(); return false; }
 
 		       if (event.key === "r") { switches.resetc(); return false; }
 		       if (event.key === "q") { switches.selectc(); return false; }

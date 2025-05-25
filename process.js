@@ -407,9 +407,9 @@ const machine = (input) => {
     const naddr = nrml(addr, true);
 
     if (naddr === INTIM) {
-      // if (mem[INSTAT] & 0x40) { // Restart interval
-      //   mem[INSTAT] &= 0xbf;
-      // }
+      if (mem[INSTAT] & 0x40) { // Restart interval
+        mem[INSTAT] &= 0xbf;
+      }
     } else if (naddr === INSTAT) {
       mem[INSTAT] &= 0xbf; // Reset bit 6 on read instat
     }
@@ -436,11 +436,6 @@ const machine = (input) => {
 
      if ((naddr === CXP0FB)) { return; }
      if ((naddr === CXP1FB)) { return; }
-     if ((naddr === HMM0)) {
-	if (v === 0x60) {
-	  console.log("pc", pc);
-	}
-     }
 
      // STROBES, i.e. won't be actually stored and return early
      if (naddr === CXCLR) { cxclr(); return; }
@@ -659,7 +654,7 @@ const machine = (input) => {
       // EOL -> process current operation immediately
       if ((s % 228) === 0) {
 	 isWSync = false;
-	 while (!action.next().done) { }
+	 // while (!action.next().done) { }
       }
 
 

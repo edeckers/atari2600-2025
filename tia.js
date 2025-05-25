@@ -25,11 +25,7 @@ let resm0x = -1;
 let resm1x = -1;
 let resblx = -1;
 
-let resp0x_ = resp0x;
-let resp1x_ = resp1x;
-let resm0x_ = resm0x;
-let resm1x_ = resm1x;
-let resblx_ = resblx;
+let dirty = false;
 
 const mod = (n, m) => (n % m + m) % m;
 
@@ -49,11 +45,11 @@ function updateScreen(mem, tt, xx) {
 
  const d = tt - vb;
 
- if (isRESP0) { resp0x_ = Math.max((tt % 228) - hb, 3); resp0x = resp0x_; isRESP0 = false; }
- if (isRESP1) { resp1x_ = Math.max((tt % 228) - hb, 3); resp1x = resp1x_; isRESP1 = false; }
- if (isRESM0) { /* console.log(xx.toString(16)); */ resm0x_ = Math.max((tt % 228) - hb, 3); resm0x = resm0x_; isRESM0 = false; }
- if (isRESM1) { resm1x_ = Math.max((tt % 228) - hb, 3); resm1x = resm1x_; isRESM1 = false; }
- if (isRESBL) { resblx_ = Math.max((tt % 228) - hb, 3); resblx = resblx_; isRESBL = false; }
+ if (isRESP0) { resp0x = Math.max((tt % 228) - hb, 3); isRESP0 = false; }
+ if (isRESP1) { resp1x = Math.max((tt % 228) - hb, 3); isRESP1 = false; }
+ if (isRESM0) { /* console.log(xx.toString(16)); */ resm0x = Math.max((tt % 228) - hb, 3);  isRESM0 = false; }
+ if (isRESM1) { resm1x = Math.max((tt % 228) - hb, 3); isRESM1 = false; }
+ if (isRESBL) { resblx = Math.max((tt % 228) - hb, 3); isRESBL = false; }
 
  if (isHMCLR) {
    mem[HMP0] = 0;
@@ -61,49 +57,39 @@ function updateScreen(mem, tt, xx) {
    mem[HMBL] = 0;
    mem[HMM0] = 0;
    mem[HMM1] = 0;
-   
+
    isHMCLR = false; }
+
+ if (isHMOVE) { 
+  const dresp0x = tcd4((read(HMP0) >> 4) & 0xf) * -1;
+  resp0x = mod(resp0x + dresp0x, 160);
+
+  const dresp1x = tcd4((read(HMP1) >> 4) & 0xf) * -1;
+  resp1x = mod(resp1x + dresp1x, 160);
+
+  const dresblx = tcd4((read(HMBL) >> 4) & 0xf) * -1;
+  resblx = mod(resblx + dresblx, 160);
+
+  const dresm0x = tcd4((read(HMM0) >> 4) & 0xf) * -1;
+  resm0x = mod(resm0x + dresm0x, 160);
+
+  const dresm1x = tcd4((read(HMM1) >> 4) & 0xf) * -1;
+  resm1x = mod(resm1x + dresm1x, 160);
+
+  isHMOVE = false; }
+
 
  const resm0top0 = (read(RESMP0) & 0x02) === 0x02;
  const resm1top1 = (read(RESMP1) & 0x02) === 0x02;
+ 
  if (resm0top0) {
-   resm0x_ = resp0x_ + 3;
    resm0x = resp0x + 3;
  }
  if (resm1top1) {
-   resm1x_ = resp1x_ + 3;
    resm1x = resp1x + 3;
  }
 
  if (!inScreen) { return; }
-
- if (isHMOVE) { 
-  const dresp0x = tcd4((read(HMP0) >> 4) & 0xf) * -1;
-  // if (dresp0x !== 0) { resp0x_ = resp0x; }
-  resp0x = mod(resp0x + dresp0x, 160);
-
-  const dresp1x = tcd4((read(HMP1) >> 4) & 0xf) * -1;
-  // if (dresp1x !== 0) { resp1x_ = resp1x; }
-  resp1x = mod(resp1x + dresp1x, 160);
-
-  const dresblx = tcd4((read(HMBL) >> 4) & 0xf) * -1;
-  // if (dresblx !== 0) { resblx_ = resblx; }
-  resblx = mod(resblx + dresblx, 160);
-
-  const dresm0x = tcd4((read(HMM0) >> 4) & 0xf) * -1;
-  // if (dresm0x !== 0) { resm0x_ = resm0x; }
-  // if (dresm0x < -2) {
-  //   const a = read(HMM0);
-  //   console.log("A", a);
-  //   debugger;
-  // }
-  resm0x = mod(resm0x + dresm0x, 160);
-
-  const dresm1x = tcd4((read(HMM1) >> 4) & 0xf) * -1;
-  // if (dresm1x !== 0) { resm1x_ = resm1x; }
-  resm1x = mod(resm1x + dresm1x, 160);
-
-  isHMOVE = false; }
 
  const y = Math.floor(d / 228);
  const x = (d % 228) - hb;
@@ -149,8 +135,6 @@ function updateScreen(mem, tt, xx) {
    const isCopy = ((psz !== 5) && (psz !== 7)); // 5 and 7 are for wides
    const size = (psz === 7) ? 4 : ((psz === 5) ? 2 : 1); // 5 = 2x, 7 = 4x
 
-   // console.log("GRP", grp.toString(2));
-
    const drawCopy = (ofx) => {
      const q = Math.floor((x - (rp + ofx)) / size);
      if (q < 0) { return; }
@@ -190,7 +174,7 @@ function updateScreen(mem, tt, xx) {
 
  (x >= resp0x) && dp(0, resp0x);
  (x >= resp1x) && dp(1, resp1x);
- (x >= resm0x) && mssl(0, resm0x, COLUP0);
+ (x >= resm0x) && mssl(0, resm0x, resm0top0 ? v : COLUP0);
  (x >= resm1x) && mssl(1, resm1x, resm1top1 ? v : COLUP1);
  (x >= resblx) && bl(COLUPF);
 
