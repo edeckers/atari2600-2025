@@ -167,7 +167,9 @@ function updateScreen(mem, tt, xx) {
 
  // MISSILES
  const mssl = (mid, resm, colup) => {
-   if ((x - resm) > 0) { return; }
+   const size = Math.pow(2, (read(NUSIZ0 + mid) & 0x30) >> 4);
+
+   if ((x - resm) > size) { return; }
    mx_[mid] = (read(ENAM0 + mid) & 0x02) === 0x02;
    if (mx_[mid]) { v = read(colup); }
  }
