@@ -1461,6 +1461,79 @@ tennis = "eNiiAKAAlACa6ND6hhmpEYUKIOf1qTaiAiCj9Kl9IKP0pZAYaQggo/SiBa2CAikI0AW9V/
 "YH48ZmZ8YGI8GBgYDAZCfueUlJeUlOeYJSUlJSWkzygIDggoz5eU9JSUlGcAgICAgIAAoqamqrKy" +
 "omOUlJSUlGQIiIiIiIi+AAAAAAAAAK2p6antQQ9QWFxWUxHwuoq6ojqA/umrr63pAADwQIA="
 
+superbreakout = "TG70oAiIEP3qoAQ4sAEY6uqx4ynwjfsAseUpDwX7hQ6x5ykPhfux6SnwBfuFD7HrKfCFDrHtKQ+F" +
+ "D7DSOIgQ0ciEDoQPqRGFCqIfmoUCrQPzRfol+YUIqT+FDoiED4QbhB2FAoUCoAClxCkg6vADTAnz" +
+ "TAnxhQKYOOXHKfw4CJjlzSn8CGho6urq6qbzpTgwLozaAMiYOOXHKfw4CJjlzSn8CJg47dgAKfzw" +
+ "FZg46Zop/NARpduFHGhoyhDQMA8w0+pMsPCpAIUcaGjKEL9MsvTgAmkBoAA4yOkPsPtJ/+kGCoUC" +
+ "CgoKlSCIEP2VEGACBAQIIycnK8Dw8PwMFgwOGO707ujcMCwwRKXiyQHwA0wJ8oUCogCGDpg45ccp" +
+ "/AiYOOXNKfwIhg9oaKITpTgw1YzaAMiFApg45ccp/AiYOOXNKfwIaGilODC9jNoAyMoQ46IAvezx" +
+ "Rfol+YUIhfvqpfuYOOXHKfwImDjlzSn8CLWAjQ4AtZCFD2hotaCFD7WwhQ6lODBijNoAyOql+5g4" +
+ "5ccp/AiYOOXNKfwItYCFDrWQhQ9oaLWghQ+1sIUOyMbvEKyYOOXHKfwImDjlzSn8CKkAhQ6FD+i9" +
+ "7PFF+iX5hQhoaKU4MBSM2gDIqQGF78bwEANMdfBMYfEwnzDtRESGhlRUxMSIAAECBAj/AwEEBAcG" +
+ "AQgwJTA9MHeFAqIAhg6YOOXHKfwImDjlzSn8CIYPaGiiE6U5MNyM2gDIhQKYOOXHKfwImDjlzSn8" +
+ "CGhopTkwxIzaAMjKEOOiAL3s8UX6JfmFCIX76qX7mDjlxyn8CJg45c0p/Ai1gI0OALWQhQ9oaLWg" +
+ "hQ+1sIUOpTkwiozaAMjqpfuYOOXHKfwImDjlzSn8CLWAhQ61kIUPaGi1oIUPtbCFDsjG7xCsmDjl" +
+ "xyn8CJg45c0p/AipAIUOhQ/ovezxRfol+YUIaGilOTASjNoAyKkBhe/G8BADTA30TFjyMO/IyMjI" +
+ "yMjIyMjIyMjIxsTCWFZUUoiGhIJIRkRCUKEAAAAABBgYADAXhQKiAIYOhg+YOOXHKfwIaKU4MOqM" +
+ "2gDIrfzyRfol+YUIpfWF8KXFKQTQBUy98zAt6urqpful++qYOOXHKfwI6uql+7WAhQ61kIUPaOrq" +
+ "taCFD7WwhQ6lODDUjNoAyMbv0NWl+5g45ccp/AipAIUOhQ/oaKU4MCWM2gDIqQSF78byMGiG+6by" +
+ "veHypvtF+iX5hQjG8BBYqQOF8NAEMNwwD5g45ccp/AhopTgw8ozaAMjG7zAFhQJMqfOpBIXvxvIw" +
+ "Kob7pvK94fJF+iX5hQim+8bwEMypA4XwmDjlxyn8CLWAhQ61kIUPaExX80x18OqYOOXHKfwI6rWA" +
+ "hQ61kI0PAGhMV/OFApg45ccp/DgImOXNKfwIaGjq6urqpvOlOTAsjNoAyJg45ccp/DgImOXNKfwI" +
+ "mDjt2AAp/PATmDjpmin80A+l24UcaGjKENAw1epMSPSpAIUcaGjKEMEwTAAQGAQFAQEEeNiiAIqN" +
+ "gQKVAOjQ+8qaqTCFBKkVhQWpBoUVqQWFF6AEhQKIiBD96oUQoAWIEP3q6oUSqfCFIIUChSqFAoUr" +
+ "5sEgyf2iN4UCjpYCogCGG4Ychh2GHoYfyprmwtAC5sOpgq6EAtD7hQKFAIUBhgqFAoUCoCyFAoYA" +
+ "jJYCoACpgKbi4ALwAUotggLQAsjIpcUpENAByITruffwhdulxCkiyQLQDkXEhcQgSf6pBYX8TAX8" +
+ "pcRqkAkKhcQg+PxMBfym/PAQpcIpB9ADxvzKvfXxhRnQBKkAhRkguv2wA0wF/KXEKRjQA0wZ96XQ" +
+ "8PmlMSlA8Aul0DAHpcw45dmwA0zl9YX7ogCl9skwkAHoyQ6QAejJCJAB6OAD0AWlxDAB6KX7pOvZ" +
+ "7/C9+/CwBUn/GGkBhc+9APGF0KX40C+lxCkg0CmlxAkChcQpCPAfpcyFxqXNhcelzoXIpc+FyaXQ" +
+ "hcqpQIXLqQqFGUzD+aX2MALm9qkKhRmpQIXRpc3JoZATyfCwE6kAhdCFz6lQhczG90wZ98kBsBul" +
+ "0En/OGkAhdClxDAGpcUJEIXFqQqFGalAhdGlzMkYsAalzzAKEBPJfpAPpc8wC0n/GGkBhc+pCoUZ" +
+ "pTUQXKXRKUDQWaXRKSDwUKXRKYDQDKXMyW+wEMlgkBKwHaXMyTCQCsk/kBOlzzAPEASlzxAJSf8Y" +
+ "aQGFz9Ahpc3JH7AGpdAwDhAVySWQEckz8A2l0DAJpdBJ/xhpAYXQTBn3pc2m0DADGGkCogA46RTp" +
+ "BZAD6LD5ijBiyQiwXoX7pcw46ReQVUpKSqq9lP8YZfuovaL/Sf85gADwQLmAAD2i/5mAAMb4pvul" +
+ "4KT3GH2w/4jQ+oXghNGl0En/GGkBhdC9sP/JBZAUpfbJMLAOpc8Khc+l0AqF0KkxhfalytADTJD5" +
+ "pTMpQPALpcowB6XGOOXZsANM2PeF+6IApfbJMJAB6MkOkAHoyQiQAejgA9AFpcQwAeil+6Tr2e/w" +
+ "vfvwsAVJ/xhpAYXJvQDxhcqlxCkg0Aql+NAGpcQJAoXEpfbQLKXEKRDwJqlFhc2lwil/GGkXyX6Q" +
+ "Auk0hcypEIXQqRCFz6XCarAEqfCFz+b3pfYwAub2pcQpIPAaxswQCqXFCQGFxaXNhcyl9ikH0Aal" +
+ "zfACxs2pCoUZqUCFy6XHyaGQE8nwsBOpAIXKhcmpUIXGxvdMkPnJAbArpcoQJ0n/OGkAhcqlxDAG" +
+ "pcUJEIXFokClxCkg8AilxSkE8AKiAIbLqQqFGaXGyRiwBqXJMAoQE8l+kA+lyTALSf84aQCFyakK" +
+ "hRmlNhAMpcQpINAJpcspQNAGTJD5TNb4pcemyjADGGkCogA46RTpBZAD6LD5ijBmyQiwYoX7pcY4" +
+ "6ReQWUpKSqq9lP8YZfuovaL/Sf85gADwRLmAAD2i/5mAAMb4pvul4KT3GH2w/4jQ+oXghMulykn/" +
+ "GGkBhcqlxDAbvbD/yQWQFKX2yTCwDqXJCoXJpcoKhcqpMYX2TJD5pfbwTaXHpsowAxhpAqIAOOkF" +
+ "kAPosPmKySCwNYX7heOlxSkEhefwB6X7GGkEheOpAzjl9YXpGGXjheWqvb//MBCm5/ADOOXpheOl" +
+ "xjjpF7ADTJD5yWiw+UpKSqq9lP8YZeOovaL/Sf85gADwTaXlSkpKxcvwRIXLuYAAPaL/mYAApftK" +
+ "Sqql4Bh9uP+F4KXKSf8YaQGFyr24/8kFkByl9skwsBalyQqFyaXKCoXKqTGF9qkAhcypAoXNpcQp" +
+ "CPAtpdEpIPAnpc3JM7AEyRawHaXFKYLQBub3hdHQEaXPSf8YaQGFz6XQSf9pAYXQogCgALXJ0ANM" +
+ "aPoQAqD/hOWF57XISkpKSoXjtcYKCgoKBeOF47XGSkpKSoX7peMYZeeF46X7ZeUKCgoKlcal40pK" +
+ "SkoVxpXGtcgpD5XIpeMKCgoKFciVyKAAtcoQAqD/hOWF57XIKQ+F47XHCgoKCgXjheO1x0pKSkqF" +
+ "+6XjGGXnheOl+2XlCgoKCpXHpeNKSkpKFceVx7XIKfCVyKXjKQ8VyJXIihhpBqrJErADTMX5pcQp" +
+ "CPANogW1zLTSldKUzMoQ9aXEKSDwWKXFKQHwUqIARcWFxaAFhPwpBNAS5vWl9ckE0DyG9aXFCQSF" +
+ "xdAT5vWl9ckE0AuG9aXFKfuFxUzl+qINtYCVgbWQlZG1oJWhtbCVscoQ7ak/hYCFsIaghpClxSkC" +
+ "8E2m4q2AAj3i/9BDpcUpfYXFqUWFx6XCKX8YaRfJfpAC6TSFxqkQhcqpEIXJpcJqsASp8IXJogCG" +
+ "+ob2yob5pcQpIPAIqQiFzKkGhc3m96Xg8DOl9MkasC2lwikHZf2qoAGl4MkgkAKgBIT7OOX7heCl" +
+ "3fgYZfuF3aXcaQCF3NiGGKkehfSm9PAIyr1s/4UahvSl9/ADTMn7pcUpwtD3peDQ86X00O+lxCkE" +
+ "8B2l4ckF0Aal4skC8BelxAkBhcSl4kkDheJqsA6QDqXhyQXQBqlAhcPQCubhpcUJAinvhcWFLKX3" +
+ "8ASFw9AypcUwEKXDyUCQKKXFCYCFxan3hfmlwtAa5vqlxCkE8BKlxSlC0Ayl4kkDheKlxAkBhcSi" +
+ "A70D80X6JfmVBsoQ9KTrpdrJiJACqYjZ8/CwA7nz8IXaqZ845dqF2aIBINHwpcyiAyDR8KXG6CDR" +
+ "8IUChSqFAoUrpcQpIPAOqRuF8qkEhe+pEoXz0AypAYXvqQeF8KlihfOpACTFUCSlwCkPhfsKCmX7" +
+ "heOpMoXlheeF6YXtogqlxCkE0AKiBYbr0Eyl3CnwSkqF+0pKGGX7heOl3CkPhfsKCmX7heWl3Snw" +
+ "SkqF+0pKGGX7aTeF56XdKQ+F+woKZftpN4XppeEKCmXhheul4goKZeJpN4Xtqf+F5IXmheiF6oXs" +
+ "he6uhALQ+4UChgFMA/CiB7WAtIiViJSAtZC0mJWYlJC1oLSolaiUoLWwtLiVuJSwyhDdpdyk3oXe" +
+ "hNyl3aTfhd+E3aX4pPWF9YT4pcQpCPB+qQCF5aXRKSDwDaKApdEpgNACokCKheWl1ykg8A+igKXX" +
+ "KYDQAqJAigXlheWpAIXPhdCF1YXWhdGF16lQhcyF0qmihc2F06XxqimA8BSpOYXMqSKFzakIhc+p" +
+ "DYXQqaCF0YopQPAUqWCF0qkihdOpCIXVqQ2F1qkghdel5YXxYK2CAmqQPWqQBqIBhsE4YMbB0Pqp" +
+ "LYXB+KXAGGkByRDQAqkBhcDYqr2K/4XEKRjQCKnwhdipRNAGqYOF2KlMhcVMLf6iAYbBpcUpDgkG" +
+ "hcXKqZmF3KmXhd2G3obfhhqpA4XghvelwikHqr378YUWvWb0hf2iEaAFuf3ylcbKMAWIEPUw8Yb5" +
+ "hPrIhMOE4YTipcQpINB9qWiF+KIHpcUpAvAGog+paIX1hvup/5WAlZCVoMoQ96kPpvuVsMoQ+6XE" +
+ "KQjwTqnwhZKFk4WihaOgYIT4qTmFzKlphdKpIoXNhdOpCIXPhdWpDYXQhdapoIXRqSCF16XFKULQ" +
+ "BqkBhfcYYKlghfUKhfGp8IWahZuFqoWrGGCpAKI/lYDKEPup/6IHlYCVkJWgyhD3qQ+iB5WwyhD7" +
+ "qQOF9aXFCQSFxRhgAAAAAAAAAAAAd1VVVXd3IiJmIndEdxF3dxEzEXcREXdVVXcRd0R3d1V3REQR" +
+ "ERERd3dVd1V3ERF3VXcAAAAAAO6qqqru7kREZkTuIu6I7u6IzIjuiIjuqqruiO4i7u6q7iIiiIiI" +
+ "iO7uqu6q7oiI7qruAAAAAAABAQEBAQEBAQECAgICAgIDAwMDAwQEBQUGCAoIQEBEEBQIDCDAxAAA" +
+ "ABAQEBAgICAgMDAwz/P8/PPPPz/P8/z8888HBwUFAwMBAQcFAwEBAQH/////AAECA/////8EBQYH" +
+ "/////wgJCgv/////DA0OD/////+AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAbvQAAA=="
+
 const operators = {
   "ADC #nn": [0x69, 1],
   "ADC nn": [0x65, 1],
@@ -1470,6 +1543,7 @@ const operators = {
   "AND #nn": [0x29, 1],
   "AND nn": [0x25, 1],
   "AND nn, X": [0x35, 1],
+  "AND nnnn": [0x2d, 2],
   "AND nnnn, X": [0x3d, 2],
   "AND nnnn, Y": [0x39, 2],
   "ASL A": [0x0a, 0],
@@ -1536,6 +1610,7 @@ const operators = {
   "LSR nn, X": [0x56, 1],
   "LSR nnnn": [0x4e, 2],
   "NOP": [0xea, 0],
+  "NOP i": [0xc2, 1], // Illegal
   "ORA #nn": [0x09, 1],
   "ORA (nn, X)": [0x01, 1],
   "ORA nn": [0x05, 1],
@@ -1557,6 +1632,7 @@ const operators = {
   "SBC (nn, X)": [0xe1, 1],
   "SBC nn": [0xe5, 1],
   "SBC nn, X": [0xf5, 1],
+  "SBC nnnn": [0xed, 2],
   "SBC nnnn, Y": [0xf9, 2],
   "SBC nnnn, X": [0xfd, 2],
   "SEC": [0x38, 0],
@@ -1661,6 +1737,10 @@ const scan = (input) => {
         follow(ix, target);
       } else if (operator === 0x00) { // BRK
 	const target = romread(ix, 0xfffe, 2);
+	if (target === 0) {
+	  console.log("BRK with no target");
+	  return;
+	}
 
 	follow(ix, target);
       } else if (operator === 0x20) {
@@ -1733,7 +1813,7 @@ const decode = (input) => {
       ]
   }
 
-  let pc = ep(rom)
+  let pc = Math.min(...reachable);
 
   while (pc <= 0xffff) {
     if (!(reachable.has(pc))) {
