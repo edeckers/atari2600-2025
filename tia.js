@@ -31,11 +31,13 @@ let resm0x_ = resm0x;
 let resm1x_ = resm1x;
 let resblx_ = resblx;
 
+const mod = (n, m) => (n % m + m) % m;
+
 function clearScreen() {
  screen = new Uint8ClampedArray(arrayBuffer);
 }
 
-function updateScreen(mem, tt) {
+function updateScreen(mem, tt, xx) {
  const invb = tt <= vb;
  const inover = tt > (228 * (262 - 30));
  const inhblank = ((tt % 228) <= hb);
@@ -49,40 +51,59 @@ function updateScreen(mem, tt) {
 
  if (isRESP0) { resp0x_ = Math.max((tt % 228) - hb, 3); resp0x = resp0x_; isRESP0 = false; }
  if (isRESP1) { resp1x_ = Math.max((tt % 228) - hb, 3); resp1x = resp1x_; isRESP1 = false; }
- if (isRESM0) { resm0x_ = Math.max((tt % 228) - hb, 3); resm0x = resm0x_; isRESM0 = false; }
+ if (isRESM0) { /* console.log(xx.toString(16)); */ resm0x_ = Math.max((tt % 228) - hb, 3); resm0x = resm0x_; isRESM0 = false; }
  if (isRESM1) { resm1x_ = Math.max((tt % 228) - hb, 3); resm1x = resm1x_; isRESM1 = false; }
  if (isRESBL) { resblx_ = Math.max((tt % 228) - hb, 3); resblx = resblx_; isRESBL = false; }
- if (isHMOVE) { 
-	 resp0x = (resp0x + (tcd4((read(HMP0) >> 4) & 0xf) * -1)) % 160;
-	 resp1x = (resp1x + (tcd4((read(HMP1) >> 4) & 0xf) * -1)) % 160;
-	 resm0x = (resm0x + (tcd4((read(HMM0) >> 4) & 0xf) * -1)) % 160;
-	 resm1x = (resm1x + (tcd4((read(HMM1) >> 4) & 0xf) * -1)) % 160;
-	 resblx = (resblx + (tcd4((read(HMBL) >> 4) & 0xf) * -1)) % 160;
-
-	 isHMOVE = false; }
 
  if (isHMCLR) {
-	 resp0x = resp0x_;
-	 resp1x = resp1x_;
-	 resm0x = resm0x_;
-	 resm1x = resm1x_;
-	 resblx = resblx_;
-
-	 isHMCLR = false; }
+   mem[HMP0] = 0;
+   mem[HMP1] = 0;
+   mem[HMBL] = 0;
+   mem[HMM0] = 0;
+   mem[HMM1] = 0;
+   
+   isHMCLR = false; }
 
  const resm0top0 = (read(RESMP0) & 0x02) === 0x02;
  const resm1top1 = (read(RESMP1) & 0x02) === 0x02;
  if (resm0top0) {
    resm0x_ = resp0x_ + 3;
-   resm0x = resp0x + 3;;
+   resm0x = resp0x + 3;
  }
  if (resm1top1) {
    resm1x_ = resp1x_ + 3;
-   resm1x = resp1x + 3;;
+   resm1x = resp1x + 3;
  }
 
  if (!inScreen) { return; }
 
+ if (isHMOVE) { 
+  const dresp0x = tcd4((read(HMP0) >> 4) & 0xf) * -1;
+  // if (dresp0x !== 0) { resp0x_ = resp0x; }
+  resp0x = mod(resp0x + dresp0x, 160);
+
+  const dresp1x = tcd4((read(HMP1) >> 4) & 0xf) * -1;
+  // if (dresp1x !== 0) { resp1x_ = resp1x; }
+  resp1x = mod(resp1x + dresp1x, 160);
+
+  const dresblx = tcd4((read(HMBL) >> 4) & 0xf) * -1;
+  // if (dresblx !== 0) { resblx_ = resblx; }
+  resblx = mod(resblx + dresblx, 160);
+
+  const dresm0x = tcd4((read(HMM0) >> 4) & 0xf) * -1;
+  // if (dresm0x !== 0) { resm0x_ = resm0x; }
+  // if (dresm0x < -2) {
+  //   const a = read(HMM0);
+  //   console.log("A", a);
+  //   debugger;
+  // }
+  resm0x = mod(resm0x + dresm0x, 160);
+
+  const dresm1x = tcd4((read(HMM1) >> 4) & 0xf) * -1;
+  // if (dresm1x !== 0) { resm1x_ = resm1x; }
+  resm1x = mod(resm1x + dresm1x, 160);
+
+  isHMOVE = false; }
 
  const y = Math.floor(d / 228);
  const x = (d % 228) - hb;
@@ -154,7 +175,7 @@ function updateScreen(mem, tt) {
 
  // BALL
  const bl = (colup) => {
-   if ((x - resblx) > 1) { return; }
+   if ((x - resblx) > 0) { return; }
 
    bl_ = (read(ENABL) & 0x02) === 0x02;
    if (bl_) { v = read(colup); }
@@ -167,10 +188,9 @@ function updateScreen(mem, tt) {
    if (mx_[mid]) { v = read(colup); }
  }
 
-
  (x >= resp0x) && dp(0, resp0x);
  (x >= resp1x) && dp(1, resp1x);
- (x >= resm0x) && mssl(0, resm0x, resm0top0 ? v : COLUP0);
+ (x >= resm0x) && mssl(0, resm0x, COLUP0);
  (x >= resm1x) && mssl(1, resm1x, resm1top1 ? v : COLUP1);
  (x >= resblx) && bl(COLUPF);
 
