@@ -176,6 +176,7 @@ const ldy = (m)           => { ry = m; fnu(ry); fzu(ry); }
 const lsr = (m, write)    => { const r = (m >> 1) & 0xff; write(r); fc = m & 0x01; fnu(r); fzu(r); }
 const ora = (m)           => { ra |= m; fnu(ra); fzu(ra); }
 const rol = (m, write)    => { const r = ((m << 1) | fc) & 0xff; write(r); fc = ((m & 0x80) >> 7); fnu(r); fzu(r); }
+const ror = (m, write)    => { const r = ((m >> 1) | (fc << 7)) & 0xff; fc = m & 0x01; write(r); fnu(r); fzu(r); }
 const sta = (write, a)    => { write(a, ra & 0xff); }
 const stx = (write, a)    => { write(a, rx & 0xff); }
 const sty = (write, a)    => { write(a, ry & 0xff); }
@@ -233,6 +234,7 @@ const processors = {
   /* ORA nnnn    */ 0x0d: go(3, 4, cabs((_r, _w, m)               => { ora(m); pc += 3; })),
   /* BPL dd      */ 0x10: go(2, 2, cjim((_r, _w, m, _a)           => { cj(fn === 0, m); pc += 2; }), (read) => cjt(read, fn === 0)),
   /* ORA nn, X   */ 0x15: go(2, 4, czpx((_r, _w, m)               => { ora(m); pc += 2; })),
+  /* ASL nn, X   */ 0x16: go(2, 6, czpx((_r, write, m, a)         => { asl(m, (v) => write(a, v)); pc += 2; })),
   /* CLC         */ 0x18: go(1, 2, no(()                          => { fc = 0; pc += 1; })),
   /* ORA nnnn, X */ 0x1d: go(3, 4, cabsx((_r, _w, m)              => { ora(m); pc += 3; }), pb2x),
   /* ORA nnnn, Y */ 0x19: go(3, 4, cabsy((_r, _w, m)              => { ora(m); pc += 3; }), pb2y),
@@ -246,7 +248,7 @@ const processors = {
   /* AND nnnn    */ 0x2d: go(3, 4, cabs((_r, _w, m)               => { and(m); pc += 3; })),
   /* BMI dd      */ 0x30: go(2, 2, cjim((_r, _w, m)               => { cj(fn === 1, m); pc += 2; }), (read) => cjt(read, fn === 1)),
   /* AND nn, X   */ 0x35: go(2, 4, czpx((_r, _w, m)               => { and(m); pc += 2; })),
-  /* SEC         */ 0x38: go(1, 2, no(()                          => { fc = 1; pc++; })),
+  /* SEC         */ 0x38: go(1, 2, no(()                          => { fc = 1; pc += 1; })),
   /* AND nnnn, Y */ 0x39: go(3, 4, cabsy((_r, _w, m)              => { and(m); pc += 3; }), pb2y),
   /* AND nnnn, X */ 0x3d: go(3, 4, cabsx((_r, _w, m)              => { and(m); pc += 3; }), pb2x),
   /* RTI         */ 0x40: go(1, 6, no((read)                      => {
@@ -266,6 +268,7 @@ const processors = {
   /* PHA         */ 0x48: go(1, 3, no((_r, write)                 => { pshsp(write, ra); pc += 1; })),
   /* EOR #nn     */ 0x49: go(2, 2, cim((_r, _w, m )               => { eor(m); pc += 2; })),
   /* LSR A       */ 0x4a: go(1, 2, no(()                          => { lsr(ra, writea); pc += 1; })),
+  /* ALR #nn     */ 0x4b: go(2, 2, cim((_r, write, m, a)          => { and(m); lsr(m, (v) => write(a, v)); pc += 2; })), // Illegal
   /* JMP nnnn    */ 0x4c: go(3, 3, cabs((_r, _w, _m, a)           => { pc = a; })),
   /* JMP (nnnn)  */ 0x6c: go(3, 5, cin((_r, _w, m)                => { pc = m; })),
   /* LSR nnnn    */ 0x4e: go(3, 6, cabs((_r, write, m, a)         => { lsr(m, (v) => write(a, v)); pc += 3; })),
@@ -274,11 +277,12 @@ const processors = {
   /* ADC nn      */ 0x65: go(2, 3, czp((_r, _w, m)                => { adc(m); pc += 2; })),
   /* PLA         */ 0x68: go(1, 4, no((read)                      => { ra = popsp(read); fnu(ra); fzu(ra); pc += 1; })),
   /* ADC #nn     */ 0x69: go(2, 2, cim((_r, _w, m)                => { adc(m); pc += 2; })),
-  /* ROR A       */ 0x6a: go(1, 2, no(()                          => { const ra0 = ((ra >> 1) | (fc << 7)) & 0xff; fc = ra & 0x01; ra = ra0; fnu(ra); fzu(ra); pc += 1; })),
+  /* ROR A       */ 0x6a: go(1, 2, no(()                          => { ror(ra, writea); pc += 1; })),
   /* BVS dd      */ 0x70: go(2, 2, cjim((_r, _w, m)               => { cj(fv === 1, m); pc += 2; }), (read) => cjt(read, fv === 1)),
   /* ADC nn, X   */ 0x75: go(2, 4, czpx((_r, _w, m)               => { adc(m); pc += 2; })),
+  /* ROR nn, X   */ 0x76: go(2, 6, czpx((_r, write, m, a)         => { ror(m, (v) => write(a, v)); pc += 2; })),
   /* ADC nnnn, Y */ 0x79: go(3, 4, cabsy((_r, _w, m)              => { adc(m); pc += 3; }), pb2y),
-  /* SEI         */ 0x78: go(1, 2, no(()                          => { fi = 1; pc++; })),
+  /* SEI         */ 0x78: go(1, 2, no(()                          => { fi = 1; pc += 1; })),
   /* ADC nnnn, X */ 0x7d: go(3, 4, cabsx((_r, _w, m)              => { adc(m); pc += 3; }), pb2x),
   /* STY nn      */ 0x84: go(2, 3, czp((_r, write, _m, a)         => { sty(write, a); pc += 2; })),
   /* STA nn      */ 0x85: go(2, 3, czp((_r, write, _m, a)         => { sta(write, a); pc += 2; })),
