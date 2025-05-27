@@ -33,7 +33,8 @@ function clearScreen() {
  screen = new Uint8ClampedArray(arrayBuffer);
 }
 
-function updateScreen(mem, tt, xx) {
+let hmoveWait = false;
+function updateScreen(mem, tt) {
  const invb = tt <= vb;
  const inover = tt > (228 * (262 - 30));
  const inhblank = ((tt % 228) <= hb);
@@ -41,15 +42,20 @@ function updateScreen(mem, tt, xx) {
  const read = (m) => mem[m];
  const write = (m, v) => { mem[m] = v; }
  
+ const enam = (pid) => (read(ENAM0 + pid) & 0x02) === 0x02;
+ const resmp = (pid) => (read(RESMP0 + pid) & 0x02) === 0x02;
+
  const inScreen = !invb && !inover && !inhblank;
 
  const d = tt - vb;
 
- if (isRESP0) { resp0x = Math.max((tt % 228) - hb, 3); isRESP0 = false; }
- if (isRESP1) { resp1x = Math.max((tt % 228) - hb, 3); isRESP1 = false; }
- if (isRESM0) { /* console.log(xx.toString(16)); */ resm0x = Math.max((tt % 228) - hb, 3);  isRESM0 = false; }
- if (isRESM1) { resm1x = Math.max((tt % 228) - hb, 3); isRESM1 = false; }
- if (isRESBL) { resblx = Math.max((tt % 228) - hb, 3); isRESBL = false; }
+ // if ((tt % 228) === 0) { hmoveWait = 0; }
+
+ if (isRESP0) { resp0x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb, 3); isRESP0 = false; }
+ if (isRESP1) { resp1x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb, 3); isRESP1 = false; }
+ if (isRESM0) { resm0x = Math.max(((tt + (hmoveWait ? 3 : 0)) % 228) - hb, 3); isRESM0 = false; }
+ if (isRESM1) { resm1x = Math.max(((tt + (hmoveWait ? 3 : 0)) % 228) - hb, 3); isRESM1 = false; }
+ if (isRESBL) { resblx = Math.max(((tt + (hmoveWait ? 3 : 0)) % 228) - hb, 3); isRESBL = false; }
 
  if (isHMCLR) {
    mem[HMP0] = 0;
@@ -76,18 +82,15 @@ function updateScreen(mem, tt, xx) {
   const dresm1x = tcd4((read(HMM1) >> 4) & 0xf) * -1;
   resm1x = mod(resm1x + dresm1x, 160);
 
+  hmoveWait = true;
   isHMOVE = false; }
 
 
- const resm0top0 = (read(RESMP0) & 0x02) === 0x02;
- const resm1top1 = (read(RESMP1) & 0x02) === 0x02;
+ const resm0top0 = resmp(0);
+ const resm1top1 = resmp(1);
  
- if (resm0top0) {
-   resm0x = resp0x + 3;
- }
- if (resm1top1) {
-   resm1x = resp1x + 3;
- }
+ if (resm0top0) { resm0x = resp0x + 3; }
+ if (resm1top1) { resm1x = resp1x + 3; }
 
  if (!inScreen) { return; }
 
@@ -157,6 +160,7 @@ function updateScreen(mem, tt, xx) {
    (psz === 6) && (drawCopy(16), drawCopy(32), drawCopy(56));
  }
 
+
  // BALL
  const bl = (colup) => {
    if ((x - resblx) > 0) { return; }
@@ -166,29 +170,30 @@ function updateScreen(mem, tt, xx) {
  }
 
  // MISSILES
- const mssl = (mid, resm, colup) => {
+ const mssl = (mid, resm) => {
    const size = Math.pow(2, (read(NUSIZ0 + mid) & 0x30) >> 4);
 
    if ((x - resm) > size) { return; }
-   mx_[mid] = (read(ENAM0 + mid) & 0x02) === 0x02;
-   if (mx_[mid]) { v = read(colup); }
+
+   mx_[mid] = enam(mid) && !resmp(mid);
+   if (mx_[mid]) { v = read(COLUP0 + mid); }
  }
 
  (x >= resp0x) && dp(0, resp0x);
  (x >= resp1x) && dp(1, resp1x);
- (x >= resm0x) && mssl(0, resm0x, resm0top0 ? v : COLUP0);
- (x >= resm1x) && mssl(1, resm1x, resm1top1 ? v : COLUP1);
+ (x >= resm0x) && mssl(0, resm0x);
+ (x >= resm1x) && mssl(1, resm1x);
  (x >= resblx) && bl(COLUPF);
 
  // fl(px_[0] && bl_) && console.log("IIIII", x, y);
- const px0bl = (px_[0] && bl_) ? 0x40 : 0x00;
  const px0pf = (px_[0] && pf_) ? 0x80 : 0x00;
+ const px0bl = (px_[0] && bl_) ? 0x40 : 0x00;
  const cxp0bf_ = px0bl | px0pf;
 
  cxp0bf_ && write(CXP0FB, cxp0bf_);
 
- const px1bl = (px_[1] && bl_) ? 0x40 : 0x00;
  const px1pf = (px_[1] && pf_) ? 0x80 : 0x00;
+ const px1bl = (px_[1] && bl_) ? 0x40 : 0x00;
  const cxp1bf_ = px1bl | px1pf;
 
  cxp1bf_ && write(CXP1FB, cxp1bf_);
@@ -196,15 +201,15 @@ function updateScreen(mem, tt, xx) {
  const cxblpf_ = ((bl_ && pf_) ? 0x80 : 0x00);
  cxblpf_ && write(CXBLPF, cxblpf_);
 
- const px0m0 = ((mx_[0] && px_[0]) ? 0x40 : 0x00);
  const px1m0 = ((mx_[0] && px_[1]) ? 0x80 : 0x00);
+ const px0m0 = ((mx_[0] && px_[0]) ? 0x40 : 0x00);
  const cxm0p_ = px0m0 | px1m0;
 
  cxm0p_ && write(CXM0P, cxm0p_);
 
- const px0m1 = ((mx_[1] && px_[0]) ? 0x40 : 0x00);
- const px1m1 = ((mx_[1] && px_[1]) ? 0x80 : 0x00);
- const cxm1p_ = px0m1 | px1m1
+ const px0m1 = ((mx_[1] && px_[0]) ? 0x80 : 0x00);
+ const px1m1 = ((mx_[1] && px_[1]) ? 0x40 : 0x00);
+ const cxm1p_ = px0m1 | px1m1;
 
  cxm1p_ && write(CXM1P, cxm1p_);
 

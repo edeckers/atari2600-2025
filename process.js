@@ -64,7 +64,7 @@ const restatus = (st) => {
  }
 
 const pshsp = (write, value) => { write((sp & 0xff), value & 0xff); sp = (sp - 1) & 0xff; }
-const popsp = (read) => { sp = (sp + 1) & 0xff; return read(sp & 0xff) & 0xff; }
+const popsp = (read) => { sp = (sp + 1) & 0xff; return read(sp & 0xff, true) & 0xff; }
 
 const word = (read, addr) => {
   const l = read(addr) & 0xff;
@@ -467,18 +467,19 @@ const machine = (input) => {
      if (naddr === RESM1) { isRESM1 = true; return; }
      if (naddr === RESBL) { isRESBL = true; return; }
 
-     if (naddr === RESMP0) { isRESMP0 = true; return; }
-     if (naddr === RESMP1) { isRESMP1 = true; return; }
-
      if (naddr === HMOVE) { isHMOVE = true; return; }
      if (naddr === HMCLR) { isHMCLR = true; return; }
 
+
+     // SPECIAL CASES with extra actions
      if (naddr === TIM1T)  { interval = 1;     timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
      if (naddr === TIM8T)  { interval = 8;     timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
      if (naddr === TIM64T) { interval = 64;    timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
      if (naddr === T1024T) { interval = 1_024; timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
 
-     // SPECIAL CASES with extra actions
+     if (naddr === SWCHA) { const v0 = v & mem[SWACNT]; mem[SWCHA] |= v0; }
+     if (naddr === SWCHB) { const v0 = v & mem[SWBCNT]; mem[SWCHB] |= v0; }
+
      if (naddr === VSYNC) { isVSync = (v & 0x02) === 0x02; }
 
      if (naddr === GRP0) {
