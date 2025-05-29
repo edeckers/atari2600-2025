@@ -653,7 +653,7 @@ const machine = (input) => {
   const process = async () => {
     // let a = 0;
     while (!isKilled) {
-      if (u === BLK) { await sleep(DLY);requestAnimationFrame(draw); u = 0; }
+      if (u === BLK) { await sleep(DLY); requestAnimationFrame(draw); u = 0; }
 
       // TIA every cycle
       tia_();
