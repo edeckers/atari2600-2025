@@ -39,11 +39,12 @@ function updateScreen(mem, tt) {
  const inover = tt > (228 * (262 - 30));
  const inhblank = ((tt % 228) <= hb);
 
- const read = (m) => mem[m];
- const write = (m, v) => { mem[m] = v; }
+ const read = (a) => mem[a];
+ const write = (a, v) => { mem[a] = v; }
  
  const enam = (pid) => (read(ENAM0 + pid) & 0x02) === 0x02;
  const resmp = (pid) => (read(RESMP0 + pid) & 0x02) === 0x02;
+ const hm = (addr) => tcd4((read(addr) >> 4) & 0xf) * -1;
 
  const inScreen = !invb && !inover && !inhblank;
 
@@ -53,8 +54,8 @@ function updateScreen(mem, tt) {
 
  if (isRESP0) { resp0x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb, 3); isRESP0 = false; }
  if (isRESP1) { resp1x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb, 3); isRESP1 = false; }
- if (isRESM0) { resm0x = Math.max(((tt + (hmoveWait ? 3 : 0)) % 228) - hb, 3); isRESM0 = false; }
- if (isRESM1) { resm1x = Math.max(((tt + (hmoveWait ? 3 : 0)) % 228) - hb, 3); isRESM1 = false; }
+ if (isRESM0) { resm0x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb, 3); isRESM0 = false; }
+ if (isRESM1) { resm1x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb, 3); isRESM1 = false; }
  if (isRESBL) { resblx = Math.max(((tt + (hmoveWait ? 3 : 0)) % 228) - hb, 3); isRESBL = false; }
 
  if (isHMCLR) {
@@ -67,19 +68,19 @@ function updateScreen(mem, tt) {
    isHMCLR = false; }
 
  if (isHMOVE) { 
-  const dresp0x = tcd4((read(HMP0) >> 4) & 0xf) * -1;
+  const dresp0x = hm(HMP0);
   resp0x = mod(resp0x + dresp0x, 160);
 
-  const dresp1x = tcd4((read(HMP1) >> 4) & 0xf) * -1;
+  const dresp1x = hm(HMP1);
   resp1x = mod(resp1x + dresp1x, 160);
 
-  const dresblx = tcd4((read(HMBL) >> 4) & 0xf) * -1;
+  const dresblx = hm(HMBL);
   resblx = mod(resblx + dresblx, 160);
 
-  const dresm0x = tcd4((read(HMM0) >> 4) & 0xf) * -1;
+  const dresm0x = hm(HMM0);
   resm0x = mod(resm0x + dresm0x, 160);
 
-  const dresm1x = tcd4((read(HMM1) >> 4) & 0xf) * -1;
+  const dresm1x = hm(HMM1);
   resm1x = mod(resm1x + dresm1x, 160);
 
   hmoveWait = true;
@@ -171,12 +172,27 @@ function updateScreen(mem, tt) {
 
  // MISSILES
  const mssl = (mid, resm) => {
+   const psz = read(NUSIZ0 + mid) & 7;
    const size = Math.pow(2, (read(NUSIZ0 + mid) & 0x30) >> 4);
 
-   if ((x - resm) > size) { return; }
+   const isVisible = enam(mid) && !resmp(mid);
+   if (!isVisible) { return; }
 
-   mx_[mid] = enam(mid) && !resmp(mid);
-   if (mx_[mid]) { v = read(COLUP0 + mid); }
+   const drawCopy = (ofx) => {
+     const p = resm + ofx;
+     if ((x < p) || (x >= (p + size))) { return; }
+
+     mx_[mid] = isVisible;
+
+     v = read(COLUP0 + mid);
+   }
+
+   drawCopy(0);
+   (psz === 1) && drawCopy(16);
+   (psz === 2) && drawCopy(32);
+   (psz === 3) && (drawCopy(16), drawCopy(32));
+   (psz === 4) && drawCopy(56);
+   (psz === 6) && (drawCopy(16), drawCopy(32), drawCopy(56));
  }
 
  (x >= resp0x) && dp(0, resp0x);
