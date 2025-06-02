@@ -72,6 +72,10 @@
 		     document.getElementById("pf2").innerHTML = pstatus.pf2.toString(2).padStart(8, "0");
 		     document.getElementById("pf").innerHTML = pstatus.pf.toString(2).padStart(20, "0");
 	             document.getElementById("ctrlpf").innerHTML = `$${pstatus.ctrlpf.toString(16).padStart(2, "0")} (${pstatus.ctrlpf.toString(2).padStart(8, "0")})`;
+	             document.getElementById("swcha").innerHTML = `$${pstatus.swcha.toString(16).padStart(2, "0")} (${pstatus.swcha.toString(2).padStart(8, "0")})`;
+	             document.getElementById("swacnt").innerHTML = `$${pstatus.swacnt.toString(16).padStart(2, "0")} (${pstatus.swacnt.toString(2).padStart(8, "0")})`;
+	             document.getElementById("swchb").innerHTML = `$${pstatus.swchb.toString(16).padStart(2, "0")} (${pstatus.swchb.toString(2).padStart(8, "0")})`;
+	             document.getElementById("swbcnt").innerHTML = `$${pstatus.swbcnt.toString(16).padStart(2, "0")} (${pstatus.swbcnt.toString(2).padStart(8, "0")})`;
 		   }
 
 		   const loadMemory = (pstatus) => {
@@ -337,7 +341,6 @@
 	          <option value="logo">Logo</option>
 	          <option value="combat">Combat</option>
 	          <option value="frogger">Frogger</option>
-	          <option value="superbreakout">Super Breakout</option>
 	          <option value="tictactoe3d">Tic Tac Toe 3D</option>
 	          <option value="bowling">Bowling</option>
 	          <option value="superbreakout">Super Breakout</option>
@@ -379,6 +382,10 @@
 		  <div>PF2: <span id="pf2">0</span></div>
 		  <div>PF: <span id="pf">0</span></div>
 		  <div>CTRLPF: <span id="ctrlpf">0</span></div>
+		  <div>SWCHA: <span id="swcha">0</span></div>
+		  <div>SWACNT: <span id="swacnt">0</span></div>
+		  <div>SWCHB: <span id="swchb">0</span></div>
+		  <div>SWBCNT: <span id="swbcnt">0</span></div>
 		</div>
 		<div>
 		  <div style="font-weight: bold;">Conditionals</div>

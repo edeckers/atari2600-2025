@@ -447,6 +447,9 @@ const machine = (input) => {
                         mem[CXM0FB] = 0;
                         mem[CXM1FB] = 0;
                         mem[CXBLPF] = 0; }
+  let p0pot = 60 * 228;
+  let p0wait = 0;
+
 
   const write = (addr, v) => {
      const naddr = nrml(addr);
@@ -477,10 +480,18 @@ const machine = (input) => {
      if (naddr === TIM64T) { interval = 64;    timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
      if (naddr === T1024T) { interval = 1_024; timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
 
-     if (naddr === SWCHA) { const v0 = v & mem[SWACNT]; mem[SWCHA] |= v0; }
-     if (naddr === SWCHB) { const v0 = v & mem[SWBCNT]; mem[SWCHB] |= v0; }
+     if (naddr === SWCHA) { const v0 = v & mem[SWACNT]; mem[SWCHA] = v0; }
+     if (naddr === SWCHB) { const v0 = v & mem[SWBCNT]; mem[SWCHB] = v0; }
 
      if (naddr === VSYNC) { isVSync = (v & 0x02) === 0x02; }
+
+     if (naddr === VBLANK) {
+       if ((v & 0x80) === 0x00) {
+	 if ((mem[naddr] & 0x80) === 0x80) { p0wait = p0pot; }
+	 // p0wait = p0pot;
+       }
+
+     }
 
      if (naddr === GRP0) {
        if (mem[VDELP1] & 0x01) { mem[GRP1] = GRP1_DELAYED; }
@@ -508,19 +519,30 @@ const machine = (input) => {
      }
   }
 
+  // const isPaddle = () => true; // mem[SWACNT] === 0x00;
+  const isPaddle = () => false;
+
+  const me  = () => { isPaddle() ? (p0pot = Math.max(p0pot - (4 * 228), 60 * 228)) : (mem[SWCHA] &= 0x7f); }
+  const mec = () => { !isPaddle() && (mem[SWCHA] |= 0x80); }
+  const mw  = () => { isPaddle() ? (p0pot = Math.min(p0pot + (4 * 228), 152 * 228)) : (mem[SWCHA] &= 0xbf); }
+  const mwc = () => { !isPaddle() && (mem[SWCHA] |= 0x40); }
+
+  const fire  = () => { isPaddle() ? (mem[SWCHA] &= 0x7f) : (mem[INPT4] &= 0x7f); }
+  const firec = () => { isPaddle() ? (mem[SWCHA] |= 0x80) : (mem[INPT4] |= 0x80); }
+
   const controller = ({
 	// P0
         mn:    () => mem[SWCHA] &= 0xef,
-	me:    () => mem[SWCHA] &= 0x7f,
+	me,
 	ms:    () => mem[SWCHA] &= 0xdf,
-	mw:    () => mem[SWCHA] &= 0xbf,
-	fire:  () => mem[INPT4] &= 0x7f,
+	mw,
+	fire,
 
 	mnc:   () => mem[SWCHA] |= 0x10,
-	mec:   () => mem[SWCHA] |= 0x80,
+	mec,
 	msc:   () => mem[SWCHA] |= 0x20,
-	mwc:   () => mem[SWCHA] |= 0x40,
-	firec: () => mem[INPT4] |= 0x80,
+	mwc,
+	firec,
 
 	// P1
         mn1:    () => mem[SWCHA] &= 0xfe,
@@ -646,6 +668,20 @@ const machine = (input) => {
       isVSync = false;
   }
 
+  const paddle_ = () => {
+    const isDumped = (mem[VBLANK] & 0x80) === 0x80;
+    if (isDumped) {
+       mem[INPT0] &= 0x7f;
+       return
+    }
+
+    if (p0wait > 0) {
+      p0wait--;
+      return;
+    }
+
+    mem[INPT0] |= 0x80;
+  }
 
   let t = 0;
   let u = 0;
@@ -654,6 +690,8 @@ const machine = (input) => {
     // let a = 0;
     while (!isKilled) {
       if (u === BLK) { await sleep(DLY); requestAnimationFrame(draw); u = 0; }
+
+      paddle_();
 
       // TIA every cycle
       tia_();
@@ -704,6 +742,10 @@ const machine = (input) => {
       pf2: mem[PF2],
       pf: PF,
       ctrlpf: mem[CTRLPF],
+      swcha:  mem[SWCHA],
+      swchb:  mem[SWCHB],
+      swacnt: mem[SWACNT],
+      swbcnt: mem[SWBCNT],
       x,
       y,
       intim: mem[INTIM],
