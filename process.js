@@ -115,7 +115,7 @@ const absy = (nnnn) => { return (nnnn + ry) & 0xffff; }
 const pb1y  = (read) => { const nn = read(pc + 1); return fl(((nn & 0xff) + (ry & 0xff) > 0xff)); }
 const pb2x  = (read) => { const nnnn = word(read, pc + 1); return fl((((nnnn & 0xff) + (rx & 0xff)) > 0xff)); }
 const pb2y  = (read) => { const nnnn = word(read, pc + 1); return fl((((nnnn & 0xff) + (ry & 0xff)) > 0xff)); }
-const cjt   = (read, c) => { const r0 = fl(c); const dd = read(pc + 1); const r1 = ((pc & 0xff) + tcd(dd)); return fl((r1 < 0) || (r1 > 0xff)) + r0; }
+const cjt   = (read, c) => { if (!c) { return 0; } const r0 = fl(c); const dd = read(pc + 1); const r1 = ((pc & 0xff) + tcd(dd)); return fl((r1 < 0) || (r1 > 0xff)) + r0; }
 
 const cjim  = (f) => (read, write) => { const nn   = read(pc + 1);                                    return () => f(read, write, nn);  }
 const cim   = (f) => (read, write) => { const nn   = read(pc + 1);                                    return () => f(read, write, nn);  }
@@ -164,9 +164,9 @@ const writea = (v) => ra = v & 0xff;
 const asl = (m, write)    => { const r = (m << 1) & 0xff; write(r); fc = ((m & 0x80) >> 7); fnu(r); fzu(r); }
 const and = (m)           => { ra = ra & m; fnu(ra); fzu(ra); }
 const bit = (m)           => { const r = ra & m; fnu(m); fzu(r); fv = fl(m & 0x40); }
-const cmp = (m)           => { const r = (ra - m) & 0xff; fc = fl(ra >= m); fnu(r); fzu(r); }
-const cpx = (m)           => { const r = (rx - m) & 0xff; fc = fl(rx >= m); fnu(r); fzu(r); }
-const cpy = (m)           => { const r = (ry - m) & 0xff; fc = fl(ry >= m); fnu(r); fzu(r); }
+const cmp = (m)           => { const r = (ra - m) & 0xff; fc = fl(m <= ra); fnu(r); fzu(r); }
+const cpx = (m)           => { const r = (rx - m) & 0xff; fc = fl(m <= rx); fnu(r); fzu(r); }
+const cpy = (m)           => { const r = (ry - m) & 0xff; fc = fl(m <= ry); fnu(r); fzu(r); }
 const dec = (write, m, a) => { const r = (m - 1) & 0xff; write(a, r); fnu(r); fzu(r); }
 const eor = (m)           => { ra ^= m; fnu(ra); fzu(ra); }
 const inc = (write, m, a) => { const r = (m + 1) & 0xff; write(a, r); fnu(r); fzu(r); }
@@ -321,7 +321,7 @@ const processors = {
   /* LDX nnnn, Y */ 0xbe: go(3, 4, cabsy((_r, _w, m)              => { ldx(m); pc += 3; }), pb2y),
   /* CPY #nn     */ 0xc0: go(2, 2, cim((_r, _w, m)                => { cpy(m); pc += 2; })),
   /* CPY nn      */ 0xc4: go(2, 3, czp((_r, _w, m)                => { cpy(m); pc += 2; })),
-  /* CMP nn      */ 0xc5: go(2, 4, czp((_r, _w, m)                => { cmp(m); pc += 2; })),
+  /* CMP nn      */ 0xc5: go(2, 3, czp((_r, _w, m)                => { cmp(m); pc += 2; })),
   /* DEC nn      */ 0xc6: go(2, 5, czp((_r, write, m, a)          => { dec(write, m, a); pc += 2; })),
   /* DEC nn, X   */ 0xd6: go(2, 6, czpx((_r, write, m, a)         => { dec(write, m, a); pc += 2; })),
   /* INY         */ 0xc8: go(1, 2, no(()                          => { ry = (ry + 1) & 0xff; fnu(ry); fzu(ry); pc += 1; })),
@@ -616,7 +616,7 @@ const machine = (input) => {
         if (bpConditional.x.upper !== undefined && (x > bpConditional.x.upper)) { break; }
         if (bpConditional.y.lower !== undefined && (y < bpConditional.y.lower)) { break; }
         if (bpConditional.y.upper !== undefined && (y > bpConditional.y.upper)) { break; }
-	if (isStep) { while (action && !action.next().done) { } }
+	if (isStep) { while (action && !action.next().done) { cc = (cc + 1) % 76 } }
 
         if (!propagated) {
           document.dispatchEvent(new Event("break"));
@@ -704,6 +704,7 @@ const machine = (input) => {
       // EOL -> process current operation immediately
       if ((s % 228) === 0) {
 	 isWSync = false;
+	 cc = 0;
 	 // while (!action.next().done) { }
       }
 
@@ -720,6 +721,7 @@ const machine = (input) => {
 
     return ({
       cc,
+      tt: s,
       pc,
       rx,
       ry,

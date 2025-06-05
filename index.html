@@ -33,10 +33,10 @@
 
 		   // let romName = "pongsports";
 		   // let romName = "tictactoe3d";
-		   // let romName = "tennis";
+		   let romName = "tennis";
 		   // let romName = "hmove";
 		   // let romName = "superbreakout";
-		   let romName = "positioning";
+		   // let romName = "positioning";
 		   // let romName = "frogger";
 
 		   const changeRom = (rn) => {
@@ -65,7 +65,8 @@
 		     document.getElementById("p1x").innerHTML = pstatus.p1x.toString(10);
 		     document.getElementById("m0x").innerHTML = pstatus.m0x.toString(10);
 		     document.getElementById("m1x").innerHTML = pstatus.m1x.toString(10);
-	             document.getElementById("cc").innerHTML = `${pstatus.cc.toString(10)} (${pstatus.cc % 228})`;
+                     // document.getElementById("cc").innerHTML = `${pstatus.cc.toString(10)} (${pstatus.cc % 228} / ${Math.floor((pstatus.cc % 228) / 3)})`;
+                     document.getElementById("cc").innerHTML = `${pstatus.cc.toString(10)}`;
 
 		     document.getElementById("pf0").innerHTML = pstatus.pf0.toString(2).padStart(8, "0");
 		     document.getElementById("pf1").innerHTML = pstatus.pf1.toString(2).padStart(8, "0");
@@ -322,7 +323,7 @@
 	<body>
           <div style="display: flex; gap: 10px">
 	    <div>
-	      <canvas id="tehScreen" width="160" height="202"></canvas>
+	      <canvas id="tehScreen" width="160" height="192"></canvas>
 	      <div><input type="text" id="fr"></div>
 	      <div style="display: flex">
 	        <select onChange="changeRom(this.options[this.selectedIndex].value)" autofocus>
