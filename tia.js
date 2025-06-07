@@ -97,9 +97,7 @@ function updateScreen(mem, tt) {
 
  const y = Math.floor(d / 228);
  const x = (d % 228) - hb;
- const p = (y * W) + x;
 
- const o = p * 4;
 
  // DEFAULT
  let v = read(COLUBK);
@@ -179,8 +177,8 @@ function updateScreen(mem, tt) {
    if (!isVisible) { return; }
 
    const drawCopy = (ofx) => {
-     const p = resm + ofx;
-     if ((x < p) || (x >= (p + size))) { return; }
+     const p_ = resm + ofx;
+     if ((x < p_) || (x >= (p_ + size))) { return; }
 
      mx_[mid] = isVisible;
 
@@ -246,6 +244,9 @@ function updateScreen(mem, tt) {
 
  const [r, g, b] = colors[v - (v % 2)] ?? [0x00, 0x00, 0x00];
 
+ const p = (y * W) + x;
+ const o = p * 4;
+
  screen[o + 0] = r;
  screen[o + 1] = g;
  screen[o + 2] = b;
@@ -255,9 +256,41 @@ function updateScreen(mem, tt) {
 function drawer() {
   const canvas = document.getElementById("tehScreen");
   const ctx = canvas.getContext("2d");
-  
+  const HM = 1;
+  const WM = 2;
+
+
+  const stretchedScreen = () => {
+     const abStretched = new ArrayBuffer(W * WM * H * HM * 4);
+     const screenStretched = new Uint8ClampedArray(abStretched);
+
+
+     for (let y_ = 0; y_ < H; y_++) {
+       const l0_ = y_ * W * 4; // 1 pixel row, 1 pixel columns, 4 byte info
+       const l1_ = y_ * HM * W * WM * 4; // 3 pixel rows, 4 pixel columns, 4 byte info
+
+       for (let x_ = 0; x_ < W; x_++) {
+	 const o0_ = l0_ + x_ * 4; 
+
+	 const o1_ = l1_ + (x_ * WM * 4);
+
+	 for (let j = 0; j < HM; j++) {
+	   for (let i = 0; i < WM; i++) {
+	     screenStretched[(i * 4) + (j * W * WM * 4) + o1_ + 0] = screen[o0_ + 0];
+	     screenStretched[(i * 4) + (j * W * WM * 4) + o1_ + 1] = screen[o0_ + 1];
+	     screenStretched[(i * 4) + (j * W * WM * 4) + o1_ + 2] = screen[o0_ + 2];
+	     screenStretched[(i * 4) + (j * W * WM * 4) + o1_ + 3] = screen[o0_ + 3];
+	   }
+
+	 }
+       }
+     }
+
+     return new ImageData(screenStretched, W * WM, H * HM);
+  }
+
   const draw = () => {
-    ctx.putImageData(new ImageData(screen, W, H), 0, 0);
+    ctx.putImageData(stretchedScreen(), 0, 0);
     document.dispatchEvent(new Event("draw")); }
 
   const cross = (x, y) => {
