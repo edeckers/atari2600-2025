@@ -1,6 +1,9 @@
-const [W, H] = [161, 192];
+const VB_AIR = 10;
+const OS_AIR = 20;
+const [W, H] = [161, 192 + VB_AIR + OS_AIR];
 
-const vb = 228 * (3 + 37);
+const vb = 228 * (3 + 37 - VB_AIR);  
+const os = 228 * (262 - 30 + OS_AIR);
 
 const hb = 68;
 
@@ -36,7 +39,7 @@ function clearScreen() {
 let hmoveWait = false;
 function updateScreen(mem, tt) {
  const invb = tt <= vb;
- const inover = tt > (228 * (262 - 30));
+ const inover = tt > os;
  const inhblank = ((tt % 228) <= hb);
 
  const read = (a) => mem[a];
