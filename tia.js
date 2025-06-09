@@ -301,13 +301,13 @@ function drawer() {
     ctx.strokeStyle = "#00ff00";
     
     ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, H);
+    ctx.moveTo(x * WM, 0);
+    ctx.lineTo(x * WM, H * HM);
     ctx.stroke();
     
     ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(W, y);
+    ctx.moveTo(0, y * HM);
+    ctx.lineTo(W * WM, y * HM);
     ctx.stroke();
   }
 

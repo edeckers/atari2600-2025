@@ -173,7 +173,7 @@ const inc = (write, m, a) => { const r = (m + 1) & 0xff; write(a, r); fnu(r); fz
 const lda = (m)           => { ra = m; fnu(ra); fzu(ra); }
 const ldx = (m)           => { rx = m; fnu(rx); fzu(rx); }
 const ldy = (m)           => { ry = m; fnu(ry); fzu(ry); }
-const lsr = (m, write)    => { const r = (m >> 1) & 0xff; write(r); fc = m & 0x01; fnu(r); fzu(r); }
+const lsr = (m, write, a)    => { if (a === 0x0282) { console.log(m.toString(16)); }; const r = (m >> 1) & 0xff; write(r); fc = m & 0x01; fnu(r); fzu(r); }
 const ora = (m)           => { ra |= m; fnu(ra); fzu(ra); }
 const rol = (m, write)    => { const r = ((m << 1) | fc) & 0xff; write(r); fc = ((m & 0x80) >> 7); fnu(r); fzu(r); }
 const ror = (m, write)    => { const r = ((m >> 1) | (fc << 7)) & 0xff; fc = m & 0x01; write(r); fnu(r); fzu(r); }
@@ -233,6 +233,7 @@ const processors = {
   /* ASL A       */ 0x0a: go(1, 2, no(()                          => { asl(ra, writea); pc += 1; })),
   /* ORA nnnn    */ 0x0d: go(3, 4, cabs((_r, _w, m)               => { ora(m); pc += 3; })),
   /* BPL dd      */ 0x10: go(2, 2, cjim((_r, _w, m, _a)           => { cj(fn === 0, m); pc += 2; }), (read) => cjt(read, fn === 0)),
+  /* ORA (nn), Y */ 0x11: go(2, 5, ciny((_r, _w, m)               => { ora(m); pc += 2; }), pb1y),
   /* ORA nn, X   */ 0x15: go(2, 4, czpx((_r, _w, m)               => { ora(m); pc += 2; })),
   /* ASL nn, X   */ 0x16: go(2, 6, czpx((_r, write, m, a)         => { asl(m, (v) => write(a, v)); pc += 2; })),
   /* CLC         */ 0x18: go(1, 2, no(()                          => { fc = 0; pc += 1; })),
@@ -248,6 +249,7 @@ const processors = {
   /* AND nnnn    */ 0x2d: go(3, 4, cabs((_r, _w, m)               => { and(m); pc += 3; })),
   /* BMI dd      */ 0x30: go(2, 2, cjim((_r, _w, m)               => { cj(fn === 1, m); pc += 2; }), (read) => cjt(read, fn === 1)),
   /* AND nn, X   */ 0x35: go(2, 4, czpx((_r, _w, m)               => { and(m); pc += 2; })),
+  /* ROL nn, X   */ 0x36: go(2, 6, czpx((_r, write, m, a)         => { rol(m, (v) => write(a, v)); pc += 2; })),
   /* SEC         */ 0x38: go(1, 2, no(()                          => { fc = 1; pc += 1; })),
   /* AND nnnn, Y */ 0x39: go(3, 4, cabsy((_r, _w, m)              => { and(m); pc += 3; }), pb2y),
   /* AND nnnn, X */ 0x3d: go(3, 4, cabsx((_r, _w, m)              => { and(m); pc += 3; }), pb2x),
@@ -271,10 +273,11 @@ const processors = {
   /* ALR #nn     */ 0x4b: go(2, 2, cim((_r, write, m, a)          => { and(m); lsr(m, (v) => write(a, v)); pc += 2; })), // Illegal
   /* JMP nnnn    */ 0x4c: go(3, 3, cabs((_r, _w, _m, a)           => { pc = a; })),
   /* JMP (nnnn)  */ 0x6c: go(3, 5, cin((_r, _w, m)                => { pc = m; })),
-  /* LSR nnnn    */ 0x4e: go(3, 6, cabs((_r, write, m, a)         => { lsr(m, (v) => write(a, v)); pc += 3; })),
+  /* LSR nnnn    */ 0x4e: go(3, 6, cabs((_r, write, m, a)         => { console.log("R", _r(m).toString(16)); lsr(m, (v) => write(a, v)); pc += 3; })),
   /* BVC dd      */ 0x50: go(2, 2, cjim((_r, _w, m)               => { cj(fv === 0, m); pc += 2; }), (read) => cjt(read, fv === 0)),
   /* RTS         */ 0x60: go(1, 6, no((read)                      => { const l = popsp(read); const h = popsp(read); pc = ((h << 8) + l) & 0xffff; })),
   /* ADC nn      */ 0x65: go(2, 3, czp((_r, _w, m)                => { adc(m); pc += 2; })),
+  /* ROR nn      */ 0x66: go(2, 5, czp((_r, write, m, a)          => { ror(m, (v) => write(a, v)); pc += 2; })),
   /* PLA         */ 0x68: go(1, 4, no((read)                      => { ra = popsp(read); fnu(ra); fzu(ra); pc += 1; })),
   /* ADC #nn     */ 0x69: go(2, 2, cim((_r, _w, m)                => { adc(m); pc += 2; })),
   /* ROR A       */ 0x6a: go(1, 2, no(()                          => { ror(ra, writea); pc += 1; })),
@@ -331,6 +334,7 @@ const processors = {
   /* CMP nn, X   */ 0xd5: go(2, 4, czpx((_r, _w, m)               => { cmp(m); pc += 2; })),
   /* CLD         */ 0xd8: go(1, 2, no(()                          => { fd = 0; pc += 1; })),
   /* CMP nnnn, Y */ 0xd9: go(3, 4, cabsy((_r, _w, m)              => { cmp(m); pc += 3; }), pb2y),
+  /* CMP nnnn, X */ 0xdd: go(3, 4, cabsx((_r, _w, m)              => { cmp(m); pc += 3; }), pb2x),
   /* CPX #nn     */ 0xe0: go(2, 2, cim((_r, _w, m)                => { cpx(m); pc += 2; })),
   /* SBC (nn, X) */ 0xe1: go(2, 6, cinx((_r, _w, m)               => { sbc(m); pc += 2; })),
   /* CPX nn      */ 0xe4: go(2, 3, czp((_r, _w, m)                => { cpx(m); pc += 2; })),
@@ -395,7 +399,8 @@ const machine = (input) => {
   document.addEventListener("continue", () => { isContinue = true; isStep = false; });
   document.addEventListener("step", () => { isBreakout = true; isStep = true });
 
-  const mem = romAsMem(input.length === 4_096 ? input : input.concat(input));
+  const rom = romAsMem(input.length === 2_048 ? input.concat(input) : input);
+  const mem = new Uint8Array(0x0fff);
 
   const nrml = (addr, r) => {
     if (addr & 0x1000) { // ROM
@@ -422,6 +427,7 @@ const machine = (input) => {
 
   const read = (addr) => {
     const naddr = nrml(addr, true);
+    // if (naddr === 0x1ff8 || naddr === 0x1ff9) { console.log("SWITCH"); }
 
     if (naddr === INTIM) {
       if (mem[INSTAT] & 0x40) { // Restart interval
@@ -429,6 +435,8 @@ const machine = (input) => {
       }
     } else if (naddr === INSTAT) {
       mem[INSTAT] &= 0xbf; // Reset bit 6 on read instat
+    } else if (naddr & 0x1000) {
+      return rom(naddr & 0x1fff);
     }
 
      // if (naddr === 0x32) { return 0xff; }
@@ -453,6 +461,7 @@ const machine = (input) => {
 
   const write = (addr, v) => {
      const naddr = nrml(addr);
+     if (addr === 0x0282) { return; }
 
      if ((naddr === CXP0FB)) { return; }
      if ((naddr === CXP1FB)) { return; }
@@ -480,8 +489,8 @@ const machine = (input) => {
      if (naddr === TIM64T) { interval = 64;    timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
      if (naddr === T1024T) { interval = 1_024; timerCounter = interval; mem[INTIM] = Math.max(v, 0) & 0xff; mem[INSTAT] &= 0x7f; return; }
 
-     if (naddr === SWCHA) { const v0 = v & mem[SWACNT]; mem[SWCHA] = v0; }
-     if (naddr === SWCHB) { const v0 = v & mem[SWBCNT]; mem[SWCHB] = v0; }
+     if (naddr === SWCHA) { const v0 = v & mem[SWACNT]; mem[SWCHA] |= v0; }
+     /* if (naddr === SWCHB) { const v0 = v & mem[SWBCNT]; mem[SWCHB] |= v0; } */
 
      if (naddr === VSYNC) { isVSync = (v & 0x02) === 0x02; }
 

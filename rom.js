@@ -121,6 +121,7 @@ const operators = {
   "PLA": [0x68, 0],
   "ROL A": [0x2a, 0],
   "ROL nn": [0x26, 1],
+  "ROL nn, X": [0x36, 1],
   "ROR nn": [0x66, 1],
   "ROR nn, X": [0x76, 1],
   "ROR A": [0x6a, 0],
@@ -181,12 +182,12 @@ const code = (v)  => v.toString(16).padStart(2, "0");
 
 const offs = (a) => a - 0xf000;
 
-const romread = (input, a, bc) => {
+const romread = (rom, a, bc) => {
   const zs = [];
 
   for (var b=0; b<bc; b++) {
     // zs.push(input[offs(a + b)]);
-    zs.push(input[a + b]);
+    zs.push(rom(a + b));
   }
 
   zs.reverse();
@@ -194,10 +195,10 @@ const romread = (input, a, bc) => {
   return zs.reduce((p, c) => (p << 8) + c, 0);
 }
 
-const ep = (input) => (romread(input, 0xfffc, 2) & 0xffff) | 0xf000;
+const ep = (rom) => (romread(rom, 0xfffc, 2) & 0xffff) | 0xf000;
 
-const scan = (input) => {
-  const entrypoint = ep(input);
+const scan = (rom) => {
+  const entrypoint = ep(rom);
   console.log("EP", entrypoint);
 
   const reachable = new Set([]);
@@ -231,7 +232,7 @@ const scan = (input) => {
         break;
       } else if (branches.has(operator)) {
 	const target = (pc + tcd(romread(ix, pc + 1, 1)) + 2) & 0xffff;
-	
+
         follow(ix, target);
       } else if (operator === 0x00) { // BRK
 	const target = romread(ix, 0xfffe, 2);
@@ -253,15 +254,15 @@ const scan = (input) => {
     }
   }
 
-  follow(input, entrypoint);
+  follow(rom, entrypoint);
 
   return reachable;
 }
 
 
-function toASM(input, addr) {
+function toASM(rom, addr) {
   const pc = addr
-  const operator = input[pc]
+  const operator = rom(pc)
 
   if (!(operator in operatorLookup)) {
     return [[operator], "Unkown"]
@@ -271,16 +272,19 @@ function toASM(input, addr) {
 
   const operandBytes = [];
   for (i = 0; i < operandCount; i++) {
-    operandBytes.push(input[pc + i + 1]);
+    operandBytes.push(rom(pc + i + 1));
   }
 
   return [[operator].concat(operandBytes), name];
 }
 
-const romAsMem = (rom) => {
-  const mem = new Uint8Array(0x10000); // 0x10000, bc 0x0000 - 0xFFFF
+const romAsMem = (input) => {
+  // const mem = new Uint8Array(0x10000); // 0x10000, bc 0x0000 - 0xFFFF
+  let b = 0;
 
-  for (const [i, b] of rom.entries()) {
+  const mem = new Uint8Array(0x20000); // 0x10000, bc 0x0000 - 0xFFFF
+
+  for (const [i, b] of input.entries()) {
     mem[0x1000 + i] = b;
     mem[0x3000 + i] = b; // Prly do something smarter in reading
     mem[0x5000 + i] = b; // Prly do something smarter in reading
@@ -291,12 +295,19 @@ const romAsMem = (rom) => {
     mem[0xf000 + i] = b; // Prly do something smarter in reading
   }
 
-  return mem;
+  return (addr) => {
+    if (addr === 0x1ff8) { b = 0; return; }
+    if (addr === 0x1ff9) { b = 1; console.log(input.length.toString(16)); return; }
+
+    return mem[addr + (0x1000 * b)];
+  }
 }
 
 const decode = (input) => {
   // Mirror memory for small cartridges
-  const rom = romAsMem(input.length === 4_096 ? input : input.concat(input));
+  const rom = romAsMem(input.length === 2_048 ? input.concat(input) : input);
+
+  console.log("ROM", rom(0xf000).toString(16));
 
   const reachable = scan(rom);
 
