@@ -232,6 +232,15 @@ const processors = {
   /* ORA #nn     */ 0x09: go(2, 2, cim((_r, _w, m)                => { ora(m); pc += 2; })),
   /* ASL A       */ 0x0a: go(1, 2, no(()                          => { asl(ra, writea); pc += 1; })),
   /* ORA nnnn    */ 0x0d: go(3, 4, cabs((_r, _w, m)               => { ora(m); pc += 3; })),
+  /* SLO nnnn    */ 0x0f: go(2, 6, cabs((read, write, m, a)       => {  // UNDOCUMENTED
+	  // https://www.masswerk.at/nowgobang/2021/6502-illegal-opcodes
+	  asl(write, m, a);
+
+	  const v = read(a);
+
+          ora(v);
+
+	  pc += 3; })),
   /* BPL dd      */ 0x10: go(2, 2, cjim((_r, _w, m, _a)           => { cj(fn === 0, m); pc += 2; }), (read) => cjt(read, fn === 0)),
   /* ORA (nn), Y */ 0x11: go(2, 5, ciny((_r, _w, m)               => { ora(m); pc += 2; }), pb1y),
   /* ORA nn, X   */ 0x15: go(2, 4, czpx((_r, _w, m)               => { ora(m); pc += 2; })),
@@ -272,15 +281,16 @@ const processors = {
   /* LSR A       */ 0x4a: go(1, 2, no(()                          => { lsr(ra, writea); pc += 1; })),
   /* ALR #nn     */ 0x4b: go(2, 2, cim((_r, write, m, a)          => { and(m); lsr(m, (v) => write(a, v)); pc += 2; })), // Illegal
   /* JMP nnnn    */ 0x4c: go(3, 3, cabs((_r, _w, _m, a)           => { pc = a; })),
-  /* JMP (nnnn)  */ 0x6c: go(3, 5, cin((_r, _w, m)                => { pc = m; })),
-  /* LSR nnnn    */ 0x4e: go(3, 6, cabs((_r, write, m, a)         => { console.log("R", _r(m).toString(16)); lsr(m, (v) => write(a, v)); pc += 3; })),
+  /* LSR nnnn    */ 0x4e: go(3, 6, cabs((_r, write, m, a)         => { lsr(m, (v) => write(a, v)); pc += 3; })),
   /* BVC dd      */ 0x50: go(2, 2, cjim((_r, _w, m)               => { cj(fv === 0, m); pc += 2; }), (read) => cjt(read, fv === 0)),
+  /* EOR nnnn, X */ 0x5d: go(3, 4, cabsx((_r, _w, m)              => { eor(m); pc += 3; }), pb2x),
   /* RTS         */ 0x60: go(1, 6, no((read)                      => { const l = popsp(read); const h = popsp(read); pc = ((h << 8) + l) & 0xffff; })),
   /* ADC nn      */ 0x65: go(2, 3, czp((_r, _w, m)                => { adc(m); pc += 2; })),
   /* ROR nn      */ 0x66: go(2, 5, czp((_r, write, m, a)          => { ror(m, (v) => write(a, v)); pc += 2; })),
   /* PLA         */ 0x68: go(1, 4, no((read)                      => { ra = popsp(read); fnu(ra); fzu(ra); pc += 1; })),
   /* ADC #nn     */ 0x69: go(2, 2, cim((_r, _w, m)                => { adc(m); pc += 2; })),
   /* ROR A       */ 0x6a: go(1, 2, no(()                          => { ror(ra, writea); pc += 1; })),
+  /* JMP (nnnn)  */ 0x6c: go(3, 5, cin((_r, _w, m)                => { pc = m; })),
   /* BVS dd      */ 0x70: go(2, 2, cjim((_r, _w, m)               => { cj(fv === 1, m); pc += 2; }), (read) => cjt(read, fv === 1)),
   /* ADC nn, X   */ 0x75: go(2, 4, czpx((_r, _w, m)               => { adc(m); pc += 2; })),
   /* ROR nn, X   */ 0x76: go(2, 6, czpx((_r, write, m, a)         => { ror(m, (v) => write(a, v)); pc += 2; })),
@@ -357,7 +367,16 @@ const processors = {
   /* SBC nn, X   */ 0xf5: go(2, 4, czpx((_r, _w, m)               => { sbc(m); pc += 2; })),
   /* INC nn, X   */ 0xf6: go(2, 5, czpx((_r, write, m, a)         => { inc(write, m, a); pc += 2; })),
   /* SED         */ 0xf8: go(1, 2, no(()                          => { fd = 1; pc += 1; })),
-  /* SBC nnnn, Y */ 0xf9: go(3, 4, absy((_r, _w, m)               => { sbc(m); pc += 3; })),
+  /* SBC nnnn, Y */ 0xf9: go(3, 4, cabsy((_r, _w, m)               => { sbc(m); pc += 3; })),
+  /* ISC nnnn, X */ 0xff: go(3, 7, cabsx((read, write, m, a)       => {  // UNDOCUMENTED
+	  // https://www.masswerk.at/nowgobang/2021/6502-illegal-opcodes
+	  inc(write, m, a);
+
+	  const v = read(a);
+
+          sbc(v);
+
+	  pc += 3; })),
 }
 
 
@@ -655,8 +674,8 @@ const machine = (input) => {
     try {
      action = p(read, write);
     } catch (e) {
-      if (o === 0xff) { return; } // Forced exit for debugging purposes
       console.log(e, pc.toString(16), "o", o.toString(16))
+      if (o === 0xff) { return; } // Forced exit for debugging purposes
       debugger;
       throw e;
     }

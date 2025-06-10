@@ -282,24 +282,26 @@ const romAsMem = (input) => {
   // const mem = new Uint8Array(0x10000); // 0x10000, bc 0x0000 - 0xFFFF
   let b = 0;
 
-  const mem = new Uint8Array(0x20000); // 0x10000, bc 0x0000 - 0xFFFF
+  const rom = new Uint8Array(0x20000); // 0x10000, bc 0x0000 - 0xFFFF
 
   for (const [i, b] of input.entries()) {
-    mem[0x1000 + i] = b;
-    mem[0x3000 + i] = b; // Prly do something smarter in reading
-    mem[0x5000 + i] = b; // Prly do something smarter in reading
-    mem[0x7000 + i] = b; // Prly do something smarter in reading
-    mem[0x9000 + i] = b; // Prly do something smarter in reading
-    mem[0xb000 + i] = b; // Prly do something smarter in reading
-    mem[0xd000 + i] = b; // Prly do something smarter in reading
-    mem[0xf000 + i] = b; // Prly do something smarter in reading
+    rom[0x1000 + i] = b;
+    rom[0x3000 + i] = b; // Prly do something smarter in reading
+    rom[0x5000 + i] = b; // Prly do something smarter in reading
+    rom[0x7000 + i] = b; // Prly do something smarter in reading
+    rom[0x9000 + i] = b; // Prly do something smarter in reading
+    rom[0xb000 + i] = b; // Prly do something smarter in reading
+    rom[0xd000 + i] = b; // Prly do something smarter in reading
+    rom[0xf000 + i] = b; // Prly do something smarter in reading
   }
 
   return (addr) => {
-    if (addr === 0x1ff8) { b = 0; return; }
-    if (addr === 0x1ff9) { b = 1; console.log(input.length.toString(16)); return; }
+    if (rom.length > 0x1000) {
+      if (addr === 0x1ff8) { b = 0; return 0; }
+      if (addr === 0x1ff9) { b = 1; return 1; }
+    }
 
-    return mem[addr + (0x1000 * b)];
+    return rom[addr + (0x1000 * b)];
   }
 }
 
