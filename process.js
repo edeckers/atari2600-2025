@@ -684,9 +684,9 @@ const machine = (input) => {
   const tia_ = () => {
       updateScreen(mem, s, pc);
 
-      if (!isVSync && !(s === (228 * 262))) { return }
+      if (!isVSync && !(s === BLK)) { return }
 
-      requestAnimationFrame(draw);
+      // requestAnimationFrame(draw);
 
       fs = new Date();
       s = 0;
@@ -717,7 +717,11 @@ const machine = (input) => {
   const process = async () => {
     // let a = 0;
     while (!isKilled) {
-      if (u === BLK) { await sleep(DLY); requestAnimationFrame(draw); u = 0; }
+      if (u === BLK) {u = 0; await sleep(0);  }
+      // const y = Math.floor((s - vb) / 228);
+      if (isVSync) { 
+	      // FIMXE requestAnimationFrame, renders out-of-sync, most notably visible in "All Sprites"
+	      draw(); /* requestAnimationFrame(draw); */ }
 
       paddle_();
 
