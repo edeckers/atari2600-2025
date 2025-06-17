@@ -75,7 +75,7 @@ let isBreakout = false;
 // const FPS = 60;
 // const FPS = 30;
 
-const HZ = (1_000_000 * 3) * 2;
+const HZ = (1_000_000 * 3);
 const FRM = (228 * 262);
 const BLK = FRM;
 const DLY = (BLK / HZ) * 1_000;
@@ -87,6 +87,7 @@ RP0 = -1;
 RP1 = -1;
 
 GRP = 0;
+ENABL_DELAYED = 0;
 GRP0_DELAYED = 0;
 GRP1_DELAYED = 0;
 
@@ -118,6 +119,7 @@ HMM1 = 0x23;
 HMBL = 0x24;
 VDELP0 = 0x25;
 VDELP1 = 0x26;
+VDELBL = 0x27;
 RESMP0 = 0x28;
 RESMP1 = 0x29;
 HMOVE = 0x2a;

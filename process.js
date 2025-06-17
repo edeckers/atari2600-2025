@@ -173,7 +173,7 @@ const inc = (write, m, a) => { const r = (m + 1) & 0xff; write(a, r); fnu(r); fz
 const lda = (m)           => { ra = m; fnu(ra); fzu(ra); }
 const ldx = (m)           => { rx = m; fnu(rx); fzu(rx); }
 const ldy = (m)           => { ry = m; fnu(ry); fzu(ry); }
-const lsr = (m, write, a)    => { if (a === 0x0282) { console.log(m.toString(16)); }; const r = (m >> 1) & 0xff; write(r); fc = m & 0x01; fnu(r); fzu(r); }
+const lsr = (m, write)    => { const r = (m >> 1) & 0xff; write(r); fc = m & 0x01; fnu(r); fzu(r); }
 const ora = (m)           => { ra |= m; fnu(ra); fzu(ra); }
 const rol = (m, write)    => { const r = ((m << 1) | fc) & 0xff; write(r); fc = ((m & 0x80) >> 7); fnu(r); fzu(r); }
 const ror = (m, write)    => { const r = ((m >> 1) | (fc << 7)) & 0xff; fc = m & 0x01; write(r); fnu(r); fzu(r); }
@@ -226,6 +226,7 @@ const processors = {
 	  p = word(read, 0xfffe);
 
 	  pc = p; })),
+  /* NOP         */ 0x04: go(2, 3, czp(()                         => { pc += 2; })),  // UNDOCUMENTED
   /* ORA nn      */ 0x05: go(2, 3, czp((_r, _w, m)                => { ora(m); pc += 2; })),
   /* ASL nn      */ 0x06: go(2, 5, czp((_r, write, m, a)          => { asl(m, (v) => write(a, v)); pc += 2; })),
   /* PHP         */ 0x08: go(1, 3, no((_r, write)                 => { pshsp(write, prstatus()); pc += 1; })),
@@ -340,6 +341,7 @@ const processors = {
   /* INY         */ 0xc8: go(1, 2, no(()                          => { ry = (ry + 1) & 0xff; fnu(ry); fzu(ry); pc += 1; })),
   /* CMP #nn     */ 0xc9: go(2, 2, cim((_r, _w, m)                => { cmp(m); pc += 2; })),
   /* DEX         */ 0xca: go(1, 2, no(()                          => { rx = (rx - 1) & 0xff; fnu(rx); fzu(rx); pc += 1; })),
+  /* CMP nnnn    */ 0xcd: go(3, 4, cabs((_r, _w, m)               => { cmp(m); pc += 3; })),
   /* BNE dd      */ 0xd0: go(2, 2, cjim((_r, _w, m)               => { cj(fz === 0, m); pc += 2; }), (read) => cjt(read, fz === 0)),
   /* CMP nn, X   */ 0xd5: go(2, 4, czpx((_r, _w, m)               => { cmp(m); pc += 2; })),
   /* CLD         */ 0xd8: go(1, 2, no(()                          => { fd = 0; pc += 1; })),
@@ -521,12 +523,17 @@ const machine = (input) => {
 
      }
 
+     if (naddr === ENABL) {
+       if (mem[VDELBL] & 0x01) { ENABL_DELAYED = v; return; }
+     }
+
      if (naddr === GRP0) {
        if (mem[VDELP1] & 0x01) { mem[GRP1] = GRP1_DELAYED; }
        if (mem[VDELP0] & 0x01) { GRP0_DELAYED = v; return; }
      }
 
      if (naddr === GRP1) {
+       if (mem[VDELBL] & 0x01) { mem[ENABL] = ENABL_DELAYED; }
        if (mem[VDELP0] & 0x01) { mem[GRP0] = GRP0_DELAYED; }
        if (mem[VDELP1] & 0x01) { GRP1_DELAYED = v; return; }
      }
@@ -637,14 +644,15 @@ const machine = (input) => {
       while (!isBreakout && ((breakpoints.has(pc) && !isContinue) || isStep)) {
 	if (isWSync) { isBreakout = false; return; }
 	if (isVSync) { isBreakout = false; return; }
+        // if (bpConditional.x.lower !== undefined && (x < bpConditional.x.lower)) { break; }
+        // if (bpConditional.x.upper !== undefined && (x > bpConditional.x.upper)) { break; }
+        // if (bpConditional.y.lower !== undefined && (y < bpConditional.y.lower)) { break; }
+        // if (bpConditional.y.upper !== undefined && (y > bpConditional.y.upper)) { break; }
+	if (isStep) { while (action && !action.next().done) { cc = (cc + 1) % 76, s++ } }
+
         const x = (s % 228) - hb;
         const y = Math.floor((s - vb) / 228);
 
-        if (bpConditional.x.lower !== undefined && (x < bpConditional.x.lower)) { break; }
-        if (bpConditional.x.upper !== undefined && (x > bpConditional.x.upper)) { break; }
-        if (bpConditional.y.lower !== undefined && (y < bpConditional.y.lower)) { break; }
-        if (bpConditional.y.upper !== undefined && (y > bpConditional.y.upper)) { break; }
-	if (isStep) { while (action && !action.next().done) { cc = (cc + 1) % 76 } }
 
         if (!propagated) {
           document.dispatchEvent(new Event("break"));
@@ -717,7 +725,7 @@ const machine = (input) => {
   const process = async () => {
     // let a = 0;
     while (!isKilled) {
-      if (u === BLK) {u = 0; await sleep(0);  }
+      if (u === BLK) {u = 0; await sleep(DLY);  }
       // const y = Math.floor((s - vb) / 228);
       if (isVSync) { 
 	      // FIMXE requestAnimationFrame, renders out-of-sync, most notably visible in "All Sprites"

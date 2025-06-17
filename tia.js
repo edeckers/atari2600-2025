@@ -2,7 +2,7 @@ const VB_AIR = 10;
 const OS_AIR = 20;
 const [W, H] = [161, 192 + VB_AIR + OS_AIR];
 
-const vb = 228 * (3 + 37 - VB_AIR);  
+const vb = 228 * (3 + 37 - VB_AIR);
 const os = 228 * (262 - 30 + OS_AIR);
 
 const hb = 68;
@@ -30,6 +30,8 @@ let resblx = -1;
 
 let dirty = false;
 
+const HL_SPRITES = true;
+
 const mod = (n, m) => (n % m + m) % m;
 
 function clearScreen() {
@@ -44,7 +46,7 @@ function updateScreen(mem, tt) {
 
  const read = (a) => mem[a];
  const write = (a, v) => { mem[a] = v; }
- 
+
  const enam = (pid) => (read(ENAM0 + pid) & 0x02) === 0x02;
  const resmp = (pid) => (read(RESMP0 + pid) & 0x02) === 0x02;
  const hm = (addr) => tcd4((read(addr) >> 4) & 0xf) * -1;
@@ -55,11 +57,13 @@ function updateScreen(mem, tt) {
 
  // if ((tt % 228) === 0) { hmoveWait = 0; }
 
- if (isRESP0) { resp0x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb, 3); isRESP0 = false; }
- if (isRESP1) { resp1x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb, 3); isRESP1 = false; }
- if (isRESM0) { resm0x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb, 3); isRESM0 = false; }
- if (isRESM1) { resm1x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb, 3); isRESM1 = false; }
- if (isRESBL) { resblx = Math.max(((tt + (hmoveWait ? 3 : 0)) % 228) - hb, 3); isRESBL = false; }
+// if (isRESP0) { resp0x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb - 1, 3); isRESP0 = false; }
+
+ if (isRESP0) { resp0x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb - 1, 3); isRESP0 = false; }
+ if (isRESP1) { resp1x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb - 1, 3); isRESP1 = false; }
+ if (isRESM0) { resm0x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb - 1, 2); isRESM0 = false; }
+ if (isRESM1) { resm1x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb - 1, 2); isRESM1 = false; }
+ if (isRESBL) { resblx = Math.max(((tt + (hmoveWait ? 3 : 0)) % 228) - hb - 1, 2); isRESBL = false; }
 
  if (isHMCLR) {
    mem[HMP0] = 0;
@@ -70,7 +74,7 @@ function updateScreen(mem, tt) {
 
    isHMCLR = false; }
 
- if (isHMOVE) { 
+ if (isHMOVE) {
   const dresp0x = hm(HMP0);
   resp0x = mod(resp0x + dresp0x, 160);
 
@@ -92,7 +96,7 @@ function updateScreen(mem, tt) {
 
  const resm0top0 = resmp(0);
  const resm1top1 = resmp(1);
- 
+
  if (resm0top0) { resm0x = resp0x + 3; }
  if (resm1top1) { resm1x = resp1x + 3; }
 
@@ -148,11 +152,15 @@ function updateScreen(mem, tt) {
      const drawMe = ((grp(pid) & Math.pow(2, 8 - q)) > 0);
      if (drawMe) {
        px_[pid] = true;
-       v = read(COLUP0 + pid); }
+       v = read(COLUP0 + pid);
+
+       HL_SPRITES && (((pid === 0) && (v > 0)) && (v = 10))
+       HL_SPRITES && (((pid === 1) && (v > 0)) && (v = 50))
+     }
    }
 
    drawCopy(0);
-   
+
    if (!isCopy) { return; }
 
    (psz === 1) && drawCopy(16);
@@ -165,10 +173,14 @@ function updateScreen(mem, tt) {
 
  // BALL
  const bl = (colup) => {
-   if ((x - resblx) > 0) { return; }
+   const size = Math.pow(2, (read(CTRLPF) & 0x110000) >> 4);
+   if ((x - resblx) > size) { return; }
 
    bl_ = (read(ENABL) & 0x02) === 0x02;
-   if (bl_) { v = read(colup); }
+   if (bl_) {
+     v = read(colup);
+     HL_SPRITES && ((v > 0) && (v = 30))
+   }
  }
 
  // MISSILES
@@ -186,6 +198,8 @@ function updateScreen(mem, tt) {
      mx_[mid] = isVisible;
 
      v = read(COLUP0 + mid);
+     HL_SPRITES && (((mid === 0) && (v > 0)) && (v = 40))
+     HL_SPRITES && (((mid === 1) && (v > 0)) && (v = 90))
    }
 
    drawCopy(0);
@@ -273,7 +287,7 @@ function drawer() {
        const l1_ = y_ * HM * W * WM * 4; // 3 pixel rows, 4 pixel columns, 4 byte info
 
        for (let x_ = 0; x_ < W; x_++) {
-	 const o0_ = l0_ + x_ * 4; 
+	 const o0_ = l0_ + x_ * 4;
 
 	 const o1_ = l1_ + (x_ * WM * 4);
 
@@ -299,12 +313,12 @@ function drawer() {
   const cross = (x, y) => {
     ctx.lineWidth = 1;
     ctx.strokeStyle = "#00ff00";
-    
+
     ctx.beginPath();
     ctx.moveTo(x * WM, 0);
     ctx.lineTo(x * WM, H * HM);
     ctx.stroke();
-    
+
     ctx.beginPath();
     ctx.moveTo(0, y * HM);
     ctx.lineTo(W * WM, y * HM);
