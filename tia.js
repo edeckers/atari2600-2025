@@ -59,6 +59,7 @@ function updateScreen(mem, tt) {
 
 // if (isRESP0) { resp0x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb - 1, 3); isRESP0 = false; }
 
+// if (isRESP0) { resp0x = ((tt + (hmoveWait ? 4 : 0)) % 228) - hb - 1; isRESP0 = false; }
  if (isRESP0) { resp0x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb - 1, 3); isRESP0 = false; }
  if (isRESP1) { resp1x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb - 1, 3); isRESP1 = false; }
  if (isRESM0) { resm0x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb - 1, 2); isRESM0 = false; }
@@ -145,11 +146,30 @@ function updateScreen(mem, tt) {
    const size = (psz === 7) ? 4 : ((psz === 5) ? 2 : 1); // 5 = 2x, 7 = 4x
 
    const drawCopy = (ofx) => {
-     const q = Math.floor((x - (rp + ofx)) / size);
+     // if ((psz !== 7) || (pid !== 1)) { return; }
+     const w0 = 8 * size;
+     const l0 = (rp + ofx); // left
+     const r0 = (l0 + w0);  // right
+
+     const r0w = (r0 % 160); // left wrapped
+     const l0w = (r0w - w0); // right wrapped
+
+     // FIXME There must be a better / more concise / elegant way to do this
+     //       Need to handle the situation where Player sprite 'wraps'; prettier
+     //       would probably to keep and update sprite pixels on every update of
+     //       relevant TIA registers, but that would need work that I'm not willing
+     //       to put in at this stage.
+     let d0 = 0;
+     if ((x >= l0) && (x < r0)) { d0 = x - l0; }
+     else if ((x >= l0w) && (x < r0w)) { d0 = x - l0w }
+     else { return; }
+
+     const q = Math.floor(d0 / size);
      if (q < 0) { return; }
      if (q > 8) { return; }
 
-     const drawMe = ((grp(pid) & Math.pow(2, 8 - q)) > 0);
+     const drawMe = (grp(pid) & Math.pow(2, 7 - q)) > 0;
+
      if (drawMe) {
        px_[pid] = true;
        v = read(COLUP0 + pid);
@@ -210,8 +230,8 @@ function updateScreen(mem, tt) {
    (psz === 6) && (drawCopy(16), drawCopy(32), drawCopy(56));
  }
 
- (x >= resp0x) && dp(0, resp0x);
- (x >= resp1x) && dp(1, resp1x);
+ /* (x >= resp0x) && */ dp(0, resp0x);
+ /* (x >= resp1x) && */ dp(1, resp1x);
  (x >= resm0x) && mssl(0, resm0x);
  (x >= resm1x) && mssl(1, resm1x);
  (x >= resblx) && bl(COLUPF);
