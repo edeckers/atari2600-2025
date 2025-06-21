@@ -30,7 +30,7 @@ let resblx = -1;
 
 let dirty = false;
 
-const HL_SPRITES = true;
+const HL_SPRITES = false;
 
 const mod = (n, m) => (n % m + m) % m;
 
@@ -62,8 +62,8 @@ function updateScreen(mem, tt) {
 // if (isRESP0) { resp0x = ((tt + (hmoveWait ? 4 : 0)) % 228) - hb - 1; isRESP0 = false; }
  if (isRESP0) { resp0x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb - 1, 3); isRESP0 = false; }
  if (isRESP1) { resp1x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb - 1, 3); isRESP1 = false; }
- if (isRESM0) { resm0x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb - 1, 2); isRESM0 = false; }
- if (isRESM1) { resm1x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb - 1, 2); isRESM1 = false; }
+ if (isRESM0) { resm0x = Math.max(((tt + (hmoveWait ? 3 : 0)) % 228) - hb - 1, 2); isRESM0 = false; }
+ if (isRESM1) { resm1x = Math.max(((tt + (hmoveWait ? 3 : 0)) % 228) - hb - 1, 2); isRESM1 = false; }
  if (isRESBL) { resblx = Math.max(((tt + (hmoveWait ? 3 : 0)) % 228) - hb - 1, 2); isRESBL = false; }
 
  if (isHMCLR) {
