@@ -297,7 +297,7 @@ const romAsMem = (input) => {
   }
 
   return (addr) => {
-    if (rom.length > 0x1000) {
+    if (input.length > 0x1000) {
       if (addr === 0x1ff8) { b = 0; return 0; }
       if (addr === 0x1ff9) { b = 1; return 1; }
     }
