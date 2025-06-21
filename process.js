@@ -131,33 +131,37 @@ const ciny  = (f) => (read, write) => { const nn   = read(pc + 1);        const 
 const no    = (f) => (read, write) => () => f(read, write);
 
 const adc = (m) => {
+  const m0 = m & 0xff;
   const ra0 = ra & 0xff;
 
-  if (fd) {
-    const r = b2d(ra) + fc + b2d(m);
+  if (fd) { return; }
 
-    ra = d2b(r % 100);
+  // if (fd) {
+  //   const r = b2d(ra) + fc + b2d(m);
 
-    // In decimal mode, the N, V and Z flags are not consistent with the decimal result.
-    // https://www.pagetable.com/c64ref/6502/?tab=2#ADC
-    fnu(ra);
-    fzu(ra);
-    fv = fl((ra0 & 0x80) !== (ra & 0x80));
-    fc = fl(r > 99);
-    return
-  }
+  //   ra = d2b(r % 100);
 
-  const r = ra + fc + m;
+  //   // In decimal mode, the N, V and Z flags are not consistent with the decimal result.
+  //   // https://www.pagetable.com/c64ref/6502/?tab=2#ADC
+  //   fnu(ra);
+  //   fzu(ra);
+  //   fv = fl((ra0 & 0x80) !== (ra & 0x80));
+  //   fc = fl(r > 99);
+  //   return
+  // }
+
+  const r = ra0 + m0 + fc;
+
+  fv = fl((r ^ ra0) & (r ^ m0) & 0x80);
+  fc = fl(r > 0xff);
 
   ra = r & 0xff;
 
   fnu(ra);
   fzu(ra);
-  fv = fl((ra0 & 0x80) !== (ra & 0x80));
-  fc = fl(r > 0xff);
 }
 
-const sbc = (m) => { adc(~m & 0xff); }
+const sbc = (m) => { adc(~m); }
 
 const writea = (v) => ra = v & 0xff;
 

@@ -57,7 +57,7 @@ const operators = {
   "BPL dd": [0x10, 1],
   "BVC dd": [0x50, 1],
   "BVS dd": [0x70, 1],
-  // "BRK": [0x00, 1], // Dummy byte https://github.com/spacerace/6502/blob/master/doc/6502-asm-doc/the%20B%20flag%20and%20BRK%20instruction.txt
+  "BRK": [0x00, 1], // Dummy byte https://github.com/spacerace/6502/blob/master/doc/6502-asm-doc/the%20B%20flag%20and%20BRK%20instruction.txt
   "CLC": [0x18, 0],
   "CLV": [0xb8, 0],
   "CLD": [0xd8, 0],
