@@ -230,11 +230,22 @@ function updateScreen(mem, tt) {
    (psz === 6) && (drawCopy(16), drawCopy(32), drawCopy(56));
  }
 
- /* (x >= resp0x) && */ dp(0, resp0x);
- /* (x >= resp1x) && */ dp(1, resp1x);
- (x >= resm0x) && mssl(0, resm0x);
- (x >= resm1x) && mssl(1, resm1x);
- (x >= resblx) && bl(COLUPF);
+ if ((read(CTRLPF) & 0x04)) {
+   if (!pf_) {
+    dp(1, resp1x);
+    (x >= resm1x) && mssl(1, resm1x);
+    dp(0, resp0x);
+    (x >= resm0x) && mssl(0, resm0x);
+    (x >= resblx) && bl(COLUPF);
+   }
+ } else {
+   (x >= resblx) && bl(COLUPF);
+   dp(1, resp1x);
+   (x >= resm1x) && mssl(1, resm1x);
+   dp(0, resp0x);
+   (x >= resm0x) && mssl(0, resm0x);
+ }
+
 
  // fl(px_[0] && bl_) && console.log("IIIII", x, y);
  const px0pf = (px_[0] && pf_) ? 0x80 : 0x00;
