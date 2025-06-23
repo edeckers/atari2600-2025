@@ -32,7 +32,6 @@ var interval = 1;
 var timerCounter = 1;
 
 
-const fl = (v) => v ? 1 : 0;
 
 const fzu = (v) => fz = fl(v === 0);
 const fnu = (v) => fn = fl((v & 0x80) === 0x80);
@@ -65,27 +64,6 @@ const restatus = (st) => {
 
 const pshsp = (write, value) => { write((sp & 0xff), value & 0xff); sp = (sp - 1) & 0xff; }
 const popsp = (read) => { sp = (sp + 1) & 0xff; return read(sp & 0xff, true) & 0xff; }
-
-const word = (read, addr) => {
-  const l = read(addr) & 0xff;
-  const h = read(addr + 1) & 0xff;
-
-  return ((h << 8) + l) & 0xffff;
-}
-
-const b2d = (b) => {
- const h = (b & 0xf0) >> 4;
- const l = (b & 0x0f);
-
- return (h * 10) + l;
-}
-
-const d2b = (d) => {
- const h = (Math.floor(d / 10)) & 0xf;
- const l = (d % 10) & 0xf;
-
- return ((h << 4) + l) & 0xff;
-}
 
 // https://www.pagetable.com/c64ref/6502/?tab=3#(a8),Y
 const indiry = (read, nn) => {
