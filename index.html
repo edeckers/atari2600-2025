@@ -63,7 +63,7 @@
 		     document.getElementById("sp").innerHTML = pstatus.sp.toString(16);
 		     document.getElementById("pc").innerHTML = formatPc(pstatus.pc)
 
-		     document.getElementById("fx").innerHTML = ["c:", pstatus.fc, "z:", pstatus.fz, "i:", pstatus.fi, "d:", pstatus.fd, "b:", _fb, "_:", 1, "v:", pstatus.fv, "n:", pstatus.fn].join(" ");
+		     document.getElementById("fx").innerHTML = ["c:", pstatus.fc, "z:", pstatus.fz, "i:", pstatus.fi, "d:", pstatus.fd, "b:", pstatus._fb, "_:", 1, "v:", pstatus.fv, "n:", pstatus.fn].join(" ");
 
 		     document.getElementById("intim").innerHTML = pstatus.intim.toString(10);
 		     document.getElementById("instat").innerHTML = pstatus.instat.toString(2);
