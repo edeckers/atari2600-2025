@@ -28,7 +28,7 @@ let resm0x = -1;
 let resm1x = -1;
 let resblx = -1;
 
-let dirty = false;
+let isDirt = false;
 
 const HL_SPRITES = false;
 
@@ -75,31 +75,29 @@ function updateScreen(mem, tt) {
 
    isHMCLR = false; }
 
+
+
  if (isHMOVE) {
-  const dresp0x = hm(HMP0);
-  resp0x = mod(resp0x + dresp0x, 160);
+  isDirt = true;
 
-  const dresp1x = hm(HMP1);
-  resp1x = mod(resp1x + dresp1x, 160);
+  resp0x = mod(resp0x + hm(HMP0), 160);
 
-  const dresblx = hm(HMBL);
-  resblx = mod(resblx + dresblx, 160);
+  resp1x = mod(resp1x + hm(HMP1), 160);
 
-  const dresm0x = hm(HMM0);
-  resm0x = mod(resm0x + dresm0x, 160);
+  resblx = mod(resblx + hm(HMBL), 160);
 
-  const dresm1x = hm(HMM1);
-  resm1x = mod(resm1x + dresm1x, 160);
+  resm0x = mod(resm0x + hm(HMM0), 160);
+
+  resm1x = mod(resm1x + hm(HMM1), 160);
 
   hmoveWait = true;
   isHMOVE = false; }
 
+ // Next line? Forget HMOVE
+ if ((tt % 228) === 0) { isDirt = false; }
 
- const resm0top0 = resmp(0);
- const resm1top1 = resmp(1);
-
- if (resm0top0) { resm0x = resp0x + 3; }
- if (resm1top1) { resm1x = resp1x + 3; }
+ if (resmp(0)) { resm0x = resp0x + 3; }
+ if (resmp(1)) { resm1x = resp1x + 3; }
 
  if (!inScreen) { return; }
 
@@ -230,20 +228,24 @@ function updateScreen(mem, tt) {
    (psz === 6) && (drawCopy(16), drawCopy(32), drawCopy(56));
  }
 
- if ((read(CTRLPF) & 0x04)) {
-   if (!pf_) {
-    dp(1, resp1x);
-    (x >= resm1x) && mssl(1, resm1x);
-    dp(0, resp0x);
-    (x >= resm0x) && mssl(0, resm0x);
-    (x >= resblx) && bl(COLUPF);
-   }
+ if (isDirt && (x < 8)) {
+  v = 0;
  } else {
-   (x >= resblx) && bl(COLUPF);
-   dp(1, resp1x);
-   (x >= resm1x) && mssl(1, resm1x);
-   dp(0, resp0x);
-   (x >= resm0x) && mssl(0, resm0x);
+   if ((read(CTRLPF) & 0x04)) {
+     if (!pf_) {
+      dp(1, resp1x);
+      (x >= resm1x) && mssl(1, resm1x);
+      dp(0, resp0x);
+      (x >= resm0x) && mssl(0, resm0x);
+      (x >= resblx) && bl(COLUPF);
+     }
+   } else {
+     (x >= resblx) && bl(COLUPF);
+     dp(1, resp1x);
+     (x >= resm1x) && mssl(1, resm1x);
+     dp(0, resp0x);
+     (x >= resm0x) && mssl(0, resm0x);
+   }
  }
 
 
