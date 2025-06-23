@@ -51,6 +51,11 @@ function formatASM(line) {
 	  .replace("nn", operand.reverse().map(o => o.toString(16).padStart(2, "0")).join(""))
   ].join(" ");
 }
+
+const flip8 = (xs) => {
+    return ~xs & 0xff;
+}
+
 const fl = (v) => v ? 1 : 0;
 const word = (read, addr) => {
   const l = read(addr) & 0xff;

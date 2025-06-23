@@ -34,13 +34,13 @@ function clearScreen() {
 }
 
 let hmoveWait = false;
-function updateScreen(mem, tt) {
+function updateScreen(read, write, tt) {
  const invb = tt <= vb;
  const inover = tt > os;
  const inhblank = ((tt % 228) <= hb);
 
- const read = (a) => mem[a];
- const write = (a, v) => { mem[a] = v; }
+ // const read = (a) => mem[a];
+ // const write = (a, v) => { mem[a] = v; }
 
  const enam = (pid) => (read(ENAM0 + pid) & 0x02) === 0x02;
  const resmp = (pid) => (read(RESMP0 + pid) & 0x02) === 0x02;
@@ -62,11 +62,11 @@ function updateScreen(mem, tt) {
  if (isRESBL) { resblx = Math.max(((tt + (hmoveWait ? 3 : 0)) % 228) - hb - 1, 2); isRESBL = false; }
 
  if (isHMCLR) {
-   mem[HMP0] = 0;
-   mem[HMP1] = 0;
-   mem[HMBL] = 0;
-   mem[HMM0] = 0;
-   mem[HMM1] = 0;
+   write(HMP0, 0);
+   write(HMP1, 0);
+   write(HMBL, 0);
+   write(HMM0, 0);
+   write(HMM1, 0);
 
    isHMCLR = false; }
 
@@ -129,7 +129,7 @@ function updateScreen(mem, tt) {
  const grp = (pid) => {
    const v = read(GRP0 + pid);
 
-   return (mem[REFP0 + pid] & 0x08) ? rev8(v) : v;
+   return (read(REFP0 + pid) & 0x08) ? rev8(v) : v;
  }
 
  // PLAYERS
