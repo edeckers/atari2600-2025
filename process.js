@@ -134,21 +134,19 @@ const adc = (m) => {
   const m0 = m & 0xff;
   const ra0 = ra & 0xff;
 
-  if (fd) { return; }
+  if (fd) {
+    const r = b2d(ra) + fc + b2d(m);
 
-  // if (fd) {
-  //   const r = b2d(ra) + fc + b2d(m);
+    ra = d2b(r % 100);
 
-  //   ra = d2b(r % 100);
-
-  //   // In decimal mode, the N, V and Z flags are not consistent with the decimal result.
-  //   // https://www.pagetable.com/c64ref/6502/?tab=2#ADC
-  //   fnu(ra);
-  //   fzu(ra);
-  //   fv = fl((ra0 & 0x80) !== (ra & 0x80));
-  //   fc = fl(r > 99);
-  //   return
-  // }
+    // In decimal mode, the N, V and Z flags are not consistent with the decimal result.
+    // https://www.pagetable.com/c64ref/6502/?tab=2#ADC
+    fnu(ra);
+    fzu(ra);
+    fv = fl((r ^ ra0) & (r ^ m0) & 0x80);
+    fc = fl(r > 99);
+    return
+  }
 
   const r = ra0 + m0 + fc;
 
