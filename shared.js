@@ -51,7 +51,22 @@ function formatASM(line) {
 	  .replace("nn", operand.reverse().map(o => o.toString(16).padStart(2, "0")).join(""))
   ].join(" ");
 }
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+const rev8 = (xs) => {
+    let x0 = 0;
+
+    x0 |= (xs & 0x80) >> 7;
+    x0 |= (xs & 0x40) >> 5;
+    x0 |= (xs & 0x20) >> 3;
+    x0 |= (xs & 0x10) >> 1;
+    x0 |= (xs & 0x08) << 1;
+    x0 |= (xs & 0x04) << 3;
+    x0 |= (xs & 0x02) << 5;
+    x0 |= (xs & 0x01) << 7;
+
+    return x0 & 0xff;
+}
 const flip8 = (xs) => {
     return ~xs & 0xff;
 }

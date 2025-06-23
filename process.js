@@ -355,24 +355,9 @@ const processors = {
 	  pc += 3; })),
 }
 
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const pfs = new Set([PF0, PF1, PF2]);
 
-const rev8 = (xs) => {
-    let x0 = 0;
-
-    x0 |= (xs & 0x80) >> 7;
-    x0 |= (xs & 0x40) >> 5;
-    x0 |= (xs & 0x20) >> 3;
-    x0 |= (xs & 0x10) >> 1;
-    x0 |= (xs & 0x08) << 1;
-    x0 |= (xs & 0x04) << 3;
-    x0 |= (xs & 0x02) << 5;
-    x0 |= (xs & 0x01) << 7;
-
-    return x0 & 0xff;
-}
 
 const machine = (input) => {
   let isKilled = false;
