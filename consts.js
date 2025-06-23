@@ -4,63 +4,68 @@ const BLK = FRM;
 const DLY = (BLK / HZ) * 1_000;
 
 // addresses
-VSYNC = 0x00;
-WSYNC = 0x02;
-VBLANK = 0x01;
+const VSYNC  = 0x00;
+const VBLANK = 0x01;
+const WSYNC  = 0x02;
+const NUSIZ0 = 0x04;
 
-COLUP0 = 0x06;
-COLUP1 = 0x07;
-REFP0 = 0x0b;
-REFP1 = 0x0c;
-RESP0 = 0x10;
-RESP1 = 0x11;
-RESM0 = 0x12;
-RESM1 = 0x13;
-RESBL = 0x14;
+const COLUP0 = 0x06;
+const COLUP1 = 0x07;
+const COLUPF = 0x08;
+const COLUBK = 0x09;
+const CTRLPF = 0x0a;
+const REFP0  = 0x0b;
+const REFP1  = 0x0c;
+const RESP0  = 0x10;
+const RESP1  = 0x11;
+const RESM0  = 0x12;
+const RESM1  = 0x13;
+const RESBL  = 0x14;
 
-GRP0 = 0x1b;
-GRP1 = 0x1c;
-ENAM0 = 0x1d;
-ENAM1 = 0x1e;
-ENABL = 0x1f;
 
-HMP0 = 0x20;
-HMP1 = 0x21;
-HMM0 = 0x22;
-HMM1 = 0x23;
-HMBL = 0x24;
-VDELP0 = 0x25;
-VDELP1 = 0x26;
-VDELBL = 0x27;
-RESMP0 = 0x28;
-RESMP1 = 0x29;
-HMOVE = 0x2a;
-HMCLR = 0x2b;
-CXCLR = 0x2c;
+const GRP0   = 0x1b;
+const GRP1   = 0x1c;
+const ENAM0  = 0x1d;
+const ENAM1  = 0x1e;
+const ENABL  = 0x1f;
 
-CXM0P = 0x30;
-CXM1P = 0x31;
-CXP0FB = 0x32;
-CXP1FB = 0x33;
-CXM0FB = 0x34;
-CXM1FB = 0x35;
-CXBLPF = 0x36;
+const HMP0   = 0x20;
+const HMP1   = 0x21;
+const HMM0   = 0x22;
+const HMM1   = 0x23;
+const HMBL   = 0x24;
+const VDELP0 = 0x25;
+const VDELP1 = 0x26;
+const VDELBL = 0x27;
+const RESMP0 = 0x28;
+const RESMP1 = 0x29;
+const HMOVE  = 0x2a;
+const HMCLR  = 0x2b;
+const CXCLR  = 0x2c;
 
-INTIM = 0x284;
-INSTAT = 0x285;
-TIM1T = 0x294;
-TIM8T = 0x295;
-TIM64T = 0x296;
-T1024T = 0x297;
+const CXM0P  = 0x30;
+const CXM1P  = 0x31;
+const CXP0FB = 0x32;
+const CXP1FB = 0x33;
+const CXM0FB = 0x34;
+const CXM1FB = 0x35;
+const CXBLPF = 0x36;
 
-INPT0 = 0x38;
-INPT4 = 0x3c;
-INPT5 = 0x3d;
+const INTIM  = 0x284;
+const INSTAT = 0x285;
+const TIM1T  = 0x294;
+const TIM8T  = 0x295;
+const TIM64T = 0x296;
+const T1024T = 0x297;
 
-SWCHA = 0x280;
-SWACNT = 0x281;
-SWCHB = 0x282; // .3 B/W (0) or Color (1)?
-SWBCNT = 0x283;
+const INPT0  = 0x38;
+const INPT4  = 0x3c;
+const INPT5  = 0x3d;
+
+const SWCHA  = 0x280;
+const SWACNT = 0x281;
+const SWCHB  = 0x282; // .3 B/W (0) or Color (1)?
+const SWBCNT = 0x283;
 
 // https://www.randomterrain.com/atari-2600-memories-tia-color-charts.html#ntsc_pal_color_conversion
 const colors = {

@@ -7,14 +7,9 @@ const os = 228 * (262 - 30 + OS_AIR);
 
 const hb = 68;
 
-const NUSIZ0 = 0x04;
-const NUSIZ1 = 0x05;
-const COLUP0 = 0x06;
-const COLUP1 = 0x07;
-const COLUPF = 0x08;
-const COLUBK = 0x09;
-const CTRLPF = 0x0a;
-
+// const NUSIZ1 = 0x05;
+// const COLUP0 = 0x06;
+// const COLUP1 = 0x07;
 const PF0 = 0x0d;
 const PF1 = 0x0e;
 const PF2 = 0x0f;
