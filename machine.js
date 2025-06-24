@@ -3,6 +3,8 @@ const machine = (input) => {
 
   let cc = 0;
   let isStep = false;
+  // FIXME ED Move dependency from step/breakpoint
+  let s = (228 * (3 + 37)) + 68 + (228 / 2); // Middle of screen, first line - pretty random, other emulators seem to work that way
   let t = 0;
   let u = 0;
 
@@ -25,11 +27,6 @@ const machine = (input) => {
   const [read, write] = bus(riotRead, riotWrite, romRead, tiaRead, tiaWrite);
 
   const [step, piaState] = mos6507(read, write, rdy);
-
-  PF = 0;
-
-  // FIXME ED Move dependency from step/breakpoint
-  let s = (228 * (3 + 37)) + 68 + (228 / 2); // Middle of screen, first line - pretty random, other emulators seem to work that way
 
   const break_ = async () => {
       let propagated = false;
@@ -76,7 +73,7 @@ const machine = (input) => {
   const process = async () => {
     // let a = 0;
     while (!isKilled) {
-      if (u === BLK) {u = 0; await sleep(DLY);  }
+      if (u === BLK) {u = 0; t = 0; await sleep(DLY);  }
 
       // paddle_();
 
