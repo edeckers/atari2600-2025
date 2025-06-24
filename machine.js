@@ -10,7 +10,7 @@ const machine = (input) => {
   document.addEventListener("continue", () => { isContinue = true; isStep = false; });
   document.addEventListener("step", () => { isBreakout = true; isStep = true });
 
-  const [read, write, readRaw, writeRaw, controller, switches, tickTimer] = riot(input);
+  const [read, write, readRaw, writeRaw, controller, switches, tickTimer, riotState] = riot(input);
 
   const [step, piaState] = mos6507(read, write, tickTimer);
 
@@ -104,6 +104,7 @@ const machine = (input) => {
       cc,
       tt: s,
       ...piaState(),
+      ...riotState(),
       p0: readRaw(GRP0),
       p1: readRaw(GRP1),
       p0x: resp0x,
@@ -115,17 +116,8 @@ const machine = (input) => {
       pf2: readRaw(PF2),
       pf: PF,
       ctrlpf: readRaw(CTRLPF),
-      swcha:  readRaw(SWCHA),
-      swchb:  readRaw(SWCHB),
-      swacnt: readRaw(SWACNT),
-      swbcnt: readRaw(SWBCNT),
       x,
       y,
-      intim: readRaw(INTIM),
-      instat: readRaw(INSTAT),
-      memory: Array(0x100).fill(1).map((_, k) => readRaw(k)),
-      timerCounter,
-      interval,
       isVSync,
       isWSync,
     });

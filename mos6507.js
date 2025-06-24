@@ -380,7 +380,7 @@ const mos6507 = (read, write, tickTimer) => {
     }
   }
 
-  const info = () => ({
+  const state = () => ({
     pc,
     rx,
     ry,
@@ -392,9 +392,8 @@ const mos6507 = (read, write, tickTimer) => {
     fn,
     fd,
     fi,
- 
   });
 
 
-  return [step, info];
+  return [step, state];
 }

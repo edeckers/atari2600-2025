@@ -229,8 +229,19 @@ const riot = (input) => {
   const readRaw = (addr) => mem[addr];
   const writeRaw = (addr, v) => write(addr, v);
 
+  const state = () => ({
+      swcha:  mem[SWCHA],
+      swchb:  mem[SWCHB],
+      swacnt: mem[SWACNT],
+      swbcnt: mem[SWBCNT],
+      intim:  mem[INTIM],
+      instat: mem[INSTAT],
+      memory: mem.slice(0x0000, 0x0100),
+      timerCounter,
+      interval,
+  });
 
-  return [read, write, readRaw, writeRaw, controller, switches, tickTimer];
+  return [read, write, readRaw, writeRaw, controller, switches, tickTimer, state];
 }
 
 
