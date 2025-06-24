@@ -5,7 +5,8 @@
 		<script type="text/javascript" src="tia.js"></script>
 		<script type="text/javascript" src="rom.js"></script>
 		<script type="text/javascript" src="riot.js"></script>
-		<script type="text/javascript" src="process.js"></script>
+		<script type="text/javascript" src="mos6507.js"></script>
+		<script type="text/javascript" src="machine.js"></script>
 		<script type="text/javascript" src="test.js"></script>
 		<script type="text/javascript">
                    const roms = {
@@ -217,15 +218,13 @@
 		   }
                    
 		   const toggleBreakpoint = (address) => {
-		     const romBytes = readRom();
-
 		     if (breakpoints.has(address)) {
 		       breakpoints.delete(address);
 		     } else {
 		       breakpoints.add(address);
 		     }
 
-		     loadSource(romBytes);
+		     loadSource(readRom());
 		   }
 
 		   document.addEventListener("DOMContentLoaded", (event) => {

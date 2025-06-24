@@ -2,6 +2,8 @@ const riot = (input) => {
   var interval = 1;
   var timerCounter = 1;
 
+
+  const pfs = new Set([PF0, PF1, PF2]);
   const rom = romAsMem(input.length === 2_048 ? input.concat(input) : input);
   const mem = new Uint8Array(0x0fff);
 

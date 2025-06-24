@@ -356,18 +356,4 @@ const decode = (input) => {
   return lines;
 }
 
-function loadFromBase64(input) {
-  const romInBytes = atob(input).split("").map(c => c.charCodeAt(0));
-
-  if (printHex) {
-    console.log(formatHex(romInBytes.map(b => b.toString(16))));
-  }
-
-  const lines = decode(romInBytes);
-
-  if (printAsm) {
-    console.log (lines.join("\n"));
-  }
-
-  return romInBytes;
-}
+const loadFromBase64 = (input) => atob(input).split("").map(c => c.charCodeAt(0));
