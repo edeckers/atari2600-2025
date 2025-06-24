@@ -352,11 +352,12 @@ const mos6507 = (read, write, rdy) => {
   let action = undefined;
 
   const step = () => {
+    if (!rdy()) { return; }
+
     const isWaiting = action && !action.next().done;
 
     if (isWaiting) { return; } // allow complete computation
 
-    if (rdy() === 0) { return; }
 
     const o = read(pc)
 

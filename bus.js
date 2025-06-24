@@ -42,7 +42,10 @@ const bus = (riotRead, riotWrite, romRead, tiaRead, tiaWrite) => {
   const write = (addr, v) => {
     const naddr = nrml(addr);
 
-    if ((addr & 0x1080) === 0x0000) { // TIA
+    if (addr & 0x1000) { // ROM
+	/* noop */
+	return; // TODO Somehow Moon Patrol needs this, find out why
+    } else if ((addr & 0x1080) === 0x0000) { // TIA
 	return tiaWrite(naddr, v);
     } else if ((addr & 0x1280) === 0x0080) { // RAM
 	return riotWrite(naddr, v);
