@@ -1,5 +1,7 @@
 const machine = (input) => {
   let isKilled = false;
+  let isContinue = false;
+  let isBreakout = false;
 
   let cc = 0;
   let isStep = false;
@@ -73,7 +75,6 @@ const machine = (input) => {
 
       // PIA once every 3 cycles
       ((t % 3) === 0) && ( await break_(), tickTimer(), step(), cc = (cc + 1) % 76);
-
 
       t++;
       s++;

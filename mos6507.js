@@ -358,8 +358,6 @@ const mos6507 = (read, write, rdy) => {
 
     if (rdy() === 0) { return; }
 
-    isContinue = false;
-
     const o = read(pc)
 
     const p = processors[o];

@@ -1,7 +1,3 @@
-const printHex = true;
-const printAsm = true;
-const printState = false;
-
 const logLevel = 1;
 
 const error = (data) => { logLevel <= 3 && console.error(data); }
@@ -101,13 +97,8 @@ const d2b = (d) => {
 const formatPc = (pc) => pc.toString(16).padStart(4, "0");
 
 const breakpoints = new Set();
-let isContinue = false;
-let isStep = false;
-let isBreakout = false;
 
 // helpers
-
-PF = 0;
 
 let bpConditional = {
   x: { lower: undefined, upper: undefined },

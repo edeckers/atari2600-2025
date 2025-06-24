@@ -123,8 +123,8 @@ const tia = (rdy) => {
 
   const updateScreen = () => {
    tt = (tt + 1) % BLK;
-	  //
-   // EOL
+
+   // EOL / Continue after possible WSYNC
    if ((tt % 228) === 0) { rdy(1); } // FIXME Move _after_ CPU action, because now update happens too early and sprites get drawn out of position
 
    const invb = tt <= VB;
