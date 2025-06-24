@@ -2,7 +2,6 @@ const riot = (input) => {
   var interval = 1;
   var timerCounter = 1;
 
-
   const pfs = new Set([PF0, PF1, PF2]);
   const rom = romAsMem(input.length === 2_048 ? input.concat(input) : input);
   const mem = new Uint8Array(0x0fff);
@@ -15,7 +14,7 @@ const riot = (input) => {
 
       // FIXME This is probably not correct:
       //       TIA has read and write addresses, some of them
-      //       which overlap, such as 0C (REFP1) and 0c (INPT4).
+      //       which overlap, such as 0c (REFP1) and 0c (INPT4).
       //       Only the action differs. We move reads to 0xyz
       //       to mirror 0x3z
       return r ? (_a | 0x30) : _a;
@@ -243,5 +242,3 @@ const riot = (input) => {
 
   return [read, write, readRaw, writeRaw, controller, switches, tickTimer, state];
 }
-
-

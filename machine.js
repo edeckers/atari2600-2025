@@ -71,7 +71,7 @@ const machine = (input) => {
       if (u === BLK) {u = 0; await sleep(DLY);  }
       // const y = Math.floor((s - vb) / 228);
       if (isVSync) { 
-	      // FIMXE requestAnimationFrame, renders out-of-sync, most notably visible in "All Sprites"
+	      // FIXME requestAnimationFrame, renders out-of-sync, most notably visible in "All Sprites"
 	      draw(); /* requestAnimationFrame(draw); */ }
 
       // paddle_();
@@ -82,7 +82,7 @@ const machine = (input) => {
       if (t === 3) { t = 0; }
 
       // PIA once every 3 cycles
-      (t === 0) && ( await break_(), step(), cc = (cc + 1) % 76);
+      (t === 0) && ( await break_(), tickTimer(), step(), cc = (cc + 1) % 76);
 
       // EOL -> process current operation immediately
       if ((s % 228) === 0) {

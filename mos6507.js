@@ -1,4 +1,4 @@
-const mos6507 = (read, write, tickTimer) => {
+const mos6507 = (read, write) => {
   let pc = 0;
   let sp = 0xff;
   
@@ -336,8 +336,8 @@ const mos6507 = (read, write, tickTimer) => {
     /* SBC nn, X   */ 0xf5: cmd(4, czpx((_r, _w, m)               => { sbc(m); pc += 2; })),
     /* INC nn, X   */ 0xf6: cmd(5, czpx((_r, write, m, a)         => { inc(write, m, a); pc += 2; })),
     /* SED         */ 0xf8: cmd(2, no(()                          => { fd = 1; pc += 1; })),
-    /* SBC nnnn, Y */ 0xf9: cmd(4, cabsy((_r, _w, m)               => { sbc(m); pc += 3; })),
-    /* ISC nnnn, X */ 0xff: cmd(7, cabsx((read, write, m, a)       => {  // UNDOCUMENTED
+    /* SBC nnnn, Y */ 0xf9: cmd(4, cabsy((_r, _w, m)              => { sbc(m); pc += 3; })),
+    /* ISC nnnn, X */ 0xff: cmd(7, cabsx((read, write, m, a)      => {  // UNDOCUMENTED
   	  // https://www.masswerk.at/nowgobang/2021/6502-illegal-opcodes
   	  inc(write, m, a);
   
@@ -358,8 +358,6 @@ const mos6507 = (read, write, tickTimer) => {
   let action = undefined;
 
   const step = () => {
-    tickTimer();
-
     const isWaiting = action && !action.next().done;
 
     if (isWSync || isWaiting) { return; }
