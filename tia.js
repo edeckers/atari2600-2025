@@ -75,7 +75,7 @@ const tia = (rdy) => {
      if (naddr === VSYNC) { 
        if (v & 0x02) {
 	 tt = 0;
-	 // rdy(1);
+	 rdy(1);
 	 isVSync = true;
 	 return;
        }

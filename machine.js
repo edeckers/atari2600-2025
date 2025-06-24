@@ -1,12 +1,12 @@
 const machine = (input) => {
   let isKilled = false;
+
+  // FIXME ED Move dependency from step/breakpoint
   let isContinue = false;
   let isBreakout = false;
 
   let cc = 0;
   let isStep = false;
-  // FIXME ED Move dependency from step/breakpoint
-  // let s = (228 * (3 + 37)) + 68 + (228 / 2); // Middle of screen, first line - pretty random, other emulators seem to work that way
 
   document.addEventListener("chrom", () => { isKilled = true; isBreak = false; });
   document.addEventListener("continue", () => { isContinue = true; isStep = false; });
@@ -75,6 +75,7 @@ const machine = (input) => {
       (t === 0) && ( /* await break_(), */ tickTimer(), step(), cc = (cc + 1) % 76);
 
       t = (t + 1) % 3;
+
       u++;
     }
   }
