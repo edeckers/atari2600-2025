@@ -14,6 +14,8 @@ const machine = (input) => {
 
   const [step, piaState] = mos6507(read, write, tickTimer);
 
+  const [updateScreen, clearScreen, drawer, tiaState] = tia(readRaw, writeRaw);
+
   const [draw, cross] = drawer();
 
   PF = 0;
@@ -32,13 +34,13 @@ const machine = (input) => {
         // if (bpConditional.y.upper !== undefined && (y > bpConditional.y.upper)) { break; }
 	// if (isStep) { while (action && !action.next().done) { cc = (cc + 1) % 76, s++ } }
 
-        const x = (s % 228) - hb;
-        const y = Math.floor((s - vb) / 228);
+        const x = (s % 228) - VB;
+        const y = Math.floor((s - VB) / 228);
 
 
         if (!propagated) {
           document.dispatchEvent(new Event("break"));
-          updateScreen(readRaw, writeRaw, s);
+          updateScreen(s);
           requestAnimationFrame(draw);
           requestAnimationFrame(() => cross(x, y));
           propagated = true;
@@ -49,7 +51,7 @@ const machine = (input) => {
   }
 
   const tia_ = () => {
-      updateScreen(readRaw, writeRaw, s);
+      updateScreen(s);
 
       if (!isVSync && !(s === BLK)) { return }
 
@@ -97,25 +99,15 @@ const machine = (input) => {
   }
 
   const info = () => {
-    const x = (s % 228) - hb;
-    const y = Math.floor((s - vb) / 228);
+    const x = (s % 228) - VB;
+    const y = Math.floor((s - VB) / 228);
 
     return ({
       cc,
       tt: s,
       ...piaState(),
       ...riotState(),
-      p0: readRaw(GRP0),
-      p1: readRaw(GRP1),
-      p0x: resp0x,
-      p1x: resp1x,
-      m0x: resm0x,
-      m1x: resm1x,
-      pf0: readRaw(PF0),
-      pf1: readRaw(PF1),
-      pf2: readRaw(PF2),
-      pf: PF,
-      ctrlpf: readRaw(CTRLPF),
+      ...tiaState(),
       x,
       y,
       isVSync,

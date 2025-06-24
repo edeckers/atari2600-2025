@@ -27,9 +27,9 @@ const tcd4 = (v) => {
  return (v & 0x08) ? -(((~v & 0x07) + 1) & 0x0f) : v & 0x0f;
 }
 
+const mod = (n, m) => (n % m + m) % m;
 
-
-function formatHex(input, columns = 10) {
+const formatHex = (input, columns = 10) => {
   const operations = [];
 
   for (i = 0; i < input.length; i += columns) {
@@ -39,7 +39,7 @@ function formatHex(input, columns = 10) {
   return operations.join("\n");
 }
 
-function formatASM(line) {
+const formatASM = (line) => {
   const [ops, name] = line;
 
   const codeAsHex = ops.map(c => c.toString(16).padStart(2, "0"));
@@ -54,6 +54,7 @@ function formatASM(line) {
 	  .replace("nn", operand.reverse().map(o => o.toString(16).padStart(2, "0")).join(""))
   ].join(" ");
 }
+
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const rev8 = (xs) => {

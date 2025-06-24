@@ -3,6 +3,16 @@ const FRM = (228 * 262);
 const BLK = FRM;
 const DLY = (BLK / HZ) * 1_000;
 
+// tia / television constants
+const VB_AIR = 10;
+const OS_AIR = 20;
+const [W, H] = [161, 192 + VB_AIR + OS_AIR];
+
+const VB = 228 * (3 + 37 - VB_AIR);
+const OS = 228 * (262 - 30 + OS_AIR);
+
+const HB = 68;
+
 // addresses
 const VSYNC  = 0x00;
 const VBLANK = 0x01;
@@ -16,6 +26,9 @@ const COLUBK = 0x09;
 const CTRLPF = 0x0a;
 const REFP0  = 0x0b;
 const REFP1  = 0x0c;
+const PF0    = 0x0d;
+const PF1    = 0x0e;
+const PF2    = 0x0f;
 const RESP0  = 0x10;
 const RESP1  = 0x11;
 const RESM0  = 0x12;
