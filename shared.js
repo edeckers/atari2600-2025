@@ -1,4 +1,3 @@
-var isWSync = false;
 var isVSync = false;
 
 const printHex = true;
@@ -28,6 +27,8 @@ const tcd4 = (v) => {
 }
 
 const mod = (n, m) => (n % m + m) % m;
+
+const pin = (v) => { let rdy = v; return [() => rdy, (a) => rdy = a]; };
 
 const formatHex = (input, columns = 10) => {
   const operations = [];

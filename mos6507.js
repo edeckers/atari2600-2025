@@ -1,4 +1,4 @@
-const mos6507 = (read, write) => {
+const mos6507 = (read, write, rdy) => {
   let pc = 0;
   let sp = 0xff;
   
@@ -58,7 +58,6 @@ const mos6507 = (read, write) => {
   
   // https://www.pagetable.com/c64ref/6502/?tab=3#(a8),Y
   const indiry = (read, nn) => {
-  
     const o = read(nn) + ry;
     const l = o % 0xff;
     const c = fl(l < o);
@@ -76,14 +75,14 @@ const mos6507 = (read, write) => {
     return ((h << 8) + l) & 0xffff;
   }
   
-  const pzx = (nn) => { return (nn + rx) & 0xff; }
-  const pzy = (nn) => { return (nn + ry) & 0xff; }
+  const pzx  = (nn)   => { return (nn + rx) & 0xff; }
+  const pzy  = (nn)   => { return (nn + ry) & 0xff; }
   const absx = (nnnn) => { return (nnnn + rx) & 0xffff; }
   const absy = (nnnn) => { return (nnnn + ry) & 0xffff; }
   
-  const pb1y  = (read) => { const nn = read(pc + 1); return fl(((nn & 0xff) + (ry & 0xff) > 0xff)); }
-  const pb2x  = (read) => { const nnnn = word(read, pc + 1); return fl((((nnnn & 0xff) + (rx & 0xff)) > 0xff)); }
-  const pb2y  = (read) => { const nnnn = word(read, pc + 1); return fl((((nnnn & 0xff) + (ry & 0xff)) > 0xff)); }
+  const pb1y  = (read)    => { const nn = read(pc + 1); return fl(((nn & 0xff) + (ry & 0xff) > 0xff)); }
+  const pb2x  = (read)    => { const nnnn = word(read, pc + 1); return fl((((nnnn & 0xff) + (rx & 0xff)) > 0xff)); }
+  const pb2y  = (read)    => { const nnnn = word(read, pc + 1); return fl((((nnnn & 0xff) + (ry & 0xff)) > 0xff)); }
   const cjt   = (read, c) => { if (!c) { return 0; } const r0 = fl(c); const dd = read(pc + 1); const r1 = ((pc & 0xff) + tcd(dd)); return fl((r1 < 0) || (r1 > 0xff)) + r0; }
   
   const cjim  = (f) => (read, write) => { const nn   = read(pc + 1);                                    return () => f(read, write, nn);  }
@@ -348,19 +347,16 @@ const mos6507 = (read, write) => {
   	  pc += 3; })),
   }
 
-  const entrypoint = word(read, 0xfffc)
-
-  pc = entrypoint; // || 0xf000;
-  PF = 0;
-
-  dbg("entrypoint", pc.toString(16));
+  pc = word(read, 0xfffc);
 
   let action = undefined;
 
   const step = () => {
     const isWaiting = action && !action.next().done;
 
-    if (isWSync || isWaiting) { return; }
+    if (isWaiting) { return; } // allow complete computation
+
+    if (rdy() === 0) { return; }
 
     isContinue = false;
 
@@ -391,7 +387,6 @@ const mos6507 = (read, write) => {
     fd,
     fi,
   });
-
 
   return [step, state];
 }

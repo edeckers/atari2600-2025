@@ -14,7 +14,9 @@ const machine = (input) => {
 
   const [riotRead, riotWrite, swcha, switches, tickTimer, riotState] = riot();
 
-  const [tiaRead, tiaWrite, inpt4, inpt5, updateScreen, drawer, tiaState] = tia();
+  const [rdy, rdyw] = pin(1);
+
+  const [tiaRead, tiaWrite, inpt4, inpt5, updateScreen, drawer, tiaState] = tia(rdyw);
 
   const ctrl = controller(swcha, inpt4, inpt5);
 
@@ -22,7 +24,7 @@ const machine = (input) => {
 
   const [read, write] = bus(riotRead, riotWrite, romRead, tiaRead, tiaWrite);
 
-  const [step, piaState] = mos6507(read, write);
+  const [step, piaState] = mos6507(read, write, rdy);
 
   PF = 0;
 
@@ -32,8 +34,8 @@ const machine = (input) => {
   const break_ = async () => {
       let propagated = false;
       while (!isBreakout && ((breakpoints.has(piaState().pc) && !isContinue) || isStep)) {
-	if (isWSync) { isBreakout = false; return; }
-	if (isVSync) { isBreakout = false; return; }
+	// if (isWSync) { isBreakout = false; return; }
+	// if (isVSync) { isBreakout = false; return; }
         // if (bpConditional.x.lower !== undefined && (x < bpConditional.x.lower)) { break; }
         // if (bpConditional.x.upper !== undefined && (x > bpConditional.x.upper)) { break; }
         // if (bpConditional.y.lower !== undefined && (y < bpConditional.y.lower)) { break; }
@@ -42,7 +44,6 @@ const machine = (input) => {
 
         const x = (s % 228) - VB;
         const y = Math.floor((s - VB) / 228);
-
 
         if (!propagated) {
           document.dispatchEvent(new Event("break"));
@@ -66,7 +67,7 @@ const machine = (input) => {
       fs = new Date();
       s = 0;
       t = 0;
-      cc = 0;
+      // cc = 0;
       isVSync = false;
   }
 
@@ -75,7 +76,7 @@ const machine = (input) => {
     while (!isKilled) {
       if (u === BLK) {u = 0; await sleep(DLY);  }
       // const y = Math.floor((s - vb) / 228);
-      if (isVSync) { 
+      if (isVSync) {
 	      // FIXME requestAnimationFrame, renders out-of-sync, most notably visible in "All Sprites"
 	      draw(); /* requestAnimationFrame(draw); */ }
 
@@ -89,13 +90,8 @@ const machine = (input) => {
       // PIA once every 3 cycles
       (t === 0) && ( await break_(), tickTimer(), step(), cc = (cc + 1) % 76);
 
-      // EOL -> process current operation immediately
-      if ((s % 228) === 0) {
-	 isWSync = false;
-	 cc = 0;
-	 // while (!action.next().done) { }
-      }
-
+      // EOL
+      if ((s % 228) === 0) { rdyw(1); cc = 0; }
 
       t++;
       s++;
@@ -110,7 +106,7 @@ const machine = (input) => {
       ...riotState(),
       ...tiaState(),
       isVSync,
-      isWSync,
+      isWSync: !rdy(),
     });
 
   return [process, ctrl, switches, info];

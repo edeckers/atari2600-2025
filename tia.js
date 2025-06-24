@@ -1,4 +1,4 @@
-const tia = () => {
+const tia = (rdy) => {
   const arrayBuffer = new ArrayBuffer(4 * W * H);
   const pfs = new Set([PF0, PF1, PF2]);
   let screen = new Uint8ClampedArray(arrayBuffer);
@@ -61,7 +61,7 @@ const tia = () => {
      if (naddr === INPT4) { return; }
      if (naddr === INPT5) { return; }
 
-     if (naddr === WSYNC) { isWSync = true; return; }
+     if (naddr === WSYNC) { rdy(0); return; }
      if (naddr === RESP0) { isRESP0 = true; return; }
      if (naddr === RESP1) { isRESP1 = true; return; }
      if (naddr === RESM0) { isRESM0 = true; return; }
@@ -160,7 +160,7 @@ const tia = () => {
     isHMOVE = false; }
   
    // Next line? Forget HMOVE
-   if ((tt % 228) === 0) { isDirt = false; }
+   if ((tt % 228) === 0) { isDirt = false; /*rdy(1);*/ }
   
    if (resmp(0)) { resm0x = resp0x + 3; }
    if (resmp(1)) { resm1x = resp1x + 3; }
