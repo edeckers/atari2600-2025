@@ -14,7 +14,7 @@ const machine = (input) => {
 
   const [riotRead, riotWrite, swcha, switches, tickTimer, riotState] = riot();
 
-  const [tiaRead, tiaWrite, inpt4, inpt5, updateScreen, clearScreen, drawer, tiaState] = tia();
+  const [tiaRead, tiaWrite, inpt4, inpt5, updateScreen, drawer, tiaState] = tia();
 
   const ctrl = controller(swcha, inpt4, inpt5);
 
@@ -66,7 +66,6 @@ const machine = (input) => {
       fs = new Date();
       s = 0;
       t = 0;
-      clearScreen();
       cc = 0;
       isVSync = false;
   }

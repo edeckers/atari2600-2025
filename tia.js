@@ -113,10 +113,6 @@ const tia = () => {
 
   const read = (naddr) => mem[naddr] & 0xff;
 
-  const clearScreen = () => {
-   screen = new Uint8ClampedArray(arrayBuffer);
-  }
-  
   const updateScreen = (tt) => {
    s = tt;
 
@@ -449,5 +445,5 @@ const tia = () => {
 
   });
 
-  return [read, write, inpt4, inpt5, updateScreen, clearScreen, drawer, state];
+  return [read, write, inpt4, inpt5, updateScreen, drawer, state];
 }
