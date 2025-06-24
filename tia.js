@@ -3,13 +3,14 @@ const tia = (rdy) => {
   const pfs = new Set([PF0, PF1, PF2]);
   let screen = new Uint8ClampedArray(arrayBuffer);
   
+  let isVSync = false;
   let resp0x = -1;
   let resp1x = -1;
   let resm0x = -1;
   let resm1x = -1;
   let resblx = -1;
   let hmoveWait = false;
-  let s = -1;
+  let tt = -1;
   
   let isDirt = false;
 
@@ -71,7 +72,14 @@ const tia = (rdy) => {
      if (naddr === HMOVE) { isHMOVE = true; return; }
      if (naddr === HMCLR) { isHMCLR = true; return; }
 
-     if (naddr === VSYNC) { isVSync = (v & 0x02) === 0x02; }
+     if (naddr === VSYNC) { 
+       if (v & 0x02) {
+	 tt = 0;
+	 rdy(1);
+	 isVSync = true;
+	 return;
+       }
+     }
 
      if (naddr === VBLANK) {
        if ((v & 0x80) === 0x00) {
@@ -113,8 +121,11 @@ const tia = (rdy) => {
 
   const read = (naddr) => mem[naddr] & 0xff;
 
-  const updateScreen = (tt) => {
-   s = tt;
+  const updateScreen = () => {
+   tt = (tt + 1) % BLK;
+	  //
+   // EOL
+   if ((tt % 228) === 0) { rdy(1); } // FIXME Move _after_ CPU action, because now update happens too early and sprites get drawn out of position
 
    const invb = tt <= VB;
    const inover = tt > OS;
@@ -406,6 +417,10 @@ const tia = (rdy) => {
     }
   
     const draw = () => {
+      if (!isVSync) { return; }
+
+      isVSync = false;
+
       ctx.putImageData(stretchedScreen(), 0, 0);
       document.dispatchEvent(new Event("draw")); }
   
@@ -440,9 +455,9 @@ const tia = (rdy) => {
       pf2: read(PF2),
       pf: PF,
       ctrlpf: read(CTRLPF),
-      x: (s % 228) - VB,
-      y: Math.floor((s - VB) / 228),
-
+      x: (tt % 228) - VB,
+      y: Math.floor((tt - VB) / 228),
+      isVSync,
   });
 
   return [read, write, inpt4, inpt5, updateScreen, drawer, state];

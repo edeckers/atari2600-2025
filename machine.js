@@ -32,7 +32,6 @@ const machine = (input) => {
       let propagated = false;
       while (!isBreakout && ((breakpoints.has(piaState().pc) && !isContinue) || isStep)) {
 	// if (isWSync) { isBreakout = false; return; }
-	// if (isVSync) { isBreakout = false; return; }
         // if (bpConditional.x.lower !== undefined && (x < bpConditional.x.lower)) { break; }
         // if (bpConditional.x.upper !== undefined && (x > bpConditional.x.upper)) { break; }
         // if (bpConditional.y.lower !== undefined && (y < bpConditional.y.lower)) { break; }
@@ -44,9 +43,9 @@ const machine = (input) => {
 
         if (!propagated) {
           document.dispatchEvent(new Event("break"));
-          updateScreen(s);
-          requestAnimationFrame(draw);
-          requestAnimationFrame(() => cross(x, y));
+          updateScreen();
+          draw;
+          cross(x, y);
           propagated = true;
         }
         await sleep(100);
@@ -55,38 +54,26 @@ const machine = (input) => {
   }
 
   const tia_ = () => {
-      updateScreen(s);
-
-      if (!isVSync/* && !(s === BLK)*/) { return }
+      updateScreen();
 
       // FIXME requestAnimationFrame, renders out-of-sync, most notably visible in "All Sprites"
       /* requestAnimationFrame(draw); */
+//      requestAnimationFrame(draw);
       draw();
-
-      // fs = new Date();
-      s = 0;
-      t = 0;
-      // cc = 0;
-      isVSync = false;
   }
 
   const process = async () => {
-    // let a = 0;
     while (!isKilled) {
-      if (u === BLK) {u = 0; t = 0; await sleep(DLY);  }
+      if (u === BLK) { u = 0; t = 0; await sleep(DLY);  }
 
       // paddle_();
 
       // TIA every cycle
       tia_();
 
-      if (t === 3) { t = 0; }
-
       // PIA once every 3 cycles
-      (t === 0) && ( await break_(), tickTimer(), step(), cc = (cc + 1) % 76);
+      ((t % 3) === 0) && ( await break_(), tickTimer(), step(), cc = (cc + 1) % 76);
 
-      // EOL
-      if ((s % 228) === 0) { rdyw(1); cc = 0; } // FIXME ED Move to TIA
 
       t++;
       s++;
@@ -100,7 +87,6 @@ const machine = (input) => {
       ...piaState(),
       ...riotState(),
       ...tiaState(),
-      isVSync,
       isWSync: !rdy(),
     });
 

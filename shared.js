@@ -1,5 +1,3 @@
-var isVSync = false;
-
 const printHex = true;
 const printAsm = true;
 const printState = false;
