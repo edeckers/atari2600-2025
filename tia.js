@@ -10,7 +10,7 @@ const tia = (rdy) => {
   let resm1x = -1;
   let resblx = -1;
   let hmoveWait = false;
-  let tt = -1;
+  let tt = 0;
   
   let isDirt = false;
 
@@ -75,7 +75,7 @@ const tia = (rdy) => {
      if (naddr === VSYNC) { 
        if (v & 0x02) {
 	 tt = 0;
-	 rdy(1);
+	 // rdy(1);
 	 isVSync = true;
 	 return;
        }
@@ -163,8 +163,6 @@ const tia = (rdy) => {
   }
 
   const updateScreen = () => {
-   tt = (tt + 1) % BLK;
-
    // EOL / Continue after possible WSYNC
    if ((tt % 228) === 0) { rdy(1); } // FIXME Move _after_ CPU action, because now update happens too early and sprites get drawn out of position
 
@@ -214,6 +212,8 @@ const tia = (rdy) => {
    // Next line? Forget HMOVE
    if ((tt % 228) === 0) { isDirt = false; /*rdy(1);*/ }
   
+   tt = (tt + 1) % BLK;
+
    if (resmp(0)) { resm0x = resp0x + 3; }
    if (resmp(1)) { resm1x = resp1x + 3; }
   
