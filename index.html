@@ -6,6 +6,8 @@
 		<script type="text/javascript" src="rom.js"></script>
 		<script type="text/javascript" src="riot.js"></script>
 		<script type="text/javascript" src="mos6507.js"></script>
+		<script type="text/javascript" src="controller.js"></script>
+		<script type="text/javascript" src="bus.js"></script>
 		<script type="text/javascript" src="machine.js"></script>
 		<script type="text/javascript" src="test.js"></script>
 		<script type="text/javascript">
@@ -193,7 +195,7 @@
 		   //   pc = 0;
 		   // }
 
-		   let controller = undefined;
+		   let ctrlr = undefined;
 		   let switches = undefined;;
 		   let info = undefined;
 		   const startRom = () => {
@@ -209,7 +211,7 @@
 
 		     process();
 		
-		     controller = ctrl;
+		     ctrlr = ctrl;
 		     switches = swch;
 		     info = nfo;
 
@@ -278,19 +280,19 @@
 		     document.addEventListener("break", () => { const pstatus = info(); loadDebugInfo(pstatus); loadMemory(pstatus); updateHighlights(pstatus); });
 
 		     document.addEventListener("keydown", (event) => {
-		       if (event.key === "w") { controller.mn(); return false; }
-		       if (event.key === "d") { controller.me(); return false; }
-		       if (event.key === "s") { controller.ms(); return false; }
-		       if (event.key === "a") { controller.mw(); return false; }
+		       if (event.key === "w") { ctrlr.mn(); return false; }
+		       if (event.key === "d") { ctrlr.me(); return false; }
+		       if (event.key === "s") { ctrlr.ms(); return false; }
+		       if (event.key === "a") { ctrlr.mw(); return false; }
 
-		       if (event.code === "Space") { controller.fire(); return false; }
+		       if (event.code === "Space") { ctrlr.fire(); return false; }
 
-		       if (event.key === "ArrowUp") { controller.mn1(); return false; }
-		       if (event.key === "ArrowRight") { controller.me1(); return false; }
-		       if (event.key === "ArrowDown") { controller.ms1(); return false; }
-		       if (event.key === "ArrowLeft") { controller.mw1(); return false; }
+		       if (event.key === "ArrowUp") { ctrlr.mn1(); return false; }
+		       if (event.key === "ArrowRight") { ctrlr.me1(); return false; }
+		       if (event.key === "ArrowDown") { ctrlr.ms1(); return false; }
+		       if (event.key === "ArrowLeft") { ctrlr.mw1(); return false; }
 
-                       if (event.code.indexOf("Control") > -1) { controller.fire1(); return false; }
+                       if (event.code.indexOf("Control") > -1) { ctrlr.fire1(); return false; }
 
 		       if (event.key === "r") { switches.reset(); return false; }
 		       if (event.key === "q") { switches.select(); return false; }
@@ -299,19 +301,19 @@
 		     });
 
        		     document.addEventListener("keyup", (event) => {
-		       if (event.key === "w") { controller.mnc(); return false; }
-		       if (event.key === "d") { controller.mec(); return false; }
-		       if (event.key === "s") { controller.msc(); return false; }
-		       if (event.key === "a") { controller.mwc(); return false; }
+		       if (event.key === "w") { ctrlr.mnc(); return false; }
+		       if (event.key === "d") { ctrlr.mec(); return false; }
+		       if (event.key === "s") { ctrlr.msc(); return false; }
+		       if (event.key === "a") { ctrlr.mwc(); return false; }
 
-		       if (event.code === "Space") { controller.firec(); return false; }
+		       if (event.code === "Space") { ctrlr.firec(); return false; }
 
-		       if (event.key === "ArrowUp") { controller.mnc1(); return false; }
-		       if (event.key === "ArrowRight") { controller.mec1(); return false; }
-		       if (event.key === "ArrowDown") { controller.msc1(); return false; }
-		       if (event.key === "ArrowLeft") { controller.mwc1(); return false; }
+		       if (event.key === "ArrowUp") { ctrlr.mnc1(); return false; }
+		       if (event.key === "ArrowRight") { ctrlr.mec1(); return false; }
+		       if (event.key === "ArrowDown") { ctrlr.msc1(); return false; }
+		       if (event.key === "ArrowLeft") { ctrlr.mwc1(); return false; }
 
-                       if (event.code.indexOf("Control") > -1) { controller.firec1(); return false; }
+                       if (event.code.indexOf("Control") > -1) { ctrlr.firec1(); return false; }
 
 		       if (event.key === "r") { switches.resetc(); return false; }
 		       if (event.key === "q") { switches.selectc(); return false; }

@@ -109,25 +109,6 @@ let isBreakout = false;
 // helpers
 
 PF = 0;
-RP0 = -1;
-RP1 = -1;
-
-GRP = 0;
-ENABL_DELAYED = 0;
-GRP0_DELAYED = 0;
-GRP1_DELAYED = 0;
-
-isRESP0 = false;
-isRESP1 = false;
-isRESM0 = false;
-isRESM1 = false;
-isRESBL = false;
-
-isRESMP0 = false;
-isRESMP1 = false;
-
-isHMOVE = false;
-isHMCLR = false;
 
 let bpConditional = {
   x: { lower: undefined, upper: undefined },

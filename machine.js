@@ -10,13 +10,19 @@ const machine = (input) => {
   document.addEventListener("continue", () => { isContinue = true; isStep = false; });
   document.addEventListener("step", () => { isBreakout = true; isStep = true });
 
-  const [read, write, readRaw, writeRaw, controller, switches, tickTimer, riotState] = riot(input);
+  const romRead = romAsMem(input.length === 2_048 ? input.concat(input) : input);
 
-  const [step, piaState] = mos6507(read, write, tickTimer);
+  const [riotRead, riotWrite, swcha, switches, tickTimer, riotState] = riot();
 
-  const [updateScreen, clearScreen, drawer, tiaState] = tia(readRaw, writeRaw);
+  const [tiaRead, tiaWrite, inpt4, inpt5, updateScreen, clearScreen, drawer, tiaState] = tia();
+
+  const ctrl = controller(swcha, inpt4, inpt5);
 
   const [draw, cross] = drawer();
+
+  const [read, write] = bus(riotRead, riotWrite, romRead, tiaRead, tiaWrite);
+
+  const [step, piaState] = mos6507(read, write);
 
   PF = 0;
 
@@ -98,23 +104,15 @@ const machine = (input) => {
     }
   }
 
-  const info = () => {
-    const x = (s % 228) - VB;
-    const y = Math.floor((s - VB) / 228);
-
-    return ({
+  const info = () => ({
       cc,
       tt: s,
       ...piaState(),
       ...riotState(),
       ...tiaState(),
-      x,
-      y,
       isVSync,
       isWSync,
     });
-  }
 
-
-  return [process, controller, switches, info];
+  return [process, ctrl, switches, info];
 }

@@ -1,5 +1,6 @@
-const tia = (read, write) => {
+const tia = () => {
   const arrayBuffer = new ArrayBuffer(4 * W * H);
+  const pfs = new Set([PF0, PF1, PF2]);
   let screen = new Uint8ClampedArray(arrayBuffer);
   
   let resp0x = -1;
@@ -7,24 +8,121 @@ const tia = (read, write) => {
   let resm0x = -1;
   let resm1x = -1;
   let resblx = -1;
+  let hmoveWait = false;
+  let s = -1;
   
   let isDirt = false;
-  
+
+  let isRESP0 = false;
+  let isRESP1 = false;
+  let isRESM0 = false;
+  let isRESM1 = false;
+  let isRESBL = false;
+
+  let isHMOVE = false;
+  let isHMCLR = false;
+
+  let ENABL_DELAYED = 0;
+  let GRP0_DELAYED = 0;
+  let GRP1_DELAYED = 0;
+
   const HL_SPRITES = false;
-  
-  
-  function clearScreen() {
+
+  const mem = new Uint8Array(0xff);
+
+
+  const cxclr = () => { mem[CXM0P]  = 0;
+                        mem[CXM1P]  = 0;
+                        mem[CXP0FB] = 0;
+                        mem[CXP1FB] = 0;
+                        mem[CXM0FB] = 0;
+                        mem[CXM1FB] = 0;
+                        mem[CXBLPF] = 0; }
+
+  const initialize = () => {
+    cxclr();
+
+    mem[INPT4]  = 0xff;
+    mem[INPT5]  = 0xff;
+  }
+
+  initialize();
+
+  const inpt4 = (fn) => { mem[INPT4] = fn(mem[INPT4]) }
+  const inpt5 = (fn) => { mem[INPT5] = fn(mem[INPT5]) }
+
+  const write = (naddr, v) => { 
+     if ((naddr === CXP0FB)) { return; }
+     if ((naddr === CXP1FB)) { return; }
+
+     // STROBES, i.e. won't be actually stored and return early
+     if (naddr === CXCLR) { cxclr(); return; }
+
+     if (naddr === INPT4) { return; }
+     if (naddr === INPT5) { return; }
+
+     if (naddr === WSYNC) { isWSync = true; return; }
+     if (naddr === RESP0) { isRESP0 = true; return; }
+     if (naddr === RESP1) { isRESP1 = true; return; }
+     if (naddr === RESM0) { isRESM0 = true; return; }
+     if (naddr === RESM1) { isRESM1 = true; return; }
+     if (naddr === RESBL) { isRESBL = true; return; }
+
+     if (naddr === HMOVE) { isHMOVE = true; return; }
+     if (naddr === HMCLR) { isHMCLR = true; return; }
+
+     if (naddr === VSYNC) { isVSync = (v & 0x02) === 0x02; }
+
+     if (naddr === VBLANK) {
+       if ((v & 0x80) === 0x00) {
+	 // if ((mem[naddr] & 0x80) === 0x80) { p0wait = p0pot; }
+	 // p0wait = p0pot;
+       }
+
+     }
+
+     if (naddr === ENABL) {
+       if (mem[VDELBL] & 0x01) { ENABL_DELAYED = v; return; }
+     }
+
+     if (naddr === GRP0) {
+       if (mem[VDELP1] & 0x01) { mem[GRP1] = GRP1_DELAYED; }
+       if (mem[VDELP0] & 0x01) { GRP0_DELAYED = v; return; }
+     }
+
+     if (naddr === GRP1) {
+       if (mem[VDELBL] & 0x01) { mem[ENABL] = ENABL_DELAYED; }
+       if (mem[VDELP0] & 0x01) { mem[GRP0] = GRP0_DELAYED; }
+       if (mem[VDELP1] & 0x01) { GRP1_DELAYED = v; return; }
+     }
+	
+     mem[naddr] = v & 0xff;
+
+     // POST PROCESSING, i.e. update helper registers and the like
+     if (pfs.has(naddr)) {
+       const pf0 = mem[PF0] & 0xff;
+       const pf1 = mem[PF1] & 0xff;
+       const pf2 = mem[PF2] & 0xff;
+
+       const pf0rev = rev8(pf0) & 0xf;
+       const pf2rev = rev8(pf2) & 0xff;
+
+       PF = ((pf0rev << 16) | (pf1 << 8) | pf2rev) & 0xffffffff;
+     }
+  }
+
+  const read = (naddr) => mem[naddr] & 0xff;
+
+  const clearScreen = () => {
    screen = new Uint8ClampedArray(arrayBuffer);
   }
   
-  let hmoveWait = false;
-  function updateScreen(tt) {
+  const updateScreen = (tt) => {
+   s = tt;
+
    const invb = tt <= VB;
    const inover = tt > OS;
    const inhblank = ((tt % 228) <= HB);
-  
-   // const read = (a) => mem[a];
-   // const write = (a, v) => { mem[a] = v; }
   
    const enam = (pid) => (read(ENAM0 + pid) & 0x02) === 0x02;
    const resmp = (pid) => (read(RESMP0 + pid) & 0x02) === 0x02;
@@ -34,11 +132,6 @@ const tia = (read, write) => {
   
    const d = tt - VB;
   
-   // if ((tt % 228) === 0) { hmoveWait = 0; }
-  
-  // if (isRESP0) { resp0x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - hb - 1, 3); isRESP0 = false; }
-  
-  // if (isRESP0) { resp0x = ((tt + (hmoveWait ? 4 : 0)) % 228) - hb - 1; isRESP0 = false; }
    if (isRESP0) { resp0x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - HB - 1, 3); isRESP0 = false; }
    if (isRESP1) { resp1x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - HB - 1, 3); isRESP1 = false; }
    if (isRESM0) { resm0x = Math.max(((tt + (hmoveWait ? 3 : 0)) % 228) - HB - 1, 2); isRESM0 = false; }
@@ -53,8 +146,6 @@ const tia = (read, write) => {
      write(HMM1, 0);
   
      isHMCLR = false; }
-  
-  
   
    if (isHMOVE) {
     isDirt = true;
@@ -282,7 +373,7 @@ const tia = (read, write) => {
    screen[o + 3] = 0xff;
   }
   
-  function drawer() {
+  const drawer = () => {
     const canvas = document.getElementById("tehScreen");
     const ctx = canvas.getContext("2d");
     const HM = 1;
@@ -353,7 +444,10 @@ const tia = (read, write) => {
       pf2: read(PF2),
       pf: PF,
       ctrlpf: read(CTRLPF),
+      x: (s % 228) - VB,
+      y: Math.floor((s - VB) / 228),
+
   });
 
-  return [updateScreen, clearScreen, drawer, state];
+  return [read, write, inpt4, inpt5, updateScreen, clearScreen, drawer, state];
 }
