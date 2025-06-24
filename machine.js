@@ -7,8 +7,6 @@ const machine = (input) => {
   let isStep = false;
   // FIXME ED Move dependency from step/breakpoint
   // let s = (228 * (3 + 37)) + 68 + (228 / 2); // Middle of screen, first line - pretty random, other emulators seem to work that way
-  let t = 0;
-  let u = 0;
 
   document.addEventListener("chrom", () => { isKilled = true; isBreak = false; });
   document.addEventListener("continue", () => { isContinue = true; isStep = false; });
@@ -64,19 +62,19 @@ const machine = (input) => {
   }
 
   const process = async () => {
-    while (!isKilled) {
-      if (u === BLK) { u = 0; t = 0; await sleep(DLY);  }
+    let t = 0;
+    let u = 0;
 
-      // paddle_();
+    while (!isKilled) {
+      if (u === BLK) { u = 0; await sleep(DLY);  }
 
       // TIA every cycle
       tia_();
 
       // PIA once every 3 cycles
-      ((t % 3) === 0) && ( await break_(), tickTimer(), step(), cc = (cc + 1) % 76);
+      (t === 0) && ( /* await break_(), */ tickTimer(), step(), cc = (cc + 1) % 76);
 
-      t++;
-      // s++;
+      t = (t + 1) % 3;
       u++;
     }
   }

@@ -121,6 +121,47 @@ const tia = (rdy) => {
 
   const read = (naddr) => mem[naddr] & 0xff;
 
+  const updateCollisions = (px_, mx_, pf_, bl_) => {
+    const px0pf = (px_[0] && pf_) ? 0x80 : 0x00;
+    const px0bl = (px_[0] && bl_) ? 0x40 : 0x00;
+    const cxp0bf_ = px0bl | px0pf;
+  
+    cxp0bf_ && write(CXP0FB, cxp0bf_);
+  
+    const px1pf = (px_[1] && pf_) ? 0x80 : 0x00;
+    const px1bl = (px_[1] && bl_) ? 0x40 : 0x00;
+    const cxp1bf_ = px1bl | px1pf;
+  
+    cxp1bf_ && write(CXP1FB, cxp1bf_);
+  
+    const cxblpf_ = ((bl_ && pf_) ? 0x80 : 0x00);
+    cxblpf_ && write(CXBLPF, cxblpf_);
+  
+    const px1m0 = ((mx_[0] && px_[1]) ? 0x80 : 0x00);
+    const px0m0 = ((mx_[0] && px_[0]) ? 0x40 : 0x00);
+    const cxm0p_ = px0m0 | px1m0;
+  
+    cxm0p_ && write(CXM0P, cxm0p_);
+  
+    const px0m1 = ((mx_[1] && px_[0]) ? 0x80 : 0x00);
+    const px1m1 = ((mx_[1] && px_[1]) ? 0x40 : 0x00);
+    const cxm1p_ = px0m1 | px1m1;
+  
+    cxm1p_ && write(CXM1P, cxm1p_);
+  
+    const m0pf = ((mx_[0] && pf_) ? 0x80 : 0x00);
+    const m0bl = ((mx_[0] && bl_) ? 0x40 : 0x00);
+    const cxm0fb_ = m0pf | m0bl;
+  
+    cxm0fb_ && write(CXM0FB, cxm0fb_);
+  
+    const m1pf = ((mx_[1] && pf_) ? 0x80 : 0x00);
+    const m1bl = ((mx_[1] && bl_) ? 0x40 : 0x00);
+    const cxm1fb_ = m1pf | m1bl;
+  
+    cxm1fb_ && write(CXM1FB, cxm1fb_);
+  }
+
   const updateScreen = () => {
    tt = (tt + 1) % BLK;
 
@@ -325,49 +366,10 @@ const tia = (rdy) => {
      }
    }
   
-  
-   // fl(px_[0] && bl_) && console.log("IIIII", x, y);
-   const px0pf = (px_[0] && pf_) ? 0x80 : 0x00;
-   const px0bl = (px_[0] && bl_) ? 0x40 : 0x00;
-   const cxp0bf_ = px0bl | px0pf;
-  
-   cxp0bf_ && write(CXP0FB, cxp0bf_);
-  
-   const px1pf = (px_[1] && pf_) ? 0x80 : 0x00;
-   const px1bl = (px_[1] && bl_) ? 0x40 : 0x00;
-   const cxp1bf_ = px1bl | px1pf;
-  
-   cxp1bf_ && write(CXP1FB, cxp1bf_);
-  
-   const cxblpf_ = ((bl_ && pf_) ? 0x80 : 0x00);
-   cxblpf_ && write(CXBLPF, cxblpf_);
-  
-   const px1m0 = ((mx_[0] && px_[1]) ? 0x80 : 0x00);
-   const px0m0 = ((mx_[0] && px_[0]) ? 0x40 : 0x00);
-   const cxm0p_ = px0m0 | px1m0;
-  
-   cxm0p_ && write(CXM0P, cxm0p_);
-  
-   const px0m1 = ((mx_[1] && px_[0]) ? 0x80 : 0x00);
-   const px1m1 = ((mx_[1] && px_[1]) ? 0x40 : 0x00);
-   const cxm1p_ = px0m1 | px1m1;
-  
-   cxm1p_ && write(CXM1P, cxm1p_);
-  
-   const m0pf = ((mx_[0] && pf_) ? 0x80 : 0x00);
-   const m0bl = ((mx_[0] && bl_) ? 0x40 : 0x00);
-   const cxm0fb_ = m0pf | m0bl;
-  
-   cxm0fb_ && write(CXM0FB, cxm0fb_);
-  
-   const m1pf = ((mx_[1] && pf_) ? 0x80 : 0x00);
-   const m1bl = ((mx_[1] && bl_) ? 0x40 : 0x00);
-   const cxm1fb_ = m1pf | m1bl;
-  
-   cxm1fb_ && write(CXM1FB, cxm1fb_);
-  
    // VBLANK
    v = (read(VBLANK) & 0x02) ? 0x00 : v;
+
+   updateCollisions(px_, mx_, pf_, bl_);
   
    const [r, g, b] = colors[v - (v % 2)] ?? [0x00, 0x00, 0x00];
   

@@ -1,4 +1,4 @@
-const HZ = (1_000_000 * 3);
+const HZ = (1_000_000 * 30);
 const FRM = (228 * 262);
 const BLK = FRM;
 const DLY = (BLK / HZ) * 1_000;
