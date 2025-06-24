@@ -60,11 +60,13 @@ const machine = (input) => {
   const tia_ = () => {
       updateScreen(s);
 
-      if (!isVSync && !(s === BLK)) { return }
+      if (!isVSync/* && !(s === BLK)*/) { return }
 
-      // requestAnimationFrame(draw);
+      // FIXME requestAnimationFrame, renders out-of-sync, most notably visible in "All Sprites"
+      /* requestAnimationFrame(draw); */
+      draw();
 
-      fs = new Date();
+      // fs = new Date();
       s = 0;
       t = 0;
       // cc = 0;
@@ -75,10 +77,6 @@ const machine = (input) => {
     // let a = 0;
     while (!isKilled) {
       if (u === BLK) {u = 0; await sleep(DLY);  }
-      // const y = Math.floor((s - vb) / 228);
-      if (isVSync) {
-	      // FIXME requestAnimationFrame, renders out-of-sync, most notably visible in "All Sprites"
-	      draw(); /* requestAnimationFrame(draw); */ }
 
       // paddle_();
 
@@ -91,7 +89,7 @@ const machine = (input) => {
       (t === 0) && ( await break_(), tickTimer(), step(), cc = (cc + 1) % 76);
 
       // EOL
-      if ((s % 228) === 0) { rdyw(1); cc = 0; }
+      if ((s % 228) === 0) { rdyw(1); cc = 0; } // FIXME ED Move to TIA
 
       t++;
       s++;
