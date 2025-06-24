@@ -24,16 +24,6 @@ const mod = (n, m) => (n % m + m) % m;
 
 const pin = (v) => { let rdy = v; return [() => rdy, (a) => rdy = a]; };
 
-const formatHex = (input, columns = 10) => {
-  const operations = [];
-
-  for (i = 0; i < input.length; i += columns) {
-    operations.push(input.slice(i, i + columns).map(v => v.padStart(2, "0")).join(" "));
-  }
-
-  return operations.join("\n");
-}
-
 const formatASM = (line) => {
   const [ops, name] = line;
 

@@ -444,6 +444,7 @@ const tia = (rdy) => {
   }
 
   const state = () => ({
+      tt,
       p0: read(GRP0),
       p1: read(GRP1),
       p0x: resp0x,

@@ -251,27 +251,6 @@
                        startRom();
 		     });
 
-		     document.getElementById("xConditionLower").addEventListener("change", (event) => {
-		        const value = parseInt(event.target.value, 10) || undefined;
-
-		        bpConditional.x.lower = value;
-		     });
-		     document.getElementById("xConditionUpper").addEventListener("change", (event) => {
-		        const value = parseInt(event.target.value, 10) || undefined;
-
-		        bpConditional.x.upper = value;
-		     });
-		     document.getElementById("yConditionLower").addEventListener("change", (event) => {
-		        const value = parseInt(event.target.value, 10) || undefined;
-
-		        bpConditional.y.lower = value;
-		     });
-		     document.getElementById("yConditionUpper").addEventListener("change", (event) => {
-		        const value = parseInt(event.target.value, 10) || undefined;
-
-		        bpConditional.y.upper = value;
-		     });
-
 
                      startRom();
 
@@ -406,11 +385,6 @@
 		  <div>SWACNT: <span id="swacnt">0</span></div>
 		  <div>SWCHB: <span id="swchb">0</span></div>
 		  <div>SWBCNT: <span id="swbcnt">0</span></div>
-		</div>
-		<div>
-		  <div style="font-weight: bold;">Conditionals</div>
-		  <div>X: <input type="text" id="xConditionLower" value=""> - <input type="text" id="xConditionUpper" value=""></div>
-		  <div>Y: <input type="text" id="yConditionLower" value=""> - <input type="text" id="yConditionUpper" value=""></div>
 		</div>
 		<div id="memory" style="font-family: courier;"></div>
 		<div style="display: flex; gap: 10px;">

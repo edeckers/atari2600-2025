@@ -6,7 +6,7 @@ const machine = (input) => {
   let cc = 0;
   let isStep = false;
   // FIXME ED Move dependency from step/breakpoint
-  let s = (228 * (3 + 37)) + 68 + (228 / 2); // Middle of screen, first line - pretty random, other emulators seem to work that way
+  // let s = (228 * (3 + 37)) + 68 + (228 / 2); // Middle of screen, first line - pretty random, other emulators seem to work that way
   let t = 0;
   let u = 0;
 
@@ -40,8 +40,7 @@ const machine = (input) => {
         // if (bpConditional.y.upper !== undefined && (y > bpConditional.y.upper)) { break; }
 	// if (isStep) { while (action && !action.next().done) { cc = (cc + 1) % 76, s++ } }
 
-        const x = (s % 228) - VB;
-        const y = Math.floor((s - VB) / 228);
+        const { x, y } = info();
 
         if (!propagated) {
           document.dispatchEvent(new Event("break"));
@@ -77,14 +76,13 @@ const machine = (input) => {
       ((t % 3) === 0) && ( await break_(), tickTimer(), step(), cc = (cc + 1) % 76);
 
       t++;
-      s++;
+      // s++;
       u++;
     }
   }
 
   const info = () => ({
       cc,
-      tt: s,
       ...piaState(),
       ...riotState(),
       ...tiaState(),
