@@ -56,9 +56,7 @@ const rev8 = (xs) => {
 
     return x0 & 0xff;
 }
-const flip8 = (xs) => {
-    return ~xs & 0xff;
-}
+const flip8 = (xs) => ~xs & 0xff;
 
 const fl = (v) => v ? 1 : 0;
 const word = (read, addr) => {
@@ -83,5 +81,3 @@ const d2b = (d) => {
 }
 
 const formatPc = (pc) => pc.toString(16).padStart(4, "0");
-
-const breakpoints = new Set();

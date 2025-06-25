@@ -8,9 +8,14 @@
 		<script type="text/javascript" src="mos6507.js"></script>
 		<script type="text/javascript" src="controller.js"></script>
 		<script type="text/javascript" src="bus.js"></script>
+		<script type="text/javascript" src="debugger.js"></script>
 		<script type="text/javascript" src="machine.js"></script>
 		<script type="text/javascript" src="test.js"></script>
 		<script type="text/javascript">
+		   let breakpoints = [];
+
+                   const isHalted = dbgr();
+
                    const roms = {
                      "kernel01": kernel01,
                      "kernel13": kernel13,
@@ -140,7 +145,7 @@
 			const srcHtml = src.replaceAll(" ", "&nbsp;");
 
 			if (!ax) {
-			  if (breakpoints.has(parseInt(address, 16))) {
+                          if (breakpoints && (breakpoints.indexOf(parseInt(address, 16)) > - 1)) {
 		            asm.push(`<div id="line-${address}"><span style="background: #ff0000; color: #fff;">${address}</span> ${srcHtml}</div>`);
 			  } else {
 		            asm.push(`<div id="line-${address}">${address} ${srcHtml}</div>`);
@@ -177,75 +182,45 @@
                      return loadFromBase64(rom);
 		   }
 
-		   // const clearState = () => {
-		   //   rx = 0;
-		   //   ry = 0;
-		   //   ra = 0;
-		   //   sp = 0xff;
-
-		   //   fc = 0;
-                   //   fc = 0;
-                   //   fn = 0;
-                   //   fi = 0;
-                   //   fd = 0;
-                   //   _fb = 0;
-                   //   fv = 0;
-                   //   fz = 0;
-
-		   //   pc = 0;
-		   // }
-
 		   let ctrlr = undefined;
 		   let switches = undefined;;
 		   let info = undefined;
 		   const startRom = () => {
-		     console.log("startRom", romName);
+		     document.dispatchEvent(new Event("machine.kill"));
+
 		     const romBytes = readRom();
 
                      loadSource(romBytes);
 
-		     // clearState();
-
-		     // logSteps = 4_500;
 		     const [process, ctrl, swch, nfo] = machine(romBytes);
 
-		     process();
+		     process(isHalted);
 		
 		     ctrlr = ctrl;
 		     switches = swch;
 		     info = nfo;
-
-                     // setInterval(() => ctrl.me(), 100);
-                     // setInterval(() => ctrl.mec(), 200);
 		   }
                    
 		   const toggleBreakpoint = (address) => {
-		     if (breakpoints.has(address)) {
-		       breakpoints.delete(address);
-		     } else {
-		       breakpoints.add(address);
-		     }
-
-		     loadSource(readRom());
+                     document.dispatchEvent(new CustomEvent("dbgr.breakpoint.toggle", { detail: { address } }));
 		   }
 
 		   document.addEventListener("DOMContentLoaded", (event) => {
-		     // clearState();
-		     // const rt = async () => {
-		     //   await testAdc();
-		     //   await testSbc();
-		     // }
-
-		     // rt();
 		     document.getElementById("source").addEventListener("dblclick", (event) => {
 	               toggleBreakpoint(parseInt(event.target.innerHTML.slice(0, 4), 16));
 		     });
 
+		     document.addEventListener("dbgr.breakpoint.changed", (event) => {
+			breakpoints = event.detail.breakpoints;
+
+			loadSource(readRom());
+		     });
+
 		     document.getElementById("continue").addEventListener("click", (event) => {
-                       document.dispatchEvent(new Event("continue"));
+                       document.dispatchEvent(new Event("dbgr.continue"));
 		     });
 		     document.getElementById("step").addEventListener("click", (event) => {
-                       document.dispatchEvent(new Event("step"));
+                       document.dispatchEvent(new Event("dbgr.step"));
 		     });
 		     document.getElementById("restart").addEventListener("click", (event) => {
                        startRom();
@@ -255,8 +230,8 @@
                      startRom();
 
 		     document.addEventListener("draw", () => { frc++; });
-		     document.addEventListener("chrom", () => { startRom(); breakpoints.clear(); });
-		     document.addEventListener("break", () => { const pstatus = info(); loadDebugInfo(pstatus); loadMemory(pstatus); updateHighlights(pstatus); });
+                     document.addEventListener("chrom", () => { startRom(); document.dispatchEvent(new Event("dbgr.breakpoint.clear")); });
+		     document.addEventListener("dbgr.break", () => { const pstatus = info(); loadDebugInfo(pstatus); loadMemory(pstatus); updateHighlights(pstatus); });
 
 		     document.addEventListener("keydown", (event) => {
 		       if (event.key === "w") { ctrlr.mn(); return false; }

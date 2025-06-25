@@ -1,17 +1,4 @@
 const machine = (input) => {
-  let isKilled = false;
-
-  // FIXME ED Move dependency from step/breakpoint
-  let isContinue = false;
-  let isBreakout = false;
-
-  let cc = 0;
-  let isStep = false;
-
-  document.addEventListener("chrom", () => { isKilled = true; isBreak = false; });
-  document.addEventListener("continue", () => { isContinue = true; isStep = false; });
-  document.addEventListener("step", () => { isBreakout = true; isStep = true });
-
   const romRead = romAsMem(input.length === 2_048 ? input.concat(input) : input);
 
   const [riotRead, riotWrite, swcha, switches, tickTimer, riotState] = riot();
@@ -28,30 +15,6 @@ const machine = (input) => {
 
   const [step, piaState] = mos6507(read, write, rdy);
 
-  const break_ = async () => {
-      let propagated = false;
-      while (!isBreakout && ((breakpoints.has(piaState().pc) && !isContinue) || isStep)) {
-	// if (isWSync) { isBreakout = false; return; }
-        // if (bpConditional.x.lower !== undefined && (x < bpConditional.x.lower)) { break; }
-        // if (bpConditional.x.upper !== undefined && (x > bpConditional.x.upper)) { break; }
-        // if (bpConditional.y.lower !== undefined && (y < bpConditional.y.lower)) { break; }
-        // if (bpConditional.y.upper !== undefined && (y > bpConditional.y.upper)) { break; }
-	// if (isStep) { while (action && !action.next().done) { cc = (cc + 1) % 76, s++ } }
-
-        const { x, y } = info();
-
-        if (!propagated) {
-          document.dispatchEvent(new Event("break"));
-          updateScreen();
-          draw;
-          cross(x, y);
-          propagated = true;
-        }
-        await sleep(100);
-      }
-      isBreakout = false;
-  }
-
   const tia_ = () => {
       updateScreen();
 
@@ -61,23 +24,38 @@ const machine = (input) => {
       draw();
   }
 
-  const process = async () => {
+  const run = async (isHalted) => {
+    let cc = 0;
     let t = 0;
     let u = 0;
+    let isKilled = false;
+
+    document.addEventListener("machine.kill", function killer() {
+      isKilled = true;
+      document.removeEventListener("machine.kill", killer);
+    });
+
+    // document.addEventListener("dbgr.break", () => { 
+    //   tia_();
+    // });
 
     while (!isKilled) {
+      if (isHalted()) { await sleep(0); continue; }
+
       if (u === BLK) { u = 0; await sleep(DLY);  }
 
       // TIA every cycle
       tia_();
 
       // PIA once every 3 cycles
-      (t === 0) && ( /* await break_(), */ tickTimer(), step(), cc = (cc + 1) % 76);
+      (t === 0) && ( tickTimer(), step(), cc = (cc + 1) % 76);
 
       t = (t + 1) % 3;
 
       u++;
     }
+
+    console.log("Machine killed, exiting run loop");
   }
 
   const info = () => ({
@@ -88,5 +66,5 @@ const machine = (input) => {
       isWSync: !rdy(),
     });
 
-  return [process, ctrl, switches, info];
+  return [run, ctrl, switches, info];
 }

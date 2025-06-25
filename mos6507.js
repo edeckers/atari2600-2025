@@ -350,21 +350,28 @@ const mos6507 = (read, write, rdy) => {
   pc = word(read, 0xfffc);
 
   let action = undefined;
+  let pc_ = pc; // Keep currently processing pc for debugging purposes
 
   const step = () => {
     if (!rdy()) { return; }
 
     const isWaiting = action && !action.next().done;
+    
+    if (isWaiting) { // allow complete computation
+      document.dispatchEvent(new CustomEvent("mos6507.step.ticked", {detail: { pc: pc_ }}));
+      return; } 
 
-    if (isWaiting) { return; } // allow complete computation
+    document.dispatchEvent(new CustomEvent("mos6507.step.completed", {detail: { pc: pc_ }}));
 
-
+    pc_ = pc;
     const o = read(pc)
 
     const p = processors[o];
 
     try {
      action = p(read, write);
+
+     document.dispatchEvent(new CustomEvent("mos6507.step.started", {detail: { pc } }));
     } catch (e) {
       console.log(e, pc.toString(16), "o", o.toString(16))
       if (o === 0xff) { return; } // Forced exit for debugging purposes
