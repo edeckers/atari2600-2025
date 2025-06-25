@@ -418,8 +418,8 @@ const tia = (rdy) => {
        return new ImageData(screenStretched, W * WM, H * HM);
     }
   
-    const draw = () => {
-      if (!isVSync) { return; }
+    const draw = (forceDraw) => {
+      if (!forceDraw && !isVSync) { return; }
 
       isVSync = false;
 
@@ -458,7 +458,7 @@ const tia = (rdy) => {
       pf2: read(PF2),
       pf: PF,
       ctrlpf: read(CTRLPF),
-      x: (tt % 228) - VB,
+      x: (tt % 228) - HB,
       y: Math.floor((tt - VB) / 228),
       isVSync,
   });

@@ -24,6 +24,13 @@ const machine = (input) => {
       draw();
   }
 
+  const halt_ = () => {
+    const {x, y} = tiaState();
+    
+    draw(true);
+    cross(x, y);
+  }
+
   const run = async (isHalted) => {
     let cc = 0;
     let t = 0;
@@ -40,7 +47,10 @@ const machine = (input) => {
     // });
 
     while (!isKilled) {
-      if (isHalted()) { await sleep(0); continue; }
+      if (isHalted()) {
+	halt_();
+	await sleep(100);
+        continue; }
 
       if (u === BLK) { u = 0; await sleep(DLY);  }
 
