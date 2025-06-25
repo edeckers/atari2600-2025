@@ -1,4 +1,8 @@
-const tia = (rdy) => {
+import { rev8, mod, tcd4 } from "./shared";
+
+import { W, H, VB, OS, BLK, HB, PF0, PF1, PF2, CXM0P, CXM1P, CXP0FB, CXP1FB, CXM0FB, CXM1FB, CXBLPF, INPT4, INPT5, RESBL, RESM0, RESM1, RESP0, RESP1, RESMP0, CXCLR, WSYNC, VSYNC, HMOVE, HMCLR, HMBL, HMM0, HMM1, HMP0, HMP1, VBLANK, ENABL, GRP0, GRP1, VDELBL, VDELP0, VDELP1, COLUBK, CTRLPF, COLUPF, NUSIZ0, colors, REFP0, ENAM0, COLUP0 } from "./consts";
+
+export const tia = (rdy) => {
   const arrayBuffer = new ArrayBuffer(4 * W * H);
   const pfs = new Set([PF0, PF1, PF2]);
   let screen = new Uint8ClampedArray(arrayBuffer);
@@ -26,6 +30,8 @@ const tia = (rdy) => {
   let ENABL_DELAYED = 0;
   let GRP0_DELAYED = 0;
   let GRP1_DELAYED = 0;
+
+  let PF = 0;
 
   const HL_SPRITES = false;
 

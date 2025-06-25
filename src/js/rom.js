@@ -1,3 +1,5 @@
+import { formatASM, tcd } from "./shared";
+
 noinmemretrigger = "REMOVECOPYRIGHTEDDATA"
 retrigger = "REMOVECOPYRIGHTEDDATA"
 complexscene2 = "REMOVECOPYRIGHTEDDATA"
@@ -29,8 +31,6 @@ pongsports = "REMOVECOPYRIGHTEDDATA"
 tictactoe3d = "REMOVECOPYRIGHTEDDATA"
 tennis = "REMOVECOPYRIGHTEDDATA"
 superbreakout = "REMOVECOPYRIGHTEDDATA";
-
-const printAsm = true;
 
 const operators = {
   "ADC #nn": [0x69, 1],
@@ -272,14 +272,14 @@ function toASM(rom, addr) {
   const [name, operandCount] = operatorLookup[parseInt(operator, 10)];
 
   const operandBytes = [];
-  for (i = 0; i < operandCount; i++) {
+  for (let i = 0; i < operandCount; i++) {
     operandBytes.push(rom(pc + i + 1));
   }
 
   return [[operator].concat(operandBytes), name];
 }
 
-const romAsMem = (input) => {
+export const romAsMem = (input) => {
   // const mem = new Uint8Array(0x10000); // 0x10000, bc 0x0000 - 0xFFFF
   let b = 0;
 
@@ -306,7 +306,7 @@ const romAsMem = (input) => {
   }
 }
 
-const decode = (input) => {
+export const decode = (input) => {
   // Mirror memory for small cartridges
   const rom = romAsMem(input.length === 2_048 ? input.concat(input) : input);
 
@@ -356,4 +356,4 @@ const decode = (input) => {
   return lines;
 }
 
-const loadFromBase64 = (input) => atob(input).split("").map(c => c.charCodeAt(0));
+export const loadFromBase64 = (input) => atob(input).split("").map(c => c.charCodeAt(0));

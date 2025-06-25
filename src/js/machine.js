@@ -1,4 +1,15 @@
-const machine = (input) => {
+import { BLK, DLY } from './consts';
+
+import { romAsMem } from "./rom";
+import { pin, sleep } from "./shared";
+
+import { riot } from "./riot";
+import { tia } from "./tia";
+import { controller } from "./controller";
+import { bus } from "./bus";
+import { mos6507 } from "./mos6507";
+
+export const machine = (input) => {
   const romRead = romAsMem(input.length === 2_048 ? input.concat(input) : input);
 
   const [riotRead, riotWrite, swcha, switches, tickTimer, riotState] = riot();

@@ -1,4 +1,6 @@
-const riot = () => {
+import { SWACNT, SWBCNT, SWCHA, SWCHB, INPT0, INSTAT, INTIM, TIM1T, TIM8T, TIM64T, T1024T } from './consts.js';
+
+export const riot = () => {
   var interval = 1;
   var timerCounter = 1;
 

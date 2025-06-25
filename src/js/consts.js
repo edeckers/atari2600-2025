@@ -1,87 +1,87 @@
-const HZ = (1_000_000 * 30);
-const FRM = (228 * 262);
-const BLK = FRM;
-const DLY = (BLK / HZ) * 1_000;
+export const HZ = (1_000_000 * 30);
+export const FRM = (228 * 262);
+export const BLK = FRM;
+export const DLY = (BLK / HZ) * 1_000;
 
 // tia / television constants
-const VB_AIR = 10;
-const OS_AIR = 20;
-const [W, H] = [161, 192 + VB_AIR + OS_AIR];
+export const VB_AIR = 10;
+export const OS_AIR = 20;
+export const [W, H] = [161, 192 + VB_AIR + OS_AIR];
 
-const VB = 228 * (3 + 37 - VB_AIR);
-const OS = 228 * (262 - 30 + OS_AIR);
+export const VB = 228 * (3 + 37 - VB_AIR);
+export const OS = 228 * (262 - 30 + OS_AIR);
 
-const HB = 68;
+export const HB = 68;
 
 // addresses
-const VSYNC  = 0x00;
-const VBLANK = 0x01;
-const WSYNC  = 0x02;
-const NUSIZ0 = 0x04;
+export const VSYNC  = 0x00;
+export const VBLANK = 0x01;
+export const WSYNC  = 0x02;
+export const NUSIZ0 = 0x04;
 
-const COLUP0 = 0x06;
-const COLUP1 = 0x07;
-const COLUPF = 0x08;
-const COLUBK = 0x09;
-const CTRLPF = 0x0a;
-const REFP0  = 0x0b;
-const REFP1  = 0x0c;
-const PF0    = 0x0d;
-const PF1    = 0x0e;
-const PF2    = 0x0f;
-const RESP0  = 0x10;
-const RESP1  = 0x11;
-const RESM0  = 0x12;
-const RESM1  = 0x13;
-const RESBL  = 0x14;
+export const COLUP0 = 0x06;
+export const COLUP1 = 0x07;
+export const COLUPF = 0x08;
+export const COLUBK = 0x09;
+export const CTRLPF = 0x0a;
+export const REFP0  = 0x0b;
+export const REFP1  = 0x0c;
+export const PF0    = 0x0d;
+export const PF1    = 0x0e;
+export const PF2    = 0x0f;
+export const RESP0  = 0x10;
+export const RESP1  = 0x11;
+export const RESM0  = 0x12;
+export const RESM1  = 0x13;
+export const RESBL  = 0x14;
 
 
-const GRP0   = 0x1b;
-const GRP1   = 0x1c;
-const ENAM0  = 0x1d;
-const ENAM1  = 0x1e;
-const ENABL  = 0x1f;
+export const GRP0   = 0x1b;
+export const GRP1   = 0x1c;
+export const ENAM0  = 0x1d;
+export const ENAM1  = 0x1e;
+export const ENABL  = 0x1f;
 
-const HMP0   = 0x20;
-const HMP1   = 0x21;
-const HMM0   = 0x22;
-const HMM1   = 0x23;
-const HMBL   = 0x24;
-const VDELP0 = 0x25;
-const VDELP1 = 0x26;
-const VDELBL = 0x27;
-const RESMP0 = 0x28;
-const RESMP1 = 0x29;
-const HMOVE  = 0x2a;
-const HMCLR  = 0x2b;
-const CXCLR  = 0x2c;
+export const HMP0   = 0x20;
+export const HMP1   = 0x21;
+export const HMM0   = 0x22;
+export const HMM1   = 0x23;
+export const HMBL   = 0x24;
+export const VDELP0 = 0x25;
+export const VDELP1 = 0x26;
+export const VDELBL = 0x27;
+export const RESMP0 = 0x28;
+export const RESMP1 = 0x29;
+export const HMOVE  = 0x2a;
+export const HMCLR  = 0x2b;
+export const CXCLR  = 0x2c;
 
-const CXM0P  = 0x30;
-const CXM1P  = 0x31;
-const CXP0FB = 0x32;
-const CXP1FB = 0x33;
-const CXM0FB = 0x34;
-const CXM1FB = 0x35;
-const CXBLPF = 0x36;
+export const CXM0P  = 0x30;
+export const CXM1P  = 0x31;
+export const CXP0FB = 0x32;
+export const CXP1FB = 0x33;
+export const CXM0FB = 0x34;
+export const CXM1FB = 0x35;
+export const CXBLPF = 0x36;
 
-const INTIM  = 0x284;
-const INSTAT = 0x285;
-const TIM1T  = 0x294;
-const TIM8T  = 0x295;
-const TIM64T = 0x296;
-const T1024T = 0x297;
+export const INTIM  = 0x284;
+export const INSTAT = 0x285;
+export const TIM1T  = 0x294;
+export const TIM8T  = 0x295;
+export const TIM64T = 0x296;
+export const T1024T = 0x297;
 
-const INPT0  = 0x38;
-const INPT4  = 0x3c;
-const INPT5  = 0x3d;
+export const INPT0  = 0x38;
+export const INPT4  = 0x3c;
+export const INPT5  = 0x3d;
 
-const SWCHA  = 0x280;
-const SWACNT = 0x281;
-const SWCHB  = 0x282; // .3 B/W (0) or Color (1)?
-const SWBCNT = 0x283;
+export const SWCHA  = 0x280;
+export const SWACNT = 0x281;
+export const SWCHB  = 0x282; // .3 B/W (0) or Color (1)?
+export const SWBCNT = 0x283;
 
 // https://www.randomterrain.com/atari-2600-memories-tia-color-charts.html#ntsc_pal_color_conversion
-const colors = {
+export const colors = {
   0x00: [0x00, 0x00, 0x00],
   0x02: [0x1a, 0x1a, 0x1a],
   0x04: [0x39, 0x39, 0x39],

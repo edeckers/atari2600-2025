@@ -1,4 +1,4 @@
-const dbgr = () => {
+export const dbgr = () => {
   let isHalted = false;
 
   const breakpoints = new Set();

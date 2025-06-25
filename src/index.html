@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/svg/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <script type="module" src="js/main.js"></script>
+  </head>
+  <body>
+    <div style="display: flex; gap: 10px">
+      <div>
+        <canvas id="tehScreen" width="320" height="222"></canvas>
+        <div><input type="text" id="fr"></div>
+        <div style="display: flex">
+          <select onChange="changeRom(this.options[this.selectedIndex].value)" autofocus>
+            <option value="kernel01">Kernel 01</option>
+            <option value="kernel13">Kernel 13</option>
+            <option value="kernel15">Kernel 15</option>
+            <option value="kernel22">Kernel 22</option>
+            <option value="demo3_8">Demo3_8</option>
+  	  <option value="bitmap">bitmap</option>
+  	  <option value="complexscene1">complexscene1</option>
+            <option value="sethorizpos">sethorizpos</option>
+            <option value="piatimer">piatimer</option>
+            <option value="timing2">timing2</option>
+            <option value="hello">Hello</option>
+            <option value="diag">Diag</option>
+            <option value="logo">Logo</option>
+            <option value="combat">Combat</option>
+            <option value="frogger">Frogger</option>
+            <option value="tictactoe3d">Tic Tac Toe 3D</option>
+            <option value="bowling">Bowling</option>
+            <option value="superbreakout">Super Breakout</option>
+            <option value="positioning">Positioning</option>
+            <option value="tennis">Tennis</option>
+            <option value="moonpatrol">Moon Patrol</option>
+            <option value="hmove">HMOVE</option>
+            <option value="allsprites">All Sprites</option>
+            <option value="bigsprite">Big Sprite</option>
+            <option value="complexscene2">complexscene2</option>
+            <option value="retrigger">retrigger</option>
+            <option value="noinmemretrigger" selected>noinmemretrigger</option>
+            <option value="pongsports">Pong Sports</option>
+          </select>
+        </div>
+      </div>
+      <div id="source" style="font-family: courier; overflow-y: scroll; max-height: 50vh; scrollbar-width: none;"></div>
+      <div style="position: fixed; left: 50%;">
+        <div style="display: flex; flex-direction: column; font-family: courier;">
+  	<div id="debuginfo">
+  	  <div style="font-weight: bold;">CPU</div>
+  	  <div>RX: <span id="rx">0</span></div>
+  	  <div>RY: <span id="ry">0</span></div>
+  	  <div>RA: <span id="ra">0</span></div>
+  	  <div>SP: <span id="sp">0</span></div>
+  	  <div>PC: <span id="pc">0</span></div>
+  	  <div>Flags: <span id="fx">0</span></div>
+  	  <div style="font-weight: bold;">Timer</div>
+  	  <div>Intim: <span id="intim">0</span></div>
+  	  <div>Instat: <span id="instat">0</span></div>
+  	  <div>Interval: <span id="interval">0</span></div>
+  	  <div>Counter: <span id="timerCounter">0</span></div>
+  	  <div style="font-weight: bold;">TIA</div>
+  	  <div>CC: <span id="cc">0</span></div>
+  	  <div>Xpos: <span id="xpos">0</span></div>
+  	  <div>Ypos: <span id="ypos">0</span></div>
+  	  <div>P0X: <span id="p0x">-1</span></div>
+  	  <div>P1X: <span id="p1x">-1</span></div>
+  	  <div>M0X: <span id="m0x">-1</span></div>
+  	  <div>M1X: <span id="m1x">-1</span></div>
+  	  <div>P0: <span id="p0">0</span></div>
+  	  <div>P1: <span id="p1">0</span></div>
+  	  <div>PF0: <span id="pf0">0</span></div>
+  	  <div>PF1: <span id="pf1">0</span></div>
+  	  <div>PF2: <span id="pf2">0</span></div>
+  	  <div>PF: <span id="pf">0</span></div>
+  	  <div>CTRLPF: <span id="ctrlpf">0</span></div>
+  	  <div>SWCHA: <span id="swcha">0</span></div>
+  	  <div>SWACNT: <span id="swacnt">0</span></div>
+  	  <div>SWCHB: <span id="swchb">0</span></div>
+  	  <div>SWBCNT: <span id="swbcnt">0</span></div>
+  	</div>
+  	<div id="memory" style="font-family: courier;"></div>
+  	<div style="display: flex; gap: 10px;">
+  	  <button id="continue">Continue</button>
+  	  <button id="step">Step</button>
+  	  <button id="restart">Restart</button>
+  	</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

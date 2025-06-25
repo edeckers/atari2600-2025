@@ -1,4 +1,7 @@
-const mos6507 = (read, write, rdy) => {
+import { fl, word, tcd, b2d, d2b } from './shared';
+
+
+export const mos6507 = (read, write, rdy) => {
   let pc = 0;
   let sp = 0xff;
   

@@ -9,7 +9,7 @@
   // const fire  = () => { isPaddle() ? (mem[SWCHA] &= 0x7f) : (console.log("FIRE"), mem[INPT4] &= 0x7f); }
   // const firec = () => { isPaddle() ? (mem[SWCHA] |= 0x80) : (mem[INPT4] |= 0x80); }
 
-  const controller = (swcha, inpt4, inpt5) => ({
+  export const controller = (swcha, inpt4, inpt5) => ({
 	// P0
         mn:    () => swcha(data => data & 0xef),
 	me:    () => swcha(data => data & 0x7f),

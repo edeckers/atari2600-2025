@@ -1,4 +1,4 @@
-const bus = (riotRead, riotWrite, romRead, tiaRead, tiaWrite) => {
+export const bus = (riotRead, riotWrite, romRead, tiaRead, tiaWrite) => {
   const nrml = (addr, r) => {
     if (addr & 0x1000) { // ROM
       return addr & 0x1fff;
