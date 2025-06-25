@@ -1,5 +1,7 @@
 import { defineConfig, loadEnv } from 'vite';
 
+import tailwindcss from "tailwindcss";
+  
 export default defineConfig(async ({ command, mode }) => {
     const isProduction = mode === 'production';
     const env = loadEnv(mode, __dirname);
@@ -10,6 +12,7 @@ export default defineConfig(async ({ command, mode }) => {
     return {
         root: 'src',
         publicDir: 'static',
+//	plugins: [tailwindcss()],
         build: {
             outDir: '../build',
             emptyOutDir: true,
