@@ -192,9 +192,7 @@ export const mos6507 = (read, write, rdy) => {
   
   	  fi = 1;
   
-  	  p = word(read, 0xfffe);
-  
-  	  pc = p; })),
+  	  pc = word(read, 0xfffe); })),
     /* NOP         */ 0x04: cmd(3, czp(()                         => { pc += 2; })),  // UNDOCUMENTED
     /* ORA nn      */ 0x05: cmd(3, czp((_r, _w, m)                => { ora(m); pc += 2; })),
     /* ASL nn      */ 0x06: cmd(5, czp((_r, write, m, a)          => { asl(m, (v) => write(a, v)); pc += 2; })),
@@ -239,7 +237,7 @@ export const mos6507 = (read, write, rdy) => {
   
   	  restatus(st);
   
-  	  p = (h << 8) + l;
+  	  const p = (h << 8) + l;
   
   	  pc = p + 2; })),
     /* EOR (nn, X) */ 0x41: cmd(6, cinx((_r, _w, m)               => { eor(m); pc += 2; })),

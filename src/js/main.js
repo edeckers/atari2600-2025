@@ -51,7 +51,7 @@ let romName = "noinmemretrigger";
 // let romName = "positioning";
 // let romName = "frogger";
 
-const changeRom = (rn) => {
+export const changeRom = (rn) => {
   romName = rn
   document.dispatchEvent(new Event("chrom"));
 }
@@ -197,7 +197,7 @@ const toggleBreakpoint = (address) => {
   document.dispatchEvent(new CustomEvent("dbgr.breakpoint.toggle", { detail: { address } }));
 }
 
-document.addEventListener("DOMContentLoaded", (event) => {
+document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("source").addEventListener("dblclick", (event) => {
     toggleBreakpoint(parseInt(event.target.innerHTML.slice(0, 4), 16));
   });
@@ -208,16 +208,19 @@ document.addEventListener("DOMContentLoaded", (event) => {
      loadSource(readRom());
   });
 
-  document.getElementById("continue").addEventListener("click", (event) => {
+  document.getElementById("continue").addEventListener("click", () => {
     document.dispatchEvent(new Event("dbgr.continue"));
   });
-  document.getElementById("step").addEventListener("click", (event) => {
+  document.getElementById("step").addEventListener("click", () => {
     document.dispatchEvent(new Event("dbgr.step"));
   });
-  document.getElementById("restart").addEventListener("click", (event) => {
+  document.getElementById("restart").addEventListener("click", () => {
     startRom();
   });
 
+  document.getElementById("romSelector").addEventListener("change", (e) => {
+    changeRom(e.target.options[e.target.selectedIndex].value)
+  });
 
   startRom();
 

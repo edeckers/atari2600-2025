@@ -2,9 +2,26 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/svg/vite.svg" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="https://branie.it/favicon-16x16.png"
+    >
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="https://branie.it/favicon-32x32.png"
+    >
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="228x228"
+      href="https://branie.it/coast-228x228.png"
+    >
+    <link rel="shortcut icon" href="https://branie.it/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <script type="module" src="js/main.js"></script>
   </head>
   <body>
@@ -13,7 +30,7 @@
         <canvas id="tehScreen" width="320" height="222"></canvas>
         <div><input type="text" id="fr"></div>
         <div style="display: flex">
-          <select onChange="changeRom(this.options[this.selectedIndex].value)" autofocus>
+          <select id="romSelector" autofocus>
             <option value="kernel01">Kernel 01</option>
             <option value="kernel13">Kernel 13</option>
             <option value="kernel15">Kernel 15</option>
