@@ -79,5 +79,3 @@ export const d2b = (d) => {
 
  return ((h << 4) + l) & 0xff;
 }
-
-export const formatPc = (pc) => pc.toString(16).padStart(4, "0");

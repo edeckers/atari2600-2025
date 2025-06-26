@@ -25,7 +25,7 @@
     <link rel="stylesheet" href="css/main.css" />    
     <script type="module" src="js/main.js"></script>
   </head>
-  <body class="bg-slate-800">
+  <body>
     <div class="flex gap-2">
       <div>
         <canvas id="tehScreen" width="320" height="222"></canvas>
@@ -37,8 +37,8 @@
             <option value="kernel15">Kernel 15</option>
             <option value="kernel22">Kernel 22</option>
             <option value="demo3_8">Demo3_8</option>
-  	  <option value="bitmap">bitmap</option>
-  	  <option value="complexscene1">complexscene1</option>
+            <option value="bitmap">bitmap</option>
+            <option value="complexscene1">complexscene1</option>
             <option value="sethorizpos">sethorizpos</option>
             <option value="piatimer">piatimer</option>
             <option value="timing2">timing2</option>
@@ -68,17 +68,20 @@
         <div class="flex flex-col font-[courier]">
   	<div id="debuginfo">
   	  <div class="font-bold">CPU</div>
-  	  <div>RX: <span id="rx">0</span></div>
-  	  <div>RY: <span id="ry">0</span></div>
-  	  <div>RA: <span id="ra">0</span></div>
-  	  <div>SP: <span id="sp">0</span></div>
-  	  <div>PC: <span id="pc">0</span></div>
-  	  <div>Flags: <span id="fx">0</span></div>
+          <div title="Register X">RX=<span id="rx">0</span></div>
+          <div title="Register Y">RY=<span id="ry">0</span></div>
+          <div title="Accumulator">RA=<span id="ra">0</span></div>
+	  <div title="Stack pointer">SP=<span id="sp">0</span></div>
+	  <div title="Program Counter">PC=<span id="pc">0</span></div>
+  	  <div title="Flags">FX=<span id="fx">0</span></div>
   	  <div class="font-bold">Timer</div>
-  	  <div>Intim: <span id="intim">0</span></div>
-  	  <div>Instat: <span id="instat">0</span></div>
-  	  <div>Interval: <span id="interval">0</span></div>
-  	  <div>Counter: <span id="timerCounter">0</span></div>
+	  <div class="grid grid-cols-2 gap-0">
+            <div>Intim</div><div><span id="intim">0</span></div>
+            <div>Instat</div><div><span id="instat">0</span></div>
+            <div>Interval</div><div><span id="interval">0</span></div>
+            <div>Counter</div><div><span id="timerCounter">0</span></div>
+	  </div>
+	  </div>
   	  <div class="font-bold">TIA</div>
   	  <div>CC: <span id="cc">0</span></div>
   	  <div>Xpos: <span id="xpos">0</span></div>

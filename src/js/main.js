@@ -51,32 +51,58 @@ let romName = "noinmemretrigger";
 // let romName = "positioning";
 // let romName = "frogger";
 
+export const formatPc = (pc) => pc.toString(16).padStart(4, "0");
+
 export const changeRom = (rn) => {
   romName = rn
   document.dispatchEvent(new Event("chrom"));
 }
 
+const fs = (f, status) => {
+ const c = status ?  f.toUpperCase() : f.toLowerCase();
+
+ const classes = status ? "font-bold text-white" : "";
+ 
+ return `<span class="${classes}">${c}</span>`;
+}
+
+const fb = (v) => v.toString(2).padStart(8, "0");
+const fd = (v) => v.toString(10).padStart(3, " ").replaceAll(" ", "&nbsp;");
+const fh = (v) => v.toString(16).padStart(2, "0");
+
+const fr = (r) => `$${fh(r)} ${fd(r)} ${fb(r)}`;
+
 const loadDebugInfo = (pstatus) => {
-  document.getElementById("rx").innerHTML = `$${pstatus.rx.toString(16).padStart(2, "0")} (${pstatus.rx.toString(2).padStart(8, "0")})`;
-  document.getElementById("ry").innerHTML = `$${pstatus.ry.toString(16).padStart(2, "0")} (${pstatus.ry.toString(2).padStart(8, "0")})`;
-  document.getElementById("ra").innerHTML = `$${pstatus.ra.toString(16).padStart(2, "0")} (${pstatus.ra.toString(2).padStart(8, "0")})`;
-  document.getElementById("sp").innerHTML = pstatus.sp.toString(16);
-  document.getElementById("pc").innerHTML = formatPc(pstatus.pc)
+  document.getElementById("rx").innerHTML = fr(pstatus.rx);
+  document.getElementById("ry").innerHTML = fr(pstatus.ry);
+  document.getElementById("ra").innerHTML = fr(pstatus.ra);
+  document.getElementById("sp").innerHTML = fr(pstatus.sp);
+  document.getElementById("pc").innerHTML = `$${formatPc(pstatus.pc)}`
 
-  document.getElementById("fx").innerHTML = ["c:", pstatus.fc, "z:", pstatus.fz, "i:", pstatus.fi, "d:", pstatus.fd, "b:", pstatus._fb, "_:", 1, "v:", pstatus.fv, "n:", pstatus.fn].join(" ");
+  document.getElementById("fx").innerHTML = [
+    fs("c",pstatus.fc),
+    fs("z", pstatus.fz),
+    fs("i", pstatus.fi),
+    fs("d", pstatus.fd),
+    fs("b", pstatus._fb),
+    fs("_", 1),
+    fs("v", pstatus.fv),
+    fs("n", pstatus.fn)].join("");
 
-  document.getElementById("intim").innerHTML = pstatus.intim.toString(10);
-  document.getElementById("instat").innerHTML = pstatus.instat.toString(2);
-  document.getElementById("interval").innerHTML = pstatus.interval.toString(10);
-  document.getElementById("timerCounter").innerHTML = pstatus.timerCounter.toString(10);
+  document.getElementById("intim").innerHTML        = `$${fh(pstatus.intim)} ${fd(pstatus.intim)}`;
+  document.getElementById("instat").innerHTML       = `$${fh(pstatus.instat)} ${fd(pstatus.interval)} ${fb(pstatus.instat)}`;
+  document.getElementById("interval").innerHTML     = `$${fh(pstatus.interval)} ${fd(pstatus.interval)}`;
+  document.getElementById("timerCounter").innerHTML = `$${fh(pstatus.timerCounter)} ${fd(pstatus.timerCounter)}`;
+
   document.getElementById("xpos").innerHTML = pstatus.x.toString(10);
   document.getElementById("ypos").innerHTML = pstatus.y.toString(10);
-  document.getElementById("p0").innerHTML = pstatus.p0.toString(2).padStart(8, "0");
-  document.getElementById("p1").innerHTML = pstatus.p1.toString(2).padStart(8, "0");
-  document.getElementById("p0x").innerHTML = pstatus.p0x.toString(10);
-  document.getElementById("p1x").innerHTML = pstatus.p1x.toString(10);
-  document.getElementById("m0x").innerHTML = pstatus.m0x.toString(10);
-  document.getElementById("m1x").innerHTML = pstatus.m1x.toString(10);
+  document.getElementById("p0").innerHTML   = pstatus.p0.toString(2).padStart(8, "0");
+  document.getElementById("p1").innerHTML   = pstatus.p1.toString(2).padStart(8, "0");
+  document.getElementById("p0x").innerHTML  = pstatus.p0x.toString(10);
+  document.getElementById("p1x").innerHTML  = pstatus.p1x.toString(10);
+  document.getElementById("m0x").innerHTML  = pstatus.m0x.toString(10);
+  document.getElementById("m1x").innerHTML  = pstatus.m1x.toString(10);
+
   // document.getElementById("cc").innerHTML = `${pstatus.cc.toString(10)} (${pstatus.cc % 228} / ${Math.floor((pstatus.cc % 228) / 3)})`;
   document.getElementById("cc").innerHTML = `${pstatus.cc.toString(10)}`;
 
@@ -126,6 +152,12 @@ const updateHighlights = (pstatus) => {
       line.style.background = "none";
     }
   }
+}
+
+const updateStatus = (pstatus) => {
+  loadDebugInfo(pstatus);
+  loadMemory(pstatus);
+  updateHighlights(pstatus);
 }
 
 const loadSource = (rbx) => {
@@ -222,11 +254,11 @@ document.addEventListener("DOMContentLoaded", () => {
     changeRom(e.target.options[e.target.selectedIndex].value)
   });
 
-  startRom();
 
   document.addEventListener("draw", () => { frc++; });
   document.addEventListener("chrom", () => { startRom(); document.dispatchEvent(new Event("dbgr.breakpoint.clear")); });
-  document.addEventListener("dbgr.break", () => { const pstatus = info(); loadDebugInfo(pstatus); loadMemory(pstatus); updateHighlights(pstatus); });
+
+  document.addEventListener("dbgr.break", () => { const pstatus = info(); updateStatus(pstatus); });
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "w") { ctrlr.mn(); return false; }
@@ -279,4 +311,15 @@ const updateFr = () => {
   frc = 0;
 }
 
-setInterval(() => updateFr(), 1_000);
+
+const main = () => {
+  setInterval(() => updateFr(), 1_000);
+
+  startRom();
+
+  const pstatus = Object.fromEntries(Object.entries(info()).map(([k, _]) => [k, 0])); // updateStatus(pstatus);
+  
+  updateStatus(pstatus);
+}
+
+main();
