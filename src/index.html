@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-US">
   <head>
     <meta charset="UTF-8" />
     <link
@@ -26,11 +26,11 @@
     <script type="module" src="js/main.js"></script>
   </head>
   <body class="bg-slate-800">
-    <div style="display: flex; gap: 10px">
+    <div class="flex gap-2">
       <div>
         <canvas id="tehScreen" width="320" height="222"></canvas>
         <div><input type="text" id="fr"></div>
-        <div style="display: flex">
+        <div style="flex">
           <select id="romSelector" autofocus>
             <option value="kernel01">Kernel 01</option>
             <option value="kernel13">Kernel 13</option>
@@ -63,23 +63,23 @@
           </select>
         </div>
       </div>
-      <div id="source" style="font-family: courier; overflow-y: scroll; max-height: 50vh; scrollbar-width: none;"></div>
-      <div style="position: fixed; left: 50%;">
-        <div style="display: flex; flex-direction: column; font-family: courier;">
+      <div id="source" style="scrollbar-width: none" class="font-[courier] overflow-y-scroll max-h-50vh"></div>
+      <div style="fixed left-50">
+        <div class="flex flex-col font-[courier]">
   	<div id="debuginfo">
-  	  <div style="font-weight: bold;">CPU</div>
+  	  <div class="font-bold">CPU</div>
   	  <div>RX: <span id="rx">0</span></div>
   	  <div>RY: <span id="ry">0</span></div>
   	  <div>RA: <span id="ra">0</span></div>
   	  <div>SP: <span id="sp">0</span></div>
   	  <div>PC: <span id="pc">0</span></div>
   	  <div>Flags: <span id="fx">0</span></div>
-  	  <div style="font-weight: bold;">Timer</div>
+  	  <div class="font-bold">Timer</div>
   	  <div>Intim: <span id="intim">0</span></div>
   	  <div>Instat: <span id="instat">0</span></div>
   	  <div>Interval: <span id="interval">0</span></div>
   	  <div>Counter: <span id="timerCounter">0</span></div>
-  	  <div style="font-weight: bold;">TIA</div>
+  	  <div class="font-bold">TIA</div>
   	  <div>CC: <span id="cc">0</span></div>
   	  <div>Xpos: <span id="xpos">0</span></div>
   	  <div>Ypos: <span id="ypos">0</span></div>
@@ -99,8 +99,8 @@
   	  <div>SWCHB: <span id="swchb">0</span></div>
   	  <div>SWBCNT: <span id="swbcnt">0</span></div>
   	</div>
-  	<div id="memory" style="font-family: courier;"></div>
-  	<div style="display: flex; gap: 10px;">
+  	<div id="memory" class="font-[courier]"></div>
+  	<div class="flex gap-2">
   	  <button id="continue">Continue</button>
   	  <button id="step">Step</button>
   	  <button id="restart">Restart</button>
