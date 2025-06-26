@@ -24,7 +24,7 @@ export const machine = (input) => {
 
   const [read, write] = bus(riotRead, riotWrite, romRead, tiaRead, tiaWrite);
 
-  const [step, piaState] = mos6507(read, write, rdy);
+  const [step, piaState, toggleEvents] = mos6507(read, write, rdy);
 
   const tia_ = () => {
       updateScreen();
@@ -87,5 +87,5 @@ export const machine = (input) => {
       isWSync: !rdy(),
     });
 
-  return [run, ctrl, switches, info];
+  return [run, ctrl, switches, info, toggleEvents];
 }

@@ -27,111 +27,118 @@
   </head>
   <body>
     <div class="flex space-x-8">
-      <div>
-        <canvas id="tehScreen" width="320" height="222"></canvas>
-        <div><input type="text" id="fr"></div>
-        <div class="flex">
-          <select id="romSelector" autofocus>
-            <option value="kernel01">Kernel 01</option>
-            <option value="kernel13">Kernel 13</option>
-            <option value="kernel15">Kernel 15</option>
-            <option value="kernel22">Kernel 22</option>
-            <option value="demo3_8">Demo3_8</option>
-            <option value="bitmap">bitmap</option>
-            <option value="complexscene1">complexscene1</option>
-            <option value="sethorizpos">sethorizpos</option>
-            <option value="piatimer">piatimer</option>
-            <option value="timing2">timing2</option>
-            <option value="hello">Hello</option>
-            <option value="diag">Diag</option>
-            <option value="logo">Logo</option>
-            <option value="combat">Combat</option>
-            <option value="frogger">Frogger</option>
-            <option value="tictactoe3d">Tic Tac Toe 3D</option>
-            <option value="bowling">Bowling</option>
-            <option value="superbreakout">Super Breakout</option>
-            <option value="positioning">Positioning</option>
-            <option value="tennis">Tennis</option>
-            <option value="moonpatrol">Moon Patrol</option>
-            <option value="hmove">HMOVE</option>
-            <option value="allsprites">All Sprites</option>
-            <option value="bigsprite">Big Sprite</option>
-            <option value="complexscene2">complexscene2</option>
-            <option value="retrigger">retrigger</option>
-            <option value="noinmemretrigger" selected>noinmemretrigger</option>
-            <option value="pongsports">Pong Sports</option>
-          </select>
-        </div>
+      <div class="flex flex-col flex-grow">
+        <div id="machine" class="flex flex-col">
+          <canvas id="tehScreen" class="max-w-[50vw]" width="320" height="222"></canvas>
+	  <div class="flex py-4 items-center space-x-8">
+	    <label for="debugmode" class="hidden md:block cursor-pointer"><input type="checkbox" id="debugmode" /> Debug</label>
+            <div>FR=<input type="text" id="fr"></div>
+            <div>
+              <select id="romSelector" autofocus>
+                <option value="kernel01">Kernel 01</option>
+                <option value="kernel13">Kernel 13</option>
+                <option value="kernel15">Kernel 15</option>
+                <option value="kernel22">Kernel 22</option>
+                <option value="demo3_8">Demo3_8</option>
+                <option value="bitmap">bitmap</option>
+                <option value="complexscene1">complexscene1</option>
+                <option value="sethorizpos">sethorizpos</option>
+                <option value="piatimer">piatimer</option>
+                <option value="timing2">timing2</option>
+                <option value="hello">Hello</option>
+                <option value="diag">Diag</option>
+                <option value="logo">Logo</option>
+                <option value="combat">Combat</option>
+                <option value="frogger">Frogger</option>
+                <option value="tictactoe3d">Tic Tac Toe 3D</option>
+                <option value="bowling">Bowling</option>
+                <option value="superbreakout">Super Breakout</option>
+                <option value="positioning">Positioning</option>
+                <option value="tennis">Tennis</option>
+                <option value="moonpatrol">Moon Patrol</option>
+                <option value="hmove">HMOVE</option>
+                <option value="allsprites">All Sprites</option>
+                <option value="bigsprite">Big Sprite</option>
+                <option value="complexscene2">complexscene2</option>
+                <option value="retrigger">retrigger</option>
+                <option value="noinmemretrigger" selected>noinmemretrigger</option>
+                <option value="pongsports">Pong Sports</option>
+              </select>
+            </div>
+           </div>
+	</div>
       </div>
-      <div class="flex flex-col">
-        <div id="source" style="scrollbar-width: none" class="overflow-y-scroll max-h-[50vh]"></div>
-        <div class="flex space-x-2 mt-8 self-center">
-          <button id="continue">Continue</button>
-          <button id="step">Step</button>
-          <button id="restart">Restart</button>
-        </div>
-      </div>
-      <div>
-	<div class="flex justify-between space-x-8">
-          <div class="flex flex-col space-y-8">
-	    <div>
-  	      <div class="font-bold">CPU</div>
-	      <div class="grid grid-cols-2 gap-0">
-                <div title="Register X">RX</div><div><span id="rx">0</span></div>
-                <div title="Register Y">RY</div><div><span id="ry">0</span></div>
-                <div title="Accumulator">RA</div><div><span id="ra">0</span></div>
-                <div title="Stack pointer">SP</div><div><span id="sp">0</span></div>
-                <div title="Program Counter">PC</div><div><span id="pc">0</span></div>
-                <div title="Flags">FX</div><div><span id="fx">0</span></div>
-	      </div>
-	    </div>
- 	    <div>
-  	      <div class="font-bold">Rendering</div>
-	      <div class="grid grid-cols-2 gap-0">
-  	        <div>CC</div><div><span id="cc">0</span></div>
-  	        <div>X Y</div><div><span id="xpos">0</span> <span id="ypos">0</span></div>
-	      <div class="font-bold mt-2">Players</div><div></div>
-  	        <div>P0.X P1.X</div><div><span id="p0x">-1</span> <span id="p1x">-1</span></div>
-  	        <div>GRP0 GRP1</div><div><span id="p0">0</span> <span id="p1">0</span></div>
-	      <div class="font-bold mt-2">Projectiles</div><div></div>
-  	        <div>M0.X</div><div><span id="m0x">-1</span></div>
-  	        <div>M1.X</div><div><span id="m1x">-1</span></div>
-  	        <div>BL.X</div><div><span id="blx">-1</span></div>
-	      <div class="font-bold mt-2">Playfield</div><div></div>
-  	        <div>PF0</div><div><span id="pf0">0</span></div>
-  	        <div>PF1</div><div><span id="pf1">0</span></div>
-  	        <div>PF2</div><div><span id="pf2">0</span></div>
-  	        <div>PF</div><div><span id="pf">0</span></div>
-  	        <div>CTRLPF</div><div><span id="ctrlpf">0</span></div>
-	      </div>
-	    </div>
+      <div id="debugger" class="flex justify-between space-x-8 hidden">
+	<div class="flex flex-col">
+          <div id="source" style="scrollbar-width: none" class="overflow-y-scroll max-h-[50vh]"></div>
+          <div class="flex space-x-2 mt-8 self-center">
+            <button id="continue">Continue</button>
+            <button id="step">Step</button>
+            <button id="restart">Restart</button>
           </div>
-          <div class="flex flex-col space-y-8">
-	      <div>
-                <div class="font-bold">RAM</div>
-  	        <div id="memory"></div>
-	      </div>
-	      <div>
-  	        <div class="font-bold">Timer</div>
-	        <div class="grid grid-cols-2 gap-0">
-                  <div>INTIM</div><div><span id="intim">0</span></div>
-                  <div>INSTAT</div><div><span id="instat">0</span></div>
-                  <div>TIMnnT</div><div><span id="interval">0</span></div>
-                  <div>Counter</div><div><span id="timerCounter">0</span></div>
-	        </div>
-	      </div>
-	      <div>
-  	        <div class="font-bold">Switches</div>
-	        <div class="grid grid-cols-2 gap-0">
-  	          <div>SWCHA</div><div><span id="swcha">0</span></div>
-  	          <div>SWACNT</div><div><span id="swacnt">0</span></div>
-  	          <div>SWCHB</div><div><span id="swchb">0</span></div>
-  	          <div>SWBCNT</div><div><span id="swbcnt">0</span></div>
-	        </div>
-	      </div>
-  	    </div>
-          </div>
-      </div>
+        </div>
+        <div>
+          <div class="flex justify-between space-x-8">
+            <div class="flex flex-col space-y-8">
+              <div>
+                <div class="font-bold">CPU</div>
+                <div class="grid grid-cols-2 gap-0">
+                  <div title="Register X">RX</div><div><span id="rx">0</span></div>
+                  <div title="Register Y">RY</div><div><span id="ry">0</span></div>
+                  <div title="Accumulator">RA</div><div><span id="ra">0</span></div>
+                  <div title="Stack pointer">SP</div><div><span id="sp">0</span></div>
+                  <div title="Program Counter">PC</div><div><span id="pc">0</span></div>
+                  <div title="Flags">FX</div><div><span id="fx">0</span></div>
+                </div>
+              </div>
+              <div>
+                <div class="font-bold">Rendering</div>
+                <div class="grid grid-cols-2 gap-0">
+                  <div>CC</div><div><span id="cc">0</span></div>
+                  <div>X Y</div><div><span id="xpos">0</span> <span id="ypos">0</span></div>
+                <div class="font-bold mt-2">Players</div><div></div>
+                  <div>P0.X P1.X</div><div><span id="p0x">-1</span> <span id="p1x">-1</span></div>
+                  <div>GRP0 GRP1</div><div><span id="p0">0</span> <span id="p1">0</span></div>
+                <div class="font-bold mt-2">Projectiles</div><div></div>
+                  <div>M0.X</div><div><span id="m0x">-1</span></div>
+                  <div>M1.X</div><div><span id="m1x">-1</span></div>
+                  <div>BL.X</div><div><span id="blx">-1</span></div>
+                <div class="font-bold mt-2">Playfield</div><div></div>
+                  <div>PF0</div><div><span id="pf0">0</span></div>
+                  <div>PF1</div><div><span id="pf1">0</span></div>
+                  <div>PF2</div><div><span id="pf2">0</span></div>
+                  <div>PF</div><div><span id="pf">0</span></div>
+                  <div>CTRLPF</div><div><span id="ctrlpf">0</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="flex flex-col space-y-8">
+                <div>
+                  <div class="font-bold">RAM</div>
+                  <div id="memory"></div>
+                </div>
+                <div>
+                  <div class="font-bold">Timer</div>
+                  <div class="grid grid-cols-2 gap-0">
+                    <div>INTIM</div><div><span id="intim">0</span></div>
+                    <div>INSTAT</div><div><span id="instat">0</span></div>
+                    <div>TIMnnT</div><div><span id="interval">0</span></div>
+                    <div>Counter</div><div><span id="timerCounter">0</span></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="font-bold">Switches</div>
+                  <div class="grid grid-cols-2 gap-0">
+                    <div>SWCHA</div><div><span id="swcha">0</span></div>
+                    <div>SWACNT</div><div><span id="swacnt">0</span></div>
+                    <div>SWCHB</div><div><span id="swchb">0</span></div>
+                    <div>SWBCNT</div><div><span id="swbcnt">0</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+	  </div>
+        </div>
     </div>
   </body>
 </html>

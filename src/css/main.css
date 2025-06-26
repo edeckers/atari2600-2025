@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 html {
-  @apply bg-slate-800 text-gray-200 text-xs font-mono p-4;
+  @apply bg-slate-800 text-gray-200 text-xs font-mono p-10;
 }
 
 button {

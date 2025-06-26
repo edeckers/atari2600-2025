@@ -27,6 +27,8 @@ export const mos6507 = (read, write, rdy) => {
   let rx = 0;
   let ry = 0;
 
+  let enableEvents = false;
+
   const fzu = (v) => fz = fl(v === 0);
   const fnu = (v) => fn = fl((v & 0x80) === 0x80);
   
@@ -359,10 +361,10 @@ export const mos6507 = (read, write, rdy) => {
     const isWaiting = action && !action.next().done;
     
     if (isWaiting) { // allow complete computation
-      document.dispatchEvent(new CustomEvent("mos6507.step.ticked", {detail: { pc: pc_ }}));
+      enableEvents && document.dispatchEvent(new CustomEvent("mos6507.step.ticked", {detail: { pc: pc_ }}));
       return; } 
 
-    document.dispatchEvent(new CustomEvent("mos6507.step.completed", {detail: { pc: pc_ }}));
+    enableEvents && document.dispatchEvent(new CustomEvent("mos6507.step.completed", {detail: { pc: pc_ }}));
 
     pc_ = pc;
     const o = read(pc)
@@ -372,7 +374,7 @@ export const mos6507 = (read, write, rdy) => {
     try {
      action = p(read, write);
 
-     document.dispatchEvent(new CustomEvent("mos6507.step.started", {detail: { pc } }));
+     enableEvents && document.dispatchEvent(new CustomEvent("mos6507.step.started", {detail: { pc } }));
     } catch (e) {
       console.log(e, pc.toString(16), "o", o.toString(16))
       if (o === 0xff) { return; } // Forced exit for debugging purposes
@@ -395,5 +397,5 @@ export const mos6507 = (read, write, rdy) => {
     fi,
   });
 
-  return [step, state];
+  return [step, state, (v) => enableEvents = !!v];
 }

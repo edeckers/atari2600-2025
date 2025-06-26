@@ -105,7 +105,7 @@ const loadDebugInfo = (pstatus) => {
   document.getElementById("blx").innerHTML  = pstatus.blx.toString(10);
 
   // document.getElementById("cc").innerHTML = `${pstatus.cc.toString(10)} (${pstatus.cc % 228} / ${Math.floor((pstatus.cc % 228) / 3)})`;
-  document.getElementById("cc").innerHTML = `${pstatus.cc.toString(10)}`;
+  // document.getElementById("cc").innerHTML = `${pstatus.cc.toString(10)}`;
 
   document.getElementById("pf0").innerHTML    = `$${fh(pstatus.pf0)} ${fb(pstatus.pf0)}`;
   document.getElementById("pf1").innerHTML    = `$${fh(pstatus.pf1)} ${fb(pstatus.pf1)}`;
@@ -151,15 +151,13 @@ const updateHighlights = (pstatus) => {
     const address = parseInt(line.id.slice(5), 16);
 
     if (address === pstatus.pc) {
-      if (line.className.indexOf("hl") > -1) { continue; }
+      if (line.classList.contains("hl")) { continue; }
 
-      line.className = (line.className.split(" ").concat("hl")).join(" ");
+      line.classList.add("hl");
 
       document.getElementById(`${line.id}`).scrollIntoView({ /*behavior: "smooth",*/ block: "nearest" });
     } else {
-      if (line.className.indexOf("hl") === -1) { continue; }
-
-      line.className = line.className.split(" ").filter(c => c !== "hl").join(" ");
+      line.classList.remove("hl");
     }
   }
 }
@@ -219,6 +217,8 @@ const readRom = () => {
 let ctrlr = undefined;
 let switches = undefined;;
 let info = undefined;
+let toggleEvents = () => {};
+
 const startRom = () => {
   document.dispatchEvent(new Event("machine.kill"));
 
@@ -226,13 +226,14 @@ const startRom = () => {
 
   loadSource(romBytes);
 
-  const [process, ctrl, swch, nfo] = machine(romBytes);
+  const [process, ctrl, swch, nfo, events] = machine(romBytes);
 
   process(isHalted);
 
   ctrlr = ctrl;
   switches = swch;
   info = nfo;
+  toggleEvents = events || (() => {});
 }
 
 const toggleBreakpoint = (address) => {
@@ -242,6 +243,17 @@ const toggleBreakpoint = (address) => {
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("source").addEventListener("dblclick", (event) => {
     toggleBreakpoint(parseInt(event.target.innerHTML.slice(0, 4), 16));
+  });
+
+  document.getElementById("debugmode").addEventListener("change", (event) => {
+    if (event.target.checked) {
+      document.getElementById("debugger").classList.remove("hidden");
+      toggleEvents(true);
+      return;
+    }
+
+    document.getElementById("debugger").classList.add("hidden");
+    toggleEvents(false);
   });
 
   document.addEventListener("dbgr.breakpoint.changed", (event) => {
