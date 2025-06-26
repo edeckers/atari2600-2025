@@ -1,13 +1,30 @@
 @import "tailwindcss";
 
 html {
-  @apply bg-slate-800 text-gray-200;
+  @apply bg-slate-800 text-gray-200 text-xs font-mono p-4;
 }
 
 button {
-  @apply bg-blue-600 text-gray-100 font-bold py-2 px-4 rounded;
+  @apply bg-blue-600 text-gray-100 font-bold py-2 px-4 rounded cursor-pointer;
 }
+button:hover {
+  @apply bg-blue-700;
+}
+
 
 select {
   @apply bg-gray-800 text-gray-200 border border-gray-200 font-bold py-2 rounded;
+}
+
+#source .bp, #source .bp.address{
+  @apply bg-red-600 text-gray-100 font-bold rounded;
+}
+
+#source .hl, #source .hl .address {
+  /* @apply bg-yellow-500 text-gray-800 font-bold py-2 px-4 rounded; */
+  @apply bg-gray-200 text-gray-800 font-bold rounded;
+}
+
+#source .address {
+  @apply text-blue-400 font-bold cursor-pointer;
 }

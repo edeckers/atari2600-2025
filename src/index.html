@@ -26,11 +26,11 @@
     <script type="module" src="js/main.js"></script>
   </head>
   <body>
-    <div class="flex gap-2">
+    <div class="flex space-x-8">
       <div>
         <canvas id="tehScreen" width="320" height="222"></canvas>
         <div><input type="text" id="fr"></div>
-        <div style="flex">
+        <div class="flex">
           <select id="romSelector" autofocus>
             <option value="kernel01">Kernel 01</option>
             <option value="kernel13">Kernel 13</option>
@@ -63,52 +63,74 @@
           </select>
         </div>
       </div>
-      <div id="source" style="scrollbar-width: none" class="font-[courier] overflow-y-scroll max-h-50vh"></div>
-      <div style="fixed left-50">
-        <div class="flex flex-col font-[courier]">
-  	<div id="debuginfo">
-  	  <div class="font-bold">CPU</div>
-          <div title="Register X">RX=<span id="rx">0</span></div>
-          <div title="Register Y">RY=<span id="ry">0</span></div>
-          <div title="Accumulator">RA=<span id="ra">0</span></div>
-	  <div title="Stack pointer">SP=<span id="sp">0</span></div>
-	  <div title="Program Counter">PC=<span id="pc">0</span></div>
-  	  <div title="Flags">FX=<span id="fx">0</span></div>
-  	  <div class="font-bold">Timer</div>
-	  <div class="grid grid-cols-2 gap-0">
-            <div>Intim</div><div><span id="intim">0</span></div>
-            <div>Instat</div><div><span id="instat">0</span></div>
-            <div>Interval</div><div><span id="interval">0</span></div>
-            <div>Counter</div><div><span id="timerCounter">0</span></div>
-	  </div>
-	  </div>
-  	  <div class="font-bold">TIA</div>
-  	  <div>CC: <span id="cc">0</span></div>
-  	  <div>Xpos: <span id="xpos">0</span></div>
-  	  <div>Ypos: <span id="ypos">0</span></div>
-  	  <div>P0X: <span id="p0x">-1</span></div>
-  	  <div>P1X: <span id="p1x">-1</span></div>
-  	  <div>M0X: <span id="m0x">-1</span></div>
-  	  <div>M1X: <span id="m1x">-1</span></div>
-  	  <div>P0: <span id="p0">0</span></div>
-  	  <div>P1: <span id="p1">0</span></div>
-  	  <div>PF0: <span id="pf0">0</span></div>
-  	  <div>PF1: <span id="pf1">0</span></div>
-  	  <div>PF2: <span id="pf2">0</span></div>
-  	  <div>PF: <span id="pf">0</span></div>
-  	  <div>CTRLPF: <span id="ctrlpf">0</span></div>
-  	  <div>SWCHA: <span id="swcha">0</span></div>
-  	  <div>SWACNT: <span id="swacnt">0</span></div>
-  	  <div>SWCHB: <span id="swchb">0</span></div>
-  	  <div>SWBCNT: <span id="swbcnt">0</span></div>
-  	</div>
-  	<div id="memory" class="font-[courier]"></div>
-  	<div class="flex gap-2">
-  	  <button id="continue">Continue</button>
-  	  <button id="step">Step</button>
-  	  <button id="restart">Restart</button>
-  	</div>
+      <div class="flex flex-col">
+        <div id="source" style="scrollbar-width: none" class="overflow-y-scroll max-h-[50vh]"></div>
+        <div class="flex space-x-2 mt-8 self-center">
+          <button id="continue">Continue</button>
+          <button id="step">Step</button>
+          <button id="restart">Restart</button>
         </div>
+      </div>
+      <div>
+	<div class="flex justify-between space-x-8">
+          <div class="flex flex-col space-y-8">
+	    <div>
+  	      <div class="font-bold">CPU</div>
+	      <div class="grid grid-cols-2 gap-0">
+                <div title="Register X">RX</div><div><span id="rx">0</span></div>
+                <div title="Register Y">RY</div><div><span id="ry">0</span></div>
+                <div title="Accumulator">RA</div><div><span id="ra">0</span></div>
+                <div title="Stack pointer">SP</div><div><span id="sp">0</span></div>
+                <div title="Program Counter">PC</div><div><span id="pc">0</span></div>
+                <div title="Flags">FX</div><div><span id="fx">0</span></div>
+	      </div>
+	    </div>
+ 	    <div>
+  	      <div class="font-bold">Rendering</div>
+	      <div class="grid grid-cols-2 gap-0">
+  	        <div>CC</div><div><span id="cc">0</span></div>
+  	        <div>X Y</div><div><span id="xpos">0</span> <span id="ypos">0</span></div>
+	      <div class="font-bold mt-2">Players</div><div></div>
+  	        <div>P0.X P1.X</div><div><span id="p0x">-1</span> <span id="p1x">-1</span></div>
+  	        <div>GRP0 GRP1</div><div><span id="p0">0</span> <span id="p1">0</span></div>
+	      <div class="font-bold mt-2">Projectiles</div><div></div>
+  	        <div>M0.X</div><div><span id="m0x">-1</span></div>
+  	        <div>M1.X</div><div><span id="m1x">-1</span></div>
+  	        <div>BL.X</div><div><span id="blx">-1</span></div>
+	      <div class="font-bold mt-2">Playfield</div><div></div>
+  	        <div>PF0</div><div><span id="pf0">0</span></div>
+  	        <div>PF1</div><div><span id="pf1">0</span></div>
+  	        <div>PF2</div><div><span id="pf2">0</span></div>
+  	        <div>PF</div><div><span id="pf">0</span></div>
+  	        <div>CTRLPF</div><div><span id="ctrlpf">0</span></div>
+	      </div>
+	    </div>
+          </div>
+          <div class="flex flex-col space-y-8">
+	      <div>
+                <div class="font-bold">RAM</div>
+  	        <div id="memory"></div>
+	      </div>
+	      <div>
+  	        <div class="font-bold">Timer</div>
+	        <div class="grid grid-cols-2 gap-0">
+                  <div>INTIM</div><div><span id="intim">0</span></div>
+                  <div>INSTAT</div><div><span id="instat">0</span></div>
+                  <div>TIMnnT</div><div><span id="interval">0</span></div>
+                  <div>Counter</div><div><span id="timerCounter">0</span></div>
+	        </div>
+	      </div>
+	      <div>
+  	        <div class="font-bold">Switches</div>
+	        <div class="grid grid-cols-2 gap-0">
+  	          <div>SWCHA</div><div><span id="swcha">0</span></div>
+  	          <div>SWACNT</div><div><span id="swacnt">0</span></div>
+  	          <div>SWCHB</div><div><span id="swchb">0</span></div>
+  	          <div>SWBCNT</div><div><span id="swbcnt">0</span></div>
+	        </div>
+	      </div>
+  	    </div>
+          </div>
       </div>
     </div>
   </body>

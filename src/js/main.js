@@ -90,7 +90,7 @@ const loadDebugInfo = (pstatus) => {
     fs("n", pstatus.fn)].join("");
 
   document.getElementById("intim").innerHTML        = `$${fh(pstatus.intim)} ${fd(pstatus.intim)}`;
-  document.getElementById("instat").innerHTML       = `$${fh(pstatus.instat)} ${fd(pstatus.interval)} ${fb(pstatus.instat)}`;
+  document.getElementById("instat").innerHTML       = `$${fh(pstatus.instat)} ${fd(pstatus.instat)} ${fb(pstatus.instat)}`;
   document.getElementById("interval").innerHTML     = `$${fh(pstatus.interval)} ${fd(pstatus.interval)}`;
   document.getElementById("timerCounter").innerHTML = `$${fh(pstatus.timerCounter)} ${fd(pstatus.timerCounter)}`;
 
@@ -102,19 +102,20 @@ const loadDebugInfo = (pstatus) => {
   document.getElementById("p1x").innerHTML  = pstatus.p1x.toString(10);
   document.getElementById("m0x").innerHTML  = pstatus.m0x.toString(10);
   document.getElementById("m1x").innerHTML  = pstatus.m1x.toString(10);
+  document.getElementById("blx").innerHTML  = pstatus.blx.toString(10);
 
   // document.getElementById("cc").innerHTML = `${pstatus.cc.toString(10)} (${pstatus.cc % 228} / ${Math.floor((pstatus.cc % 228) / 3)})`;
   document.getElementById("cc").innerHTML = `${pstatus.cc.toString(10)}`;
 
-  document.getElementById("pf0").innerHTML = pstatus.pf0.toString(2).padStart(8, "0");
-  document.getElementById("pf1").innerHTML = pstatus.pf1.toString(2).padStart(8, "0");
-  document.getElementById("pf2").innerHTML = pstatus.pf2.toString(2).padStart(8, "0");
-  document.getElementById("pf").innerHTML = pstatus.pf.toString(2).padStart(20, "0");
-  document.getElementById("ctrlpf").innerHTML = `$${pstatus.ctrlpf.toString(16).padStart(2, "0")} (${pstatus.ctrlpf.toString(2).padStart(8, "0")})`;
-  document.getElementById("swcha").innerHTML = `$${pstatus.swcha.toString(16).padStart(2, "0")} (${pstatus.swcha.toString(2).padStart(8, "0")})`;
-  document.getElementById("swacnt").innerHTML = `$${pstatus.swacnt.toString(16).padStart(2, "0")} (${pstatus.swacnt.toString(2).padStart(8, "0")})`;
-  document.getElementById("swchb").innerHTML = `$${pstatus.swchb.toString(16).padStart(2, "0")} (${pstatus.swchb.toString(2).padStart(8, "0")})`;
-  document.getElementById("swbcnt").innerHTML = `$${pstatus.swbcnt.toString(16).padStart(2, "0")} (${pstatus.swbcnt.toString(2).padStart(8, "0")})`;
+  document.getElementById("pf0").innerHTML    = `$${fh(pstatus.pf0)} ${fb(pstatus.pf0)}`;
+  document.getElementById("pf1").innerHTML    = `$${fh(pstatus.pf1)} ${fb(pstatus.pf1)}`;
+  document.getElementById("pf2").innerHTML    = `$${fh(pstatus.pf2)} ${fb(pstatus.pf2)}`;
+  document.getElementById("pf").innerHTML     = pstatus.pf.toString(2).padStart(20, "0");
+  document.getElementById("ctrlpf").innerHTML = `$${fh(pstatus.ctrlpf)} ${fb(pstatus.ctrlpf)}`;
+  document.getElementById("swcha").innerHTML  = `$${fh(pstatus.swcha)} ${fb(pstatus.swcha)}`;
+  document.getElementById("swacnt").innerHTML = `$${fh(pstatus.swacnt)} ${fb(pstatus.swacnt)}`;
+  document.getElementById("swchb").innerHTML  = `$${fh(pstatus.swchb)} ${fb(pstatus.swchb)}`;
+  document.getElementById("swbcnt").innerHTML = `$${fh(pstatus.swbcnt)} ${fb(pstatus.swbcnt)}`;
 }
 
 const loadMemory = (pstatus) => {
@@ -126,12 +127,16 @@ const loadMemory = (pstatus) => {
   }
   
   memoryEl.innerHTML = "<div>&nbsp;&nbsp;&nbsp;" + columns.join(" ") + "</div>";
-  for (let y = 0x00; y < 0x100; y+=0x10) {
+  for (let y = 0x80; y < 0x100; y+=0x10) {
     const row = [];
     for (let x = 0; x < 0x10; x++) {
       const address = y + x;
 
       const value = pstatus.memory[address];
+      if (value === undefined) {
+	row.push("&nbsp;&nbsp;");
+	continue;
+      }
 
       row.push(value.toString(16).padStart(2, "0"));
     }
@@ -146,10 +151,15 @@ const updateHighlights = (pstatus) => {
     const address = parseInt(line.id.slice(5), 16);
 
     if (address === pstatus.pc) {
-      line.style.background = "#00ff00";
+      if (line.className.indexOf("hl") > -1) { continue; }
+
+      line.className = (line.className.split(" ").concat("hl")).join(" ");
+
       document.getElementById(`${line.id}`).scrollIntoView({ /*behavior: "smooth",*/ block: "nearest" });
     } else {
-      line.style.background = "none";
+      if (line.className.indexOf("hl") === -1) { continue; }
+
+      line.className = line.className.split(" ").filter(c => c !== "hl").join(" ");
     }
   }
 }
@@ -170,9 +180,9 @@ const loadSource = (rbx) => {
 
      if (!ax) {
        if (breakpoints && (breakpoints.indexOf(parseInt(address, 16)) > - 1)) {
-         asm.push(`<div id="line-${address}"><span style="background: #ff0000; color: #fff;">${address}</span> ${srcHtml}</div>`);
+         asm.push(`<div id="line-${address}"><span class="address bp">${address}</span> ${srcHtml}</div>`);
        } else {
-         asm.push(`<div id="line-${address}">${address} ${srcHtml}</div>`);
+         asm.push(`<div id="line-${address}"><span class="address">${address}</span> ${srcHtml}</div>`);
        }
      } else {
        asm.push(`<div class="blank">&nbsp;</div>`);
@@ -303,7 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
  });
 
-var frc = 0; 
+let frc = 0; 
 
 const updateFr = () => {
   document.getElementById("fr").value = frc;
