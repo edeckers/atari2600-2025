@@ -72,6 +72,9 @@ export const TIM64T = 0x296;
 export const T1024T = 0x297;
 
 export const INPT0  = 0x38;
+export const INPT1  = 0x39;
+export const INPT2  = 0x3a;
+export const INPT3  = 0x3b;
 export const INPT4  = 0x3c;
 export const INPT5  = 0x3d;
 

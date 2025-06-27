@@ -1,5 +1,20 @@
-import { formatASM, tcd } from "./shared";
+import { tcd } from "./shared";
 
+export const formatASM = (line) => {
+  const [ops, name] = line;
+
+  const codeAsHex = ops.map(c => c.toString(16).padStart(2, "0"));
+
+  const operand = ops.slice(1);
+
+  return [
+    codeAsHex.join(" ").padEnd(8, " "),
+    name
+	  .replace("nnnn", "nn")
+	  .replace("dd", "nn")
+	  .replace("nn", operand.reverse().map(o => o.toString(16).padStart(2, "0")).join(""))
+  ].join(" ");
+}
 const operators = {
   "ADC #nn": [0x69, 1],
   "ADC nn": [0x65, 1],

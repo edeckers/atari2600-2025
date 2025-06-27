@@ -1,4 +1,4 @@
-import { SWACNT, SWBCNT, SWCHA, SWCHB, INPT0, INSTAT, INTIM, TIM1T, TIM8T, TIM64T, T1024T } from './consts.js';
+import { SWACNT, SWBCNT, SWCHA, SWCHB, INSTAT, INTIM, TIM1T, TIM8T, TIM64T, T1024T } from './consts.js';
 
 export const riot = () => {
   var interval = 1;
@@ -48,24 +48,6 @@ export const riot = () => {
 
      // UPDATE MEMORY
      mem[naddr] = v;
-  }
-
-  let p0pot = 60 * 228;
-  let p0wait = 0;
-
-  const paddle_ = () => {
-    const isDumped = (mem[VBLANK] & 0x80) === 0x80;
-    if (isDumped) {
-       mem[INPT0] &= 0x7f;
-       return
-    }
-
-    if (p0wait > 0) {
-      p0wait--;
-      return;
-    }
-
-    mem[INPT0] |= 0x80;
   }
 
 

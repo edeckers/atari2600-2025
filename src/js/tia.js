@@ -1,6 +1,6 @@
 import { rev8, mod, tcd4 } from "./shared";
 
-import { W, H, VB, OS, BLK, HB, PF0, PF1, PF2, CXM0P, CXM1P, CXP0FB, CXP1FB, CXM0FB, CXM1FB, CXBLPF, INPT4, INPT5, RESBL, RESM0, RESM1, RESP0, RESP1, RESMP0, CXCLR, WSYNC, VSYNC, HMOVE, HMCLR, HMBL, HMM0, HMM1, HMP0, HMP1, VBLANK, ENABL, GRP0, GRP1, VDELBL, VDELP0, VDELP1, COLUBK, CTRLPF, COLUPF, NUSIZ0, colors, REFP0, ENAM0, COLUP0, COLUP1 } from "./consts";
+import { W, H, VB, OS, BLK, HB, PF0, PF1, PF2, CXM0P, CXM1P, CXP0FB, CXP1FB, CXM0FB, CXM1FB, CXBLPF, INPT0, INPT1, INPT2, INPT3, INPT4, INPT5, RESBL, RESM0, RESM1, RESP0, RESP1, RESMP0, CXCLR, WSYNC, VSYNC, HMOVE, HMCLR, HMBL, HMM0, HMM1, HMP0, HMP1, VBLANK, ENABL, GRP0, GRP1, VDELBL, VDELP0, VDELP1, COLUBK, CTRLPF, COLUPF, NUSIZ0, colors, REFP0, ENAM0, COLUP0, COLUP1 } from "./consts";
 
 export const tia = (rdy) => {
   const arrayBuffer = new ArrayBuffer(4 * W * H);
@@ -55,6 +55,39 @@ export const tia = (rdy) => {
 
   initialize();
 
+  const cap = (r0) => {
+    let reset = () => 0;
+
+    let v = 0;
+
+    const tick = () => {
+      const isDumped = (mem[VBLANK] & 0x80) === 0x80;
+      if (isDumped) {
+         mem[r0] &= 0x7f;
+	 v = reset();
+         return
+      }
+
+      if (v > 0) {
+        v--;
+        return;
+      }
+
+      // console.log(r0, "poink");
+
+      mem[r0] |= 0x80;
+    }
+
+    return ({
+	connect: (p) => reset = p,
+	tick,
+    });
+  }
+
+  const inpt0 = cap(INPT0);
+  // const inpt1 = (fn) => { mem[INPT1] = fn(mem[INPT1]) }
+  const inpt2 = cap(INPT1);
+  // const inpt3 = (fn) => { mem[INPT3] = fn(mem[INPT3]) }
   const inpt4 = (fn) => { mem[INPT4] = fn(mem[INPT4]) }
   const inpt5 = (fn) => { mem[INPT5] = fn(mem[INPT5]) }
 
@@ -88,9 +121,11 @@ export const tia = (rdy) => {
      }
 
      if (naddr === VBLANK) {
-       if ((v & 0x80) === 0x00) {
-	 // if ((mem[naddr] & 0x80) === 0x80) { p0wait = p0pot; }
-	 // p0wait = p0pot;
+       if ((v & 0x80) === 0x80) {
+	 mem[INPT0] = 0x00;
+	 mem[INPT1] = 0x00;
+	 mem[INPT2] = 0x00;
+	 mem[INPT3] = 0x00;
        }
 
      }
@@ -169,6 +204,9 @@ export const tia = (rdy) => {
   }
 
   const updateScreen = () => {
+   inpt0.tick();
+   inpt2.tick();
+
    // EOL / Continue after possible WSYNC
    if ((tt % 228) === 0) { rdy(1); } // FIXME Move _after_ CPU action, because now update happens too early and sprites get drawn out of position
 
@@ -371,7 +409,7 @@ export const tia = (rdy) => {
        (x >= resm0x) && mssl(0, resm0x);
      }
    }
-  
+
    // VBLANK
    v = (read(VBLANK) & 0x02) ? 0x00 : v;
 
@@ -474,5 +512,5 @@ export const tia = (rdy) => {
       isVSync,
   });
 
-  return [read, write, inpt4, inpt5, updateScreen, drawer, state];
+  return [read, write, inpt0, inpt2, inpt4, inpt5, updateScreen, drawer, state];
 }

@@ -23,22 +23,7 @@ export const tcd4 = (v) => {
 export const mod = (n, m) => (n % m + m) % m;
 
 export const pin = (v) => { let rdy = v; return [() => rdy, (a) => rdy = a]; };
-
-export const formatASM = (line) => {
-  const [ops, name] = line;
-
-  const codeAsHex = ops.map(c => c.toString(16).padStart(2, "0"));
-
-  const operand = ops.slice(1);
-
-  return [
-    codeAsHex.join(" ").padEnd(8, " "),
-    name
-	  .replace("nnnn", "nn")
-	  .replace("dd", "nn")
-	  .replace("nn", operand.reverse().map(o => o.toString(16).padStart(2, "0")).join(""))
-  ].join(" ");
-}
+export const pot = (v) => { let res = v; return [() => res, (a) => res = Math.max(0, a)]; };
 
 export const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 

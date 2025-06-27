@@ -4,6 +4,7 @@ import { decode } from "./assembly";
 import { loadFromBase64, listRoms, romAsMem } from "./rom";
 
 import { joystick } from "./joystick";
+import { paddle } from "./paddle";
 
 import { machine } from "./machine";
 
@@ -26,7 +27,7 @@ const fs = (f, status) => {
  const c = status ?  f.toUpperCase() : f.toLowerCase();
 
  const classes = status ? "font-bold text-white" : "";
- 
+
  return `<span class="${classes}">${c}</span>`;
 }
 
@@ -89,7 +90,7 @@ const loadMemory = (pstatus) => {
   for (let i = 0; i < 0x10; i++) {
      columns.push(i.toString(16).padStart(2, "0"));
   }
-  
+
   memoryEl.innerHTML = "<div>&nbsp;&nbsp;&nbsp;" + columns.join(" ") + "</div>";
   for (let y = 0x80; y < 0x100; y+=0x10) {
     const row = [];
@@ -199,7 +200,10 @@ let ctrll = undefined;
 let ctrlr = undefined;
 let switches = undefined;;
 let info = undefined;
+
 let toggleEvents = () => {};
+let connectCtrl0 = () => {}
+let connectCtrl1 = () => {}
 
 const startRom = () => {
   document.dispatchEvent(new Event("machine.kill"));
@@ -212,11 +216,16 @@ const startRom = () => {
 
   process(isHalted);
 
-  ctrll = joystick(port0);
-  ctrlr = joystick(port1);
+  document.removeEventListener("", process);
+
   switches = swch;
   info = nfo;
   toggleEvents = events || (() => {});
+  connectCtrl0 = (c0) => { ctrll = c0(port0); }
+  connectCtrl1 = (c1) => { ctrlr = c1(port1); }
+
+  connectCtrl0(joystick);
+  connectCtrl1(joystick);
 }
 
 const toggleBreakpoint = (address) => {
@@ -259,11 +268,18 @@ document.addEventListener("DOMContentLoaded", () => {
     changeRom(e.target.options[e.target.selectedIndex].value)
   });
 
+  document.getElementsByName("p0.settings.controller").forEach($e => $e.addEventListener(
+	  "click",
+	  (e) => { console.log(e); connectCtrl0(e.target.value === "joystick" ? joystick : paddle); }));
+  document.getElementsByName("p1.settings.controller").forEach($e => $e.addEventListener(
+	  "click",
+	  (e) => { connectCtrl1(e.target.value === "joystick" ? joystick : paddle); }));
 
   document.addEventListener("draw", () => { frc++; });
   document.addEventListener("chrom", () => { startRom(); document.dispatchEvent(new Event("dbgr.breakpoint.clear")); });
 
   document.addEventListener("dbgr.break", () => { const pstatus = info(); updateStatus(pstatus); });
+
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "w") { ctrll.mn(); return false; }
@@ -308,7 +324,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
  });
 
-let frc = 0; 
+let frc = 0;
 
 const updateFr = () => {
   document.getElementById("fr").value = frc;
@@ -324,7 +340,7 @@ const main = () => {
   startRom();
 
   const pstatus = Object.fromEntries(Object.entries(info()).map(([k, _]) => [k, 0])); // updateStatus(pstatus);
-  
+
   updateStatus(pstatus);
 }
 

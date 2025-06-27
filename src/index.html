@@ -36,7 +36,19 @@
             <div>
               <select id="romSelector" autofocus></select>
             </div>
-           </div>
+          </div>
+	  <div class="flex py-4 items-center space-x-8">
+            <div id="p0.settings">
+              <div>P0</div>
+	      <label for="p0.settings.joystick" class="block cursor-pointer"><input type="radio" name="p0.settings.controller" id="p0.settings.joystick" value="joystick" checked /> Joystick</label>
+	      <label for="p0.settings.paddle" class="block cursor-pointer"><input type="radio" name="p0.settings.controller" value="paddle" id="p0.settings.paddle" /> Paddle</label>
+	    </div>
+            <div id="p1.settings">
+              <div>P1</div>
+	      <label for="p1.settings.joystick" class="block cursor-pointer"><input type="radio" name="p1.settings.controller" value="joystick" id="p1.settings.joystick" checked /> Joystick</label>
+	      <label for="p1.settings.paddle" class="block cursor-pointer"><input type="radio" name="p1.settings.controller" value="paddle" id="p1.settings.paddle" /> Paddle</label>
+	    </div>
+          </div>
 	</div>
       </div>
       <div id="debugger" class="flex justify-between space-x-8 hidden">
