@@ -3,6 +3,8 @@ import { dbgr } from "./debugger";
 import { decode } from "./assembly";
 import { loadFromBase64, listRoms, romAsMem } from "./rom";
 
+import { joystick } from "./joystick";
+
 import { machine } from "./machine";
 
 let breakpoints = [];
@@ -193,6 +195,7 @@ const readRom = () => {
   return loadFromBase64(rom);
 }
 
+let ctrll = undefined;
 let ctrlr = undefined;
 let switches = undefined;;
 let info = undefined;
@@ -205,11 +208,12 @@ const startRom = () => {
 
   loadSource(romBytes);
 
-  const [process, ctrl, swch, nfo, events] = machine(romBytes);
+  const [process, port0, port1, swch, nfo, events] = machine(romBytes);
 
   process(isHalted);
 
-  ctrlr = ctrl;
+  ctrll = joystick(port0);
+  ctrlr = joystick(port1);
   switches = swch;
   info = nfo;
   toggleEvents = events || (() => {});
@@ -262,19 +266,19 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("dbgr.break", () => { const pstatus = info(); updateStatus(pstatus); });
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "w") { ctrlr.mn(); return false; }
-    if (event.key === "d") { ctrlr.me(); return false; }
-    if (event.key === "s") { ctrlr.ms(); return false; }
-    if (event.key === "a") { ctrlr.mw(); return false; }
+    if (event.key === "w") { ctrll.mn(); return false; }
+    if (event.key === "d") { ctrll.me(); return false; }
+    if (event.key === "s") { ctrll.ms(); return false; }
+    if (event.key === "a") { ctrll.mw(); return false; }
 
-    if (event.code === "Space") { ctrlr.fire(); return false; }
+    if (event.code === "Space") { ctrll.fire(); return false; }
 
-    if (event.key === "ArrowUp") { ctrlr.mn1(); return false; }
-    if (event.key === "ArrowRight") { ctrlr.me1(); return false; }
-    if (event.key === "ArrowDown") { ctrlr.ms1(); return false; }
-    if (event.key === "ArrowLeft") { ctrlr.mw1(); return false; }
+    if (event.key === "ArrowUp") { ctrlr.mn(); return false; }
+    if (event.key === "ArrowRight") { ctrlr.me(); return false; }
+    if (event.key === "ArrowDown") { ctrlr.ms(); return false; }
+    if (event.key === "ArrowLeft") { ctrlr.mw(); return false; }
 
-    if (event.code.indexOf("Control") > -1) { ctrlr.fire1(); return false; }
+    if (event.code.indexOf("Control") > -1) { ctrlr.fire(); return false; }
 
     if (event.key === "r") { switches.reset(); return false; }
     if (event.key === "q") { switches.select(); return false; }
@@ -283,19 +287,19 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.addEventListener("keyup", (event) => {
-    if (event.key === "w") { ctrlr.mnc(); return false; }
-    if (event.key === "d") { ctrlr.mec(); return false; }
-    if (event.key === "s") { ctrlr.msc(); return false; }
-    if (event.key === "a") { ctrlr.mwc(); return false; }
+    if (event.key === "w") { ctrll.mnc(); return false; }
+    if (event.key === "d") { ctrll.mec(); return false; }
+    if (event.key === "s") { ctrll.msc(); return false; }
+    if (event.key === "a") { ctrll.mwc(); return false; }
 
-    if (event.code === "Space") { ctrlr.firec(); return false; }
+    if (event.code === "Space") { ctrll.firec(); return false; }
 
-    if (event.key === "ArrowUp") { ctrlr.mnc1(); return false; }
-    if (event.key === "ArrowRight") { ctrlr.mec1(); return false; }
-    if (event.key === "ArrowDown") { ctrlr.msc1(); return false; }
-    if (event.key === "ArrowLeft") { ctrlr.mwc1(); return false; }
+    if (event.key === "ArrowUp") { ctrlr.mnc(); return false; }
+    if (event.key === "ArrowRight") { ctrlr.mec(); return false; }
+    if (event.key === "ArrowDown") { ctrlr.msc(); return false; }
+    if (event.key === "ArrowLeft") { ctrlr.mwc(); return false; }
 
-    if (event.code.indexOf("Control") > -1) { ctrlr.firec1(); return false; }
+    if (event.code.indexOf("Control") > -1) { ctrlr.firec(); return false; }
 
     if (event.key === "r") { switches.resetc(); return false; }
     if (event.key === "q") { switches.selectc(); return false; }

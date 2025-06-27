@@ -5,7 +5,7 @@ import { pin, sleep } from "./shared";
 
 import { riot } from "./riot";
 import { tia } from "./tia";
-import { controller } from "./controller";
+
 import { bus } from "./bus";
 import { mos6507 } from "./mos6507";
 
@@ -17,8 +17,32 @@ export const machine = (input) => {
   const [rdy, rdyw] = pin(1);
 
   const [tiaRead, tiaWrite, inpt4, inpt5, updateScreen, drawer, tiaState] = tia(rdyw);
+ 
+  const port0 = (v) => {
+   //  0   SWCHA.4
+   //  1   SWCHA.5
+   //  2   SWCHA.6
+   //  3   SWCHA.7
+   //  4   INPT0
+   //  5   INPT4
+   //  6   INPT1
 
-  const ctrl = controller(swcha, inpt4, inpt5);
+   swcha(data => ((v & 0x0f) << 4) | (data & 0x0f));
+   inpt4(data => ((v & 0x10) << 3) | (data & 0x7f));
+  }
+
+  const port1 = (v) => {
+   //  0   SWCHA.0
+   //  1   SWCHA.1
+   //  2   SWCHA.2
+   //  3   SWCHA.3
+   //  4   INPT2
+   //  5   INPT5
+   //  6   INPT3
+
+   swcha(data => (v & 0x0f) | (data & 0xf0));
+   inpt5(data => ((v & 0x10) << 3) | (data & 0x7f));
+  }
 
   const [draw, cross] = drawer();
 
@@ -87,5 +111,5 @@ export const machine = (input) => {
       isWSync: !rdy(),
     });
 
-  return [run, ctrl, switches, info, toggleEvents];
+  return [run, port0, port1, switches, info, toggleEvents];
 }
