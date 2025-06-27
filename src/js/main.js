@@ -1,8 +1,9 @@
-import { dbgr } from "./debugger.js";
+import { dbgr } from "./debugger";
 
-import { decode, loadFromBase64, listRoms } from "./rom.js";
+import { decode } from "./assembly";
+import { loadFromBase64, listRoms, romAsMem } from "./rom";
 
-import { machine } from "./machine.js";
+import { machine } from "./machine";
 
 let breakpoints = [];
 
@@ -147,7 +148,7 @@ const updateRomSelector = () => {
 }
 
 const loadSource = (rbx) => {
-  const lines = decode(rbx);
+  const lines = decode(romAsMem(rbx));
 
   const asm = [];
   for (const line of lines) {
