@@ -357,3 +357,33 @@ export const decode = (input) => {
 }
 
 export const loadFromBase64 = (input) => atob(input).split("").map(c => c.charCodeAt(0));
+
+export const listRoms = () => [
+  ["All Sprites",          allsprites],
+  ["Big Sprite",           bigsprite],
+  ["Bitmap",               bitmap],
+  ["Bowling",              bowling],
+  ["Combat",               combat],
+  ["Complex Scene 1",      complexscene1],
+  ["Demo 3.8",             demo3_8],
+  ["Diag",                 diag],
+  ["Frogger",              frogger],
+  ["Hello",                hello],
+  ["HMOVE",                hmove],
+  ["Kernel 0.1",           kernel01],
+  ["Kernel 1.3",           kernel13],
+  ["Kernel 1.5",           kernel15],
+  ["Kernel 2.2",           kernel22],
+  ["Logo",                 logo],
+  ["Moon Patrol",          moonpatrol],
+  ["Pia Timer",            piatimer],
+  ["Pong Sports",          pongsports],
+  ["Positioning",          positioning],
+  ["Retrigger",            retrigger],
+  ["Retrigger - no inmem", noinmemretrigger],
+  ["Set Horiz Pos",        sethorizpos],
+  ["Super Breakout",       superbreakout],
+  ["Tennis",               tennis],
+  ["Tic Tac Toe 3D",       tictactoe3d],
+  ["Timing 2",             timing2],
+];

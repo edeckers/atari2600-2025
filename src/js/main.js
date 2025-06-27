@@ -1,6 +1,6 @@
 import { dbgr } from "./debugger.js";
 
-import { allsprites, bigsprite, bitmap, bowling, combat, complexscene1, decode, demo3_8, diag, frogger, hello, hmove, kernel01, kernel13, kernel15, kernel22, loadFromBase64, logo, moonpatrol, noinmemretrigger, piatimer, pongsports, positioning, retrigger, sethorizpos, superbreakout, tennis, tictactoe3d, timing2 } from "./rom.js";
+import { decode, loadFromBase64, listRoms } from "./rom.js";
 
 import { machine } from "./machine.js";
 
@@ -8,48 +8,9 @@ let breakpoints = [];
 
 const isHalted = dbgr();
 
-const roms = {
-  "kernel01": kernel01,
-  "kernel13": kernel13,
-  "kernel15": kernel15,
-  "kernel22": kernel22,
-  "diag": diag,
-  "demo3_8": demo3_8,
-  "bitmap": bitmap,
-  "complexscene1": complexscene1,
-  "sethorizpos": sethorizpos,
-  "piatimer": piatimer,
-  "timing2": timing2,
-  "hello": hello,
-  "logo": logo,
-  "combat": combat,
-  "frogger": frogger,
-  "tennis": tennis,
-  "positioning": positioning,
-  "bowling": bowling,
-  "moonpatrol": moonpatrol,
-  "superbreakout": superbreakout,
-  "tictactoe3d": tictactoe3d,
-  "hmove": hmove,
-  "allsprites": allsprites,
-  "bigsprite": bigsprite,
-  "retrigger": retrigger,
-  "noinmemretrigger": noinmemretrigger,
-  "pongsports": pongsports,
-};
+const roms = Object.fromEntries(listRoms());
 
-// let romName = "pongsports";
-// let romName = "tictactoe3d";
-// let romName = "tennis";
-// let romName = "moonpatrol";
-// let romName = "allsprites";
-// let romName = "bigsprite";
-// let romName = "complexscene2";
-// let romName = "retrigger";
-let romName = "noinmemretrigger";
-// let romName = "superbreakout";
-// let romName = "positioning";
-// let romName = "frogger";
+let romName = Object.keys(roms)[0]; // default to first rom
 
 export const formatPc = (pc) => pc.toString(16).padStart(4, "0");
 
@@ -166,6 +127,23 @@ const updateStatus = (pstatus) => {
   loadDebugInfo(pstatus);
   loadMemory(pstatus);
   updateHighlights(pstatus);
+}
+
+const updateRomSelector = () => {
+  const romSelector = document.getElementById("romSelector");
+  romSelector.innerHTML = "";
+
+  for (const [name, _] of Object.entries(roms)) {
+    const option = document.createElement("option");
+    option.value = name;
+    option.textContent = name;
+
+    if (name === romName) {
+      option.selected = true;
+    }
+
+    romSelector.appendChild(option);
+  }
 }
 
 const loadSource = (rbx) => {
@@ -337,6 +315,7 @@ const updateFr = () => {
 const main = () => {
   setInterval(() => updateFr(), 1_000);
 
+  updateRomSelector();
   startRom();
 
   const pstatus = Object.fromEntries(Object.entries(info()).map(([k, _]) => [k, 0])); // updateStatus(pstatus);
