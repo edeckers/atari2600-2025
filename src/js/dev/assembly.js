@@ -1,4 +1,4 @@
-import { tcd } from "./shared";
+import { tcd } from "../shared";
 
 export const formatASM = (line) => {
   const [ops, name] = line;
