@@ -7,6 +7,7 @@ import { joystick } from "./joystick";
 import { paddle } from "./paddle";
 
 import { machine } from "./machine";
+import { romUploader } from "./ui/uploader";
 
 let breakpoints = [];
 
@@ -336,12 +337,14 @@ const updateFr = () => {
 const main = () => {
   setInterval(() => updateFr(), 1_000);
 
+  romUploader();
   updateRomSelector();
   startRom();
 
   const pstatus = Object.fromEntries(Object.entries(info()).map(([k, _]) => [k, 0])); // updateStatus(pstatus);
 
   updateStatus(pstatus);
+ 
 }
 
 main();

@@ -1,32 +1,3 @@
-const noinmemretrigger = "REMOVECOPYRIGHTEDDATA"
-const retrigger = "REMOVECOPYRIGHTEDDATA"
-const bigsprite = "REMOVECOPYRIGHTEDDATA"
-const allsprites = "REMOVECOPYRIGHTEDDATA"
-const moonpatrol = "REMOVECOPYRIGHTEDDATA"
-const positioning = "REMOVECOPYRIGHTEDDATA"
-const kernel01 = "REMOVECOPYRIGHTEDDATA"
-const kernel13 = "REMOVECOPYRIGHTEDDATA"
-const kernel15 = "REMOVECOPYRIGHTEDDATA"
-const kernel22 = "REMOVECOPYRIGHTEDDATA"
-const bowling = "REMOVECOPYRIGHTEDDATA"
-const hmove = "REMOVECOPYRIGHTEDDATA"
-const timing2 = "REMOVECOPYRIGHTEDDATA"
-const piatimer = "REMOVECOPYRIGHTEDDATA"
-const bitmap = "REMOVECOPYRIGHTEDDATA"
-const complexscene1 = "REMOVECOPYRIGHTEDDATA"
-const sethorizpos = "REMOVECOPYRIGHTEDDATA"
-const demo3_8 = "REMOVECOPYRIGHTEDDATA"
-// https://raw.githubusercontent.com/nanochess/book-Atari/3195f4b71990ec0faac1c4a1f56333b37875b58a/demo3_2.asm
-const hello = "REMOVECOPYRIGHTEDDATA"
-const frogger = "REMOVECOPYRIGHTEDDATA"
-const diag = "REMOVECOPYRIGHTEDDATA"
-const logo = "REMOVECOPYRIGHTEDDATA"
-const combat = "REMOVECOPYRIGHTEDDATA"
-const pongsports = "REMOVECOPYRIGHTEDDATA"
-const tictactoe3d = "REMOVECOPYRIGHTEDDATA"
-const tennis = "REMOVECOPYRIGHTEDDATA"
-const superbreakout = "REMOVECOPYRIGHTEDDATA";
-
 export const romAsMem = (input) => {
   // Mirror memory for small cartridges
   const r = input.length === 2_048 ? input.concat(input) : input;
@@ -58,32 +29,12 @@ export const romAsMem = (input) => {
 
 export const loadFromBase64 = (input) => atob(input).split("").map(c => c.charCodeAt(0));
 
-export const listRoms = () => [
-  ["All Sprites",          allsprites],
-  ["Big Sprite",           bigsprite],
-  ["Bitmap",               bitmap],
-  ["Bowling",              bowling],
-  ["Combat",               combat],
-  ["Complex Scene 1",      complexscene1],
-  ["Demo 3.8",             demo3_8],
-  ["Diag",                 diag],
-  ["Frogger",              frogger],
-  ["Hello",                hello],
-  ["HMOVE",                hmove],
-  ["Kernel 0.1",           kernel01],
-  ["Kernel 1.3",           kernel13],
-  ["Kernel 1.5",           kernel15],
-  ["Kernel 2.2",           kernel22],
-  ["Logo",                 logo],
-  ["Moon Patrol",          moonpatrol],
-  ["Pia Timer",            piatimer],
-  ["Pong Sports",          pongsports],
-  ["Positioning",          positioning],
-  ["Retrigger",            retrigger],
-  ["Retrigger - no inmem", noinmemretrigger],
-  ["Set Horiz Pos",        sethorizpos],
-  ["Super Breakout",       superbreakout],
-  ["Tennis",               tennis],
-  ["Tic Tac Toe 3D",       tictactoe3d],
-  ["Timing 2",             timing2],
-];
+export const listRoms = () =>
+  Object.keys(localStorage)
+    .filter((k) => k.startsWith("rom:"))
+    .map((k) => {
+      const { name, data } = JSON.parse(localStorage.getItem(k));
+
+      return [name, data];
+    })
+    .sort((a, b) => a[0].localeCompare(b[0]));
