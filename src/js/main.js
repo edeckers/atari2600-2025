@@ -8,7 +8,7 @@ import { paddle } from "./controllers/paddle";
 
 import { machine } from "./machine";
 import { romUploader } from "./ui/uploader";
-import { updateStatus } from "./ui/debugger";
+import { listenForDebuggerEvents, updateStatus } from "./ui/debugger";
 
 let breakpoints = [];
 
@@ -118,59 +118,7 @@ const startRom = () => {
   connectCtrl1(joystick);
 }
 
-const toggleBreakpoint = (address) => {
-  document.dispatchEvent(new CustomEvent("dbgr.breakpoint.toggle", { detail: { address } }));
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("source").addEventListener("dblclick", (event) => {
-    toggleBreakpoint(parseInt(event.target.innerHTML.slice(0, 4), 16));
-  });
-
-  document.getElementById("debugmode").addEventListener("change", (event) => {
-    if (event.target.checked) {
-      document.getElementById("debugger").classList.remove("hidden");
-      toggleEvents(true);
-      return;
-    }
-
-    document.getElementById("debugger").classList.add("hidden");
-    toggleEvents(false);
-  });
-
-  document.addEventListener("dbgr.breakpoint.changed", (event) => {
-     breakpoints = event.detail.breakpoints;
-
-     loadSource(readRom());
-  });
-
-  document.getElementById("continue").addEventListener("click", () => {
-    document.dispatchEvent(new Event("dbgr.continue"));
-  });
-  document.getElementById("step").addEventListener("click", () => {
-    document.dispatchEvent(new Event("dbgr.step"));
-  });
-  document.getElementById("restart").addEventListener("click", () => {
-    startRom();
-  });
-
-  document.getElementById("romSelector").addEventListener("change", (e) => {
-    changeRom(e.target.options[e.target.selectedIndex].value)
-  });
-
-  document.getElementsByName("p0.settings.controller").forEach($e => $e.addEventListener(
-	  "click",
-	  (e) => { console.log(e); connectCtrl0(e.target.value === "joystick" ? joystick : paddle); }));
-  document.getElementsByName("p1.settings.controller").forEach($e => $e.addEventListener(
-	  "click",
-	  (e) => { connectCtrl1(e.target.value === "joystick" ? joystick : paddle); }));
-
-  document.addEventListener("draw", () => { frc++; });
-  document.addEventListener("chrom", () => { startRom(); document.dispatchEvent(new Event("dbgr.breakpoint.clear")); });
-
-  document.addEventListener("dbgr.break", () => { const pstatus = info(); updateStatus(pstatus); });
-
-
+const listenForControllerInputs = () => {
   document.addEventListener("keydown", (event) => {
     if (event.key === "w") { ctrll.mn(); return false; }
     if (event.key === "d") { ctrll.me(); return false; }
@@ -212,20 +160,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
     return false;
   });
- });
-
-let frc = 0;
-
-const updateFr = () => {
-  document.getElementById("fr").value = frc;
-
-  frc = 0;
 }
 
+const listenForPlayerConfigInputs = () => {
+  document.getElementsByName("p0.settings.controller").forEach($e => $e.addEventListener(
+	  "click",
+	  (e) => { console.log(e); connectCtrl0(e.target.value === "joystick" ? joystick : paddle); }));
+  document.getElementsByName("p1.settings.controller").forEach($e => $e.addEventListener(
+	  "click",
+	  (e) => { connectCtrl1(e.target.value === "joystick" ? joystick : paddle); }));
+}
+
+const startFr = () => {
+  let frc = 0;
+  
+  const updateFr = () => {
+    document.getElementById("fr").value = frc;
+  
+    frc = 0;
+  }
+
+  document.addEventListener("draw", () => { frc++; });
+
+  setInterval(() => updateFr(), 1_000);
+}
+
+const attachControlsAndEvents = () => {
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("romSelector").addEventListener("change", (e) => {
+      changeRom(e.target.options[e.target.selectedIndex].value)
+    });
+  
+    document.addEventListener("chrom", () => { startRom(); document.dispatchEvent(new Event("dbgr.breakpoint.clear")); });
+  
+    document.addEventListener("dbgr.breakpoint.changed", (event) => {
+       breakpoints = event.detail.breakpoints;
+  
+       loadSource(readRom());
+    });
+  
+    startFr();
+    listenForDebuggerEvents(() => startRom(), (v) => toggleEvents(v), () => info());
+    listenForControllerInputs();
+    listenForPlayerConfigInputs();
+  });
+}
 
 const main = () => {
-  setInterval(() => updateFr(), 1_000);
-
+  attachControlsAndEvents();
   romUploader();
   updateRomSelector();
   startRom();
@@ -233,7 +215,6 @@ const main = () => {
   const pstatus = Object.fromEntries(Object.entries(info()).map(([k, _]) => [k, 0])); // updateStatus(pstatus);
 
   updateStatus(pstatus);
- 
 }
 
 main();

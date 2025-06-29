@@ -12,7 +12,11 @@ const fh = (v) => v.toString(16).padStart(2, "0");
 
 const fr = (r) => `$${fh(r)} ${fd(r)} ${fb(r)}`;
 
-export const formatPc = (pc) => pc.toString(16).padStart(4, "0");
+const formatPc = (pc) => pc.toString(16).padStart(4, "0");
+
+const toggleBreakpoint = (address) => {
+  document.dispatchEvent(new CustomEvent("dbgr.breakpoint.toggle", { detail: { address } }));
+}
 
 const loadDebugInfo = (pstatus) => {
   document.getElementById("rx").innerHTML = fr(pstatus.rx);
@@ -109,3 +113,34 @@ export const updateStatus = (pstatus) => {
   loadMemory(pstatus);
   updateHighlights(pstatus);
 }
+
+export const listenForDebuggerEvents = (startRom, toggleEvents, info) => {
+  document.getElementById("source").addEventListener("dblclick", (event) => {
+    toggleBreakpoint(parseInt(event.target.innerHTML.slice(0, 4), 16));
+  });
+
+  document.getElementById("debugmode").addEventListener("change", (event) => {
+    if (event.target.checked) {
+      document.getElementById("debugger").classList.remove("hidden");
+      toggleEvents(true);
+      return;
+    }
+
+    document.getElementById("debugger").classList.add("hidden");
+    toggleEvents(false);
+  });
+
+  document.getElementById("continue").addEventListener("click", () => {
+    document.dispatchEvent(new Event("dbgr.continue"));
+  });
+  document.getElementById("step").addEventListener("click", () => {
+    document.dispatchEvent(new Event("dbgr.step"));
+  });
+  document.getElementById("restart").addEventListener("click", () => {
+    startRom();
+  });
+
+  document.addEventListener("dbgr.break", () => { const pstatus = info(); updateStatus(pstatus); });
+}
+
+
