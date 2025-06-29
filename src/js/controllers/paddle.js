@@ -1,14 +1,21 @@
 import { pot } from "../shared";
 
-// const me  = () => { isPaddle() ? (p0pot = Math.max(p0pot - (4 * 228), 60 * 228)) : (mem[SWCHA] &= 0x7f); }
-// const mw  = () => { isPaddle() ? (p0pot = Math.min(p0pot + (4 * 228), 152 * 228)) : (mem[SWCHA] &= 0xbf); }
-// const fire  = () => { isPaddle() ? (mem[SWCHA] &= 0x7f) : (console.log("FIRE"), mem[INPT4] &= 0x7f); }
-// const firec = () => { isPaddle() ? (mem[SWCHA] |= 0x80) : (mem[INPT4] |= 0x80); }
+const TICKS_PER_LINE = 228;
+
+// Determined by manual testing, adjust as you see fit
+const MIN            = 60;
+const MAX            = 152;
+
+const MIN_TICKS    = MIN * TICKS_PER_LINE;
+const MAX_TICKS    = MAX * TICKS_PER_LINE;
+const MIDDLE_TICKS = 100 * TICKS_PER_LINE;
+
+const STEP_TICKS = 8 * TICKS_PER_LINE;
 
 export const paddle = (port) => {
   let state = 0xff;
 
-  const [pr, pw] = pot(0);
+  const [pr, pw] = pot(MIDDLE_TICKS);
 
   const signal = (v) => {
     state = v & 0xff;
@@ -16,13 +23,16 @@ export const paddle = (port) => {
     port(state, pr);
   }
 
+
+  signal(state);
+
   return ({
-      me:    () => (pw(60 * 228), signal(state)),
-      mw:    () => (pw(152 * 228), signal(state)),
+      me:    () => (pw(Math.max(pr() - STEP_TICKS,  MIN_TICKS)), signal(state)),
+      mw:    () => (pw(Math.min(pr() + STEP_TICKS, MAX_TICKS)), signal(state)),
       fire:  () => signal(state & 0xf7, pr()),
 
-      mec:   () => (pw(128), signal(state)),
-      mwc:   () => (pw(128), signal(state)),
+      mec:   () => { },
+      mwc:   () => { },
       firec: () => signal(state | 0x08),
   });
 }

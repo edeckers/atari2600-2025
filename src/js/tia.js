@@ -65,7 +65,7 @@ export const tia = (rdy) => {
       if (isDumped) {
          mem[r0] &= 0x7f;
 	 v = reset();
-         return
+         return;
       }
 
       if (v > 0) {
@@ -73,13 +73,11 @@ export const tia = (rdy) => {
         return;
       }
 
-      // console.log(r0, "poink");
-
       mem[r0] |= 0x80;
     }
 
     return ({
-	connect: (p) => reset = p,
+	connect: (p) => (reset = p),
 	tick,
     });
   }
