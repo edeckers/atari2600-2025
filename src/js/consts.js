@@ -6,7 +6,7 @@ export const DLY = (BLK / HZ) * 1_000;
 // tia / television constants
 export const VB_AIR = 10;
 export const OS_AIR = 20;
-export const [W, H] = [161, 192 + VB_AIR + OS_AIR];
+export const [W, H] = [160, 192 + VB_AIR + OS_AIR];
 
 export const VB = 228 * (3 + 37 - VB_AIR);
 export const OS = 228 * (262 - 30 + OS_AIR);

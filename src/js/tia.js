@@ -227,11 +227,11 @@ export const tia = (rdy) => {
   
    const d = tt - VB;
   
-   if (isRESP0) { resp0x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - HB - 1, 3); isRESP0 = false; }
-   if (isRESP1) { resp1x = Math.max(((tt + (hmoveWait ? 4 : 0)) % 228) - HB - 1, 3); isRESP1 = false; }
-   if (isRESM0) { resm0x = Math.max(((tt + (hmoveWait ? 3 : 0)) % 228) - HB - 1, 2); isRESM0 = false; }
-   if (isRESM1) { resm1x = Math.max(((tt + (hmoveWait ? 3 : 0)) % 228) - HB - 1, 2); isRESM1 = false; }
-   if (isRESBL) { resblx = Math.max(((tt + (hmoveWait ? 3 : 0)) % 228) - HB - 1, 2); isRESBL = false; }
+   if (isRESP0) { resp0x = Math.max(((tt + (hmoveWait ? 6 : 0)) % 228) - HB - 1, 3); isRESP0 = false; }
+   if (isRESP1) { resp1x = Math.max(((tt + (hmoveWait ? 6 : 0)) % 228) - HB - 1, 3); isRESP1 = false; }
+   if (isRESM0) { resm0x = Math.max(((tt + (hmoveWait ? 5 : 0)) % 228) - HB - 1, 2); isRESM0 = false; }
+   if (isRESM1) { resm1x = Math.max(((tt + (hmoveWait ? 5 : 0)) % 228) - HB - 1, 2); isRESM1 = false; }
+   if (isRESBL) { resblx = Math.max(((tt + (hmoveWait ? 5 : 0)) % 228) - HB - 1, 2); isRESBL = false; }
   
    if (isHMCLR) {
      write(HMP0, 0);
