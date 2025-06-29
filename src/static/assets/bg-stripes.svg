@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:svg="http://www.w3.org/2000/svg"
+  version="1.0"
+  viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+  <polyline points = "0,20 100,20" fill="none" stroke="#156D83FF" stroke-width="4.7" />
+  <polyline points = "0,25 100,25" fill="none" stroke="#259FA2FF" stroke-width="4.7" />
+  <polyline points = "0,30 100,30" fill="none" stroke="#4BB8B3FF" stroke-width="4.7" />
+  <polyline points = "0,35 100,35" fill="none" stroke="#EEAF22FF" stroke-width="4.7" />
+  <polyline points = "0,40 100,40" fill="none" stroke="#F6DBACFF" stroke-width="4.7" />
+  <polyline points = "0,45 100,45" fill="none" stroke="#DF3B31FF" stroke-width="4.7" />
+</svg>

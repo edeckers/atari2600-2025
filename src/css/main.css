@@ -1,7 +1,13 @@
 @import "tailwindcss";
 
 html {
-  @apply bg-slate-800 text-gray-200 text-xs font-mono p-10;
+  @apply bg-[#231F20] /*bg-slate-800 */ text-gray-200 text-xs font-mono p-10 bg-[url(/assets/bg-stripes.svg)];
+
+  background-image: url(/assets/bg-stripes.svg);
+  background-size: 100% 100%;
+  -o-background-size: 100% 100%;
+  -webkit-background-size: 100% 100%;
+  background-size: cover;
 }
 
 button {
