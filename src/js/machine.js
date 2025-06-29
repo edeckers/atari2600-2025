@@ -18,34 +18,37 @@ export const machine = (input) => {
 
   const [tiaRead, tiaWrite, inpt0, inpt2, inpt4, inpt5, updateScreen, drawer, tiaState] = tia(rdyw);
  
-  const port0 = (v, i0) => {
+  const port0 = (v, i0, i1) => {
    //  0   SWCHA.4
    //  1   SWCHA.5
    //  2   SWCHA.6
    //  3   SWCHA.7
-   //  5   INPT4
+   //  4   INPT4
 
-   //  4   INPT0
-   //  6   INPT1
+   //  i0   INPT0
+   //  i1   INPT1
 
    swcha(data => ((v & 0x0f) << 4) | (data & 0x0f));
    inpt0.connect(i0 || (() => 0));
-   inpt4(data => (v & 0x80) | (data & 0x7f));
+   // inpt1.connect(i1 || (() => 0));
+   
+   inpt4(data => ((v & 0x10) << 3) | (data & 0x7f));
   }
 
-  const port1 = (v, i2) => {
+  const port1 = (v, i2, i3) => {
    //  0   SWCHA.0
    //  1   SWCHA.1
    //  2   SWCHA.2
    //  3   SWCHA.3
-   //  5   INPT5
+   //  4   INPT5
 
    //  4   INPT2
    //  6   INPT3
 
    swcha(data => (v & 0x0f) | (data & 0xf0));
    inpt2.connect(i2 || (() => 0));
-   inpt5(data => ((v & 0x20) << 2) | (data & 0x7f));
+   // inpt3.connect(i3 || (() => 0));
+   inpt5(data => ((v & 0x10) << 3) | (data & 0x7f));
   }
 
   const [draw, cross] = drawer();
