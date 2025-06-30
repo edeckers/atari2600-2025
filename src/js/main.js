@@ -163,7 +163,6 @@ const listenForControllerInputs = () => {
 }
 
 const updateControllerStatus = () => {
-
   const xx = (p) => {
     const sx = document.getElementById(`${p}.settings`);
 
@@ -195,6 +194,21 @@ const listenForPlayerDifficultyInputs = () => {
 	  "click",
 	  (e) => { e.target.value === "novice" ? switches.diff10() : switches.diff11(); }));
 }
+
+const listenForConsoleButtonEvents = () => {
+  document.getElementById("console.reset").addEventListener("click", () => { 
+    switches.reset();
+    
+    setTimeout(() => { switches.resetc(); }, 100);
+  });
+
+  document.getElementById("console.select").addEventListener("click", () => { 
+    switches.select();
+    
+    setTimeout(() => { switches.selectc(); }, 100);
+  });
+}
+
 
 const startFr = () => {
   let frc = 0;
@@ -232,6 +246,8 @@ const attachControlsAndEvents = () => {
     listenForControllerInputs();
     listenForPlayerConfigInputs();
     listenForPlayerDifficultyInputs();
+
+    listenForConsoleButtonEvents();
   });
 }
 
