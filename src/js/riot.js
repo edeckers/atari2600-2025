@@ -61,10 +61,14 @@ export const riot = () => {
   const swcha = (fn) => { mem[SWCHA] = fn(mem[SWCHA]) }
 
   const switches = ({
-	reset:   () => mem[SWCHB] &= 0xfe,
-	resetc:  () => mem[SWCHB] |= 0x01,
-	select:  () => mem[SWCHB] &= 0xfd,
-	selectc: () => mem[SWCHB] |= 0x02,
+	reset:    () => mem[SWCHB] &= 0xfe,
+	resetc:   () => mem[SWCHB] |= 0x01,
+	select:   () => mem[SWCHB] &= 0xfd,
+	selectc:  () => mem[SWCHB] |= 0x02,
+	diff00:   () => mem[SWCHB] &= 0xbf,
+	diff01:   () => mem[SWCHB] |= 0x40,
+	diff10:   () => mem[SWCHB] &= 0x7f,
+	diff11:   () => mem[SWCHB] |= 0x80,
   });
 
   const initialize = () => {

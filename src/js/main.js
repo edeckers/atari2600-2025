@@ -187,6 +187,15 @@ const listenForPlayerConfigInputs = () => {
 	  (e) => { connectCtrl1(e.target.value === "joystick" ? joystick : paddle); }));
 }
 
+const listenForPlayerDifficultyInputs = () => {
+  document.getElementsByName("p0.settings.difficulty").forEach($e => $e.addEventListener(
+	  "click",
+	  (e) => { e.target.value === "novice" ? switches.diff00() : switches.diff01(); }));
+  document.getElementsByName("p1.settings.difficulty").forEach($e => $e.addEventListener(
+	  "click",
+	  (e) => { e.target.value === "novice" ? switches.diff10() : switches.diff11(); }));
+}
+
 const startFr = () => {
   let frc = 0;
   
@@ -222,6 +231,7 @@ const attachControlsAndEvents = () => {
     listenForDebuggerEvents(() => startRom(), (v) => toggleEvents(v), () => info());
     listenForControllerInputs();
     listenForPlayerConfigInputs();
+    listenForPlayerDifficultyInputs();
   });
 }
 
