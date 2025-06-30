@@ -111,8 +111,8 @@ const startRom = () => {
   switches = swch;
   info = nfo;
   toggleEvents = events || (() => {});
-  connectCtrl0 = (c0) => { ctrll = c0(port0); }
-  connectCtrl1 = (c1) => { ctrlr = c1(port1); }
+  connectCtrl0 = (c0) => { ctrll = c0(port0); updateControllerStatus(); }
+  connectCtrl1 = (c1) => { ctrlr = c1(port1); updateControllerStatus(); }
 
   connectCtrl0(joystick);
   connectCtrl1(joystick);
@@ -162,10 +162,26 @@ const listenForControllerInputs = () => {
   });
 }
 
+const updateControllerStatus = () => {
+
+  const xx = (p) => {
+    const sx = document.getElementById(`${p}.settings`);
+
+    sx.querySelectorAll("label").forEach($e => $e.classList.remove("border-2"));
+
+    document.getElementById(`${p}.settings.joystick`).checked ?
+        sx.querySelector(`label[for='${p}.settings.joystick']`).classList.add("border-2") :
+        sx.querySelector(`label[for='${p}.settings.paddle']`).classList.add("border-2");
+  }
+
+  xx("p0");
+  xx("p1");
+}
+
 const listenForPlayerConfigInputs = () => {
   document.getElementsByName("p0.settings.controller").forEach($e => $e.addEventListener(
 	  "click",
-	  (e) => { console.log(e); connectCtrl0(e.target.value === "joystick" ? joystick : paddle); }));
+	  (e) => { connectCtrl0(e.target.value === "joystick" ? joystick : paddle); }));
   document.getElementsByName("p1.settings.controller").forEach($e => $e.addEventListener(
 	  "click",
 	  (e) => { connectCtrl1(e.target.value === "joystick" ? joystick : paddle); }));
