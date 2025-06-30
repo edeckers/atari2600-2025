@@ -2,6 +2,7 @@ const toBase64 = (input) => btoa(input);
 
 export const romUploader = () => {
   const input = document.getElementById("romFile");
+  const button = document.getElementById("romUploadButton");
   
   input.addEventListener("change", (e0) => {
     const reader = new FileReader();
@@ -14,5 +15,10 @@ export const romUploader = () => {
     });
     
     reader.readAsBinaryString(e0.target.files[0]);
+  });
+
+
+  button.addEventListener("click", () => {
+    input.click();
   });
 }

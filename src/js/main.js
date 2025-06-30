@@ -203,8 +203,11 @@ const startFr = () => {
 
 const attachControlsAndEvents = () => {
   document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("romSelector").addEventListener("change", (e) => {
+    const $romSelector = document.getElementById("romSelector");
+    $romSelector.addEventListener("change", (e) => {
       changeRom(e.target.options[e.target.selectedIndex].value)
+
+      $romSelector.blur();
     });
   
     document.addEventListener("chrom", () => { startRom(); document.dispatchEvent(new Event("dbgr.breakpoint.clear")); });

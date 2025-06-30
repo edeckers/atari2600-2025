@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 html {
   @apply bg-[#231F20] /*bg-slate-800 */ text-gray-200 text-xs font-mono p-10 bg-[url(/assets/bg-stripes.svg)];
 
@@ -17,10 +21,13 @@ button:hover {
   @apply bg-blue-700;
 }
 
-
-select {
-  @apply bg-gray-800 text-gray-200 border border-gray-200 font-bold py-2 rounded;
+#romUploadButton {
+  @apply rounded-xl;
 }
+
+/* select {
+  @apply bg-gray-800 text-gray-200 border border-gray-200 font-bold py-2 rounded;
+} */
 
 #source .bp, #source .bp.address{
   @apply bg-red-600 text-gray-100 font-bold rounded;
