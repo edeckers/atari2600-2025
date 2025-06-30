@@ -1,0 +1,32 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Base - isometric cube -->
+  <!-- Top face -->
+  <path d="M 8 18 L 16 14 L 24 18 L 16 22 Z" fill="#555"/>
+  <!-- Left face -->
+  <path d="M 8 18 L 16 22 L 16 28 L 8 24 Z" fill="#333"/>
+  <!-- Right face -->
+  <path d="M 16 22 L 24 18 L 24 24 L 16 28 Z" fill="#444"/>
+
+  <!-- Base outline -->
+  <path d="M 8 18 L 16 14 L 24 18 L 24 24 L 16 28 L 8 24 Z" fill="none" stroke="#000" stroke-width="0.5"/>
+
+  <!-- Fire button - isometric cylinder (moved down 0.5 unit) -->
+  <!-- Button top (ellipse) -->
+  <ellipse cx="11.5" cy="17.3" rx="1" ry="0.5" fill="#ff4444"/>
+  <!-- Button side -->
+  <path d="M 10.5 17.3 L 10.5 18.3 Q 11.5 18.8 12.5 18.3 L 12.5 17.3" fill="#cc0000"/>
+  <!-- Button outline -->
+  <path d="M 10.5 17.3 L 10.5 18.3 Q 11.5 18.8 12.5 18.3 L 12.5 17.3" fill="none" stroke="#000" stroke-width="0.5"/>
+  <ellipse cx="11.5" cy="17.3" rx="1" ry="0.5" fill="none" stroke="#000" stroke-width="0.5"/>
+
+  <!-- Stick - isometric cylinder -->
+  <!-- Cylinder top (ellipse) -->
+  <ellipse cx="16" cy="7.5" rx="1.5" ry="0.8" fill="#888"/>
+  <!-- Cylinder side -->
+  <path d="M 14.5 7.5 L 14.5 18 Q 16 18.8 17.5 18 L 17.5 7.5" fill="#666"/>
+  <!-- Cylinder highlight -->
+  <path d="M 14.5 7.5 L 14.5 18 Q 15.2 18.5 16 18 L 16 7.5" fill="#777"/>
+  <!-- Cylinder outline -->
+  <path d="M 14.5 7.5 L 14.5 18 Q 16 18.8 17.5 18 L 17.5 7.5" fill="none" stroke="#000" stroke-width="0.5"/>
+  <ellipse cx="16" cy="7.5" rx="1.5" ry="0.8" fill="none" stroke="#000" stroke-width="0.5"/>
+</svg>

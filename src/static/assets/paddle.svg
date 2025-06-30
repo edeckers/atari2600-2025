@@ -1,0 +1,27 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Base - isometric cube -->
+  <!-- Top face -->
+  <path d="M 8 18 L 16 14 L 24 18 L 16 22 Z" fill="#555"/>
+  <!-- Left face -->
+  <path d="M 8 18 L 16 22 L 16 28 L 8 24 Z" fill="#333"/>
+  <!-- Right face -->
+  <path d="M 16 22 L 24 18 L 24 24 L 16 28 Z" fill="#444"/>
+
+  <!-- Base outline -->
+  <path d="M 8 18 L 16 14 L 24 18 L 24 24 L 16 28 L 8 24 Z" fill="none" stroke="#000" stroke-width="0.5"/>
+
+  <!-- Ellipse on left face (darkest gray surface) - moved down 1 unit -->
+  <ellipse cx="11.5" cy="23" rx="0.8" ry="1.2" fill="#ff4444" transform="rotate(-30 11.5 23)"/>
+  <ellipse cx="11.5" cy="23" rx="0.8" ry="1.2" fill="none" stroke="#000" stroke-width="0.5" transform="rotate(-30 11.5 23)"/>
+
+  <!-- Stick - isometric cylinder (grown another 50% wider) -->
+  <!-- Cylinder side -->
+  <path d="M 12.625 16.4 L 12.625 18 A 3.375 1.8 0 0 0 19.375 18 L 19.375 16.4" fill="#666"/>
+  <!-- Cylinder highlight -->
+  <path d="M 12.625 16.4 L 12.625 18 A 3.375 1.8 0 0 0 16 18 L 16 16.4" fill="#777"/>
+  <!-- Cylinder top (ellipse) -->
+  <ellipse cx="16" cy="16.4" rx="3.375" ry="1.8" fill="#888"/>
+  <!-- Cylinder outline -->
+  <path d="M 12.625 16.4 L 12.625 18 A 3.375 1.8 0 0 0 19.375 18 L 19.375 16.4" fill="none" stroke="#000" stroke-width="0.5"/>
+  <ellipse cx="16" cy="16.4" rx="3.375" ry="1.8" fill="none" stroke="#000" stroke-width="0.5"/>
+</svg>
