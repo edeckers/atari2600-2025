@@ -39,6 +39,8 @@
               <label for="debugmode" class="hidden md:block cursor-pointer"><input type="checkbox" id="debugmode" /> Debug</label>
               <div>FR=<input type="text" id="fr"></div>
             </div>
+	    
+
             <canvas id="tehScreen" class="max-w-[50vw] px-10" width="320" height="222"></canvas>
             <div class="flex flex-col items-center" id="panel">
 	      <div class="flex space-x-4">
@@ -58,11 +60,21 @@
                     <label for="p0.settings.paddle" class="block cursor-pointer h-20 w-20 bg-black bg-[url(/assets/paddle.svg)] bg-no-repeat bg-cover rounded-xl border-white"><input class="hidden" type="radio" name="p0.settings.controller" value="paddle" id="p0.settings.paddle" /></label>
 		  </div>
 
-		  <div class="flex space-x-4 rounded-4xl">
-                    <label for="p0.settings.novice" class="block cursor-pointer bg-no-repeat bg-cover rounded-xl border-white text-center justify-center"><input type="radio" name="p0.settings.difficulty" id="p0.settings.novice" value="novice" checked />Novice</label>
-                    <label for="p0.settings.expert" class="block cursor-pointer bg-no-repeat bg-cover rounded-xl border-white"><input type="radio" name="p0.settings.difficulty" value="expert" id="p0.settings.expert" />Expert</label>
-		  </div>
-                </div>
+		  <div class="flex bg-white border-2 border-green-500 rounded-full w-fit overflow-hidden">
+                    <label for="p0.settings.novice">
+                      <input type="radio" name="p0.settings.difficulty" id="p0.settings.novice" value="novice" class="sr-only peer" checked>
+                      <span class="px-6 py-3 cursor-pointer peer-checked:bg-green-500 peer-checked:text-white text-gray-700 font-medium">
+                        Novice
+                      </span>
+                    </label>
+                    <label for="p0.settings.expert">
+                      <input type="radio" name="p0.settings.difficulty" id="p0.settings.expert" value="expert" class="sr-only peer">
+                      <span class="px-6 py-3 cursor-pointer peer-checked:bg-green-500 peer-checked:text-white text-gray-700 font-medium">
+                        Expert
+                      </span>
+                    </label>
+                  </div>
+		</div>
                 <div id="p1.settings" class="flex flex-col bg-gray-500 p-4 space-y-4 rounded-xl">
                   <div class="text-black font-bold">Player 1</div>
 
@@ -71,12 +83,21 @@
                     <label for="p1.settings.paddle" class="block cursor-pointer h-20 w-20 bg-black bg-[url(/assets/paddle.svg)] bg-no-repeat bg-cover rounded-xl"><input class="hidden" type="radio" name="p1.settings.controller" value="paddle" id="p1.settings.paddle" /></label>
 		  </div>
 
-		  <div class="flex space-x-4 rounded-4xl">
-                    <label for="p1.settings.novice" class="block cursor-pointer bg-no-repeat bg-cover rounded-xl border-white text-center justify-center"><input type="radio" name="p1.settings.difficulty" id="p1.settings.novice" value="novice" checked />Novice</label>
-                    <label for="p1.settings.expert" class="block cursor-pointer bg-no-repeat bg-cover rounded-xl border-white"><input type="radio" name="p1.settings.difficulty" value="expert" id="p1.settings.expert" />Expert</label>
-		  </div>
-
-                </div>
+		  <div class="flex bg-white border-2 border-green-500 rounded-full w-fit overflow-hidden">
+                    <label for="p1.settings.novice">
+                      <input type="radio" name="p1.settings.difficulty" id="p1.settings.novice" value="novice" class="sr-only peer" checked>
+                      <span class="px-6 py-3 cursor-pointer peer-checked:bg-green-500 peer-checked:text-white text-gray-700 font-medium">
+                        Novice
+                      </span>
+                    </label>
+                    <label for="p1.settings.expert">
+                      <input type="radio" name="p1.settings.difficulty" id="p1.settings.expert" value="expert" class="sr-only peer">
+                      <span class="px-6 py-3 cursor-pointer peer-checked:bg-green-500 peer-checked:text-white text-gray-700 font-medium">
+                        Expert
+                      </span>
+                    </label>
+                  </div>
+		</div>
               </div>
             </div>
           </div>
