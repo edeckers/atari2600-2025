@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg fill="#ffffff" width="800px" height="800px" viewBox="0 0 512 512" id="_27_Rewind" data-name="27 Rewind" xmlns="http://www.w3.org/2000/svg">
+  <!-- One more smidge thicker circle outline -->
+  <circle cx="256" cy="256" r="240" fill="none" stroke="#ffffff" stroke-width="44"/>
+
+  <!-- Filled rewind arrows -->
+  <path d="M128,256l112,84V284l84,63V165l-84,63V172Z" fill="#ffffff"/>
+</svg>

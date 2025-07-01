@@ -36,90 +36,76 @@
           <h1 class="text-4xl font-bold">Atari 2600</h1>
           <h2 class="text-2xl font-bold">VCS Emulator</h2>
         </div>
-        <div class="flex space-x-8">
-          <div class="flex flex-col bg-slate-800 h-full rounded-xl drop-shadow-xl/50 w-[35vw]">
-            <div id="machine" class="flex flex-col space-y-8 rounded">
+        <div class="flex flex-row space-x-8">
+          <div class="flex flex-col bg-slate-800 h-full rounded-xl drop-shadow-xl/50 w-[35vw] p-10">
+            <div id="machine" class="flex flex-col rounded space-y-10">
               <div>
                 <label for="debugmode" class="hidden 2xl:block cursor-pointer"><input type="checkbox" id="debugmode" /> Debug</label>
                 <div>FR=<input type="text" id="fr"></div>
               </div>
-              
 
-              <canvas id="tehScreen" class="max-w-[50vw] px-10" width="320" height="222"></canvas>
+              <canvas id="tehScreen" class="max-w-[50vw] border-2 border-black rounded-md" width="320" height="222"></canvas>
+
               <div class="flex flex-col items-center" id="panel">
-          	 <div class="flex border-2 border-white rounded-full w-fit overflow-hidden">
-                   <label for="console.color">
-                     <input type="radio" name="console.color" id="console.color" value="color" class="sr-only peer" checked>
-                     <span class="px-6 py-3 cursor-pointer peer-checked:bg-white peer-checked:text-black text-white font-medium">
-                       Color
-                     </span>
-                   </label>
-                   <label for="console.bw">
-                     <input type="radio" name="console.color" id="console.bw" value="bw" class="sr-only peer">
-                     <span class="px-6 py-3 cursor-pointer peer-checked:bg-white peer-checked:text-black text-white font-medium">
-                       B/W
-                     </span>
-                   </label>
-                 </div>
-                 <div class="flex space-x-4">
-                  <button id="console.select">Select</button>
-                  <button id="console.reset">Reset</button>
-                </div>
-                <div class="flex py-4 self-center space-x-4 p-4 px-10 w-full max-w-[25vw]">
-                  <select id="romSelector" class="border-4 border-white border-double font-bold appearance-none p-4 rounded-xl uppercase w-full text-center cursor-pointer bg-gray-800"></select>
-          	<button id="romUploadButton" class="rounded-xl">Upload</button>
-                </div>
-                <div class="flex flex-row justify-center space-x-8 p-4">
-                  <div id="p0.settings" class="flex flex-col bg-gray-500 p-4 space-y-4 rounded-xl">
-                    <div class="text-black font-bold">Player 0</div>
-
-          	  <div class="flex space-x-4">
-                      <label for="p0.settings.joystick" class="block cursor-pointer h-20 w-20 bg-black bg-[url(/assets/joystick.svg)] bg-no-repeat bg-cover rounded-xl border-white"><input class="hidden" type="radio" name="p0.settings.controller" id="p0.settings.joystick" value="joystick" checked /></label>
-                      <label for="p0.settings.paddle" class="block cursor-pointer h-20 w-20 bg-black bg-[url(/assets/paddle.svg)] bg-no-repeat bg-cover rounded-xl border-white"><input class="hidden" type="radio" name="p0.settings.controller" value="paddle" id="p0.settings.paddle" /></label>
-          	  </div>
-
-          	  <div class="flex border-2 border-white rounded-full w-fit overflow-hidden">
-                    <label for="p0.settings.novice">
-                      <input type="radio" name="p0.settings.difficulty" id="p0.settings.novice" value="novice" class="sr-only peer" checked>
-                      <span class="px-6 py-3 cursor-pointer peer-checked:bg-white peer-checked:text-black text-white font-medium">
-                        Novice
-                      </span>
+                <div class="flex space-x-4 h-14">
+          	  <div class="flex border-2 border-white rounded-sm h-vh text-sm">
+                    <label for="console.color" title="Toggle Color Mode" class="flex flex-1 flex-col justify-center px-2 cursor-pointer has-[:checked]:bg-white has-[:checked]:text-black text-white font-medium">
+                      <input type="radio" name="console.color" id="console.color" value="color" class="sr-only" checked>
+                      <span>Color</span>
                     </label>
-                    <label for="p0.settings.expert">
-                      <input type="radio" name="p0.settings.difficulty" id="p0.settings.expert" value="expert" class="sr-only peer">
-                      <span class="px-6 py-3 cursor-pointer peer-checked:bg-white peer-checked:text-black text-white font-medium">
-                        Expert
-                      </span>
+                    <label for="console.bw" title="Toggle B/W Mode" class="flex flex-1 flex-col justify-center px-2 cursor-pointer has-[:checked]:bg-white has-[:checked]:text-black text-white font-medium">
+                      <input type="radio" name="console.color" id="console.bw" value="bw" class="sr-only">
+                      <span>B/W</span>
                     </label>
                   </div>
-          	</div>
-                <div id="p1.settings" class="flex flex-col bg-gray-500 p-4 space-y-4 rounded-xl">
-                  <div class="text-black font-bold">Player 1</div>
-          	    <div class="flex space-x-4">
-                        <label for="p1.settings.joystick" class="block cursor-pointer h-20 w-20 bg-black bg-[url(/assets/joystick.svg)] bg-no-repeat bg-cover rounded-xl"><input class="hidden" type="radio" name="p1.settings.controller" id="p1.settings.joystick" value="joystick" checked /></label>
-                        <label for="p1.settings.paddle" class="block cursor-pointer h-20 w-20 bg-black bg-[url(/assets/paddle.svg)] bg-no-repeat bg-cover rounded-xl"><input class="hidden" type="radio" name="p1.settings.controller" value="paddle" id="p1.settings.paddle" /></label>
-          	    </div>
+		  <button id="console.select" title="Game Select" class="flex justify-center w-20 rounded-sm"><img src="/assets/select.svg" /></button>
+		  <button id="console.reset" title="Reset" class="flex justify-center w-20 rounded-sm"><img src="/assets/rewind.svg" /></button>
 
-          	    <div class="flex border-2 border-white rounded-full w-fit overflow-hidden">
-                        <label for="p1.settings.novice">
-                          <input type="radio" name="p1.settings.difficulty" id="p1.settings.novice" value="novice" class="sr-only peer" checked>
-                          <span class="px-6 py-3 cursor-pointer peer-checked:bg-white peer-checked:text-black text-white font-medium">
-                            Novice
-                          </span>
-                        </label>
-                        <label for="p1.settings.expert">
-                          <input type="radio" name="p1.settings.difficulty" id="p1.settings.expert" value="expert" class="sr-only peer">
-                          <span class="px-6 py-3 cursor-pointer peer-checked:bg-white peer-checked:text-black text-white font-medium">
-                            Expert
-                          </span>
-                        </label>
-                    </div>
-          	  </div>
+                  <select id="romSelector" class="border-2 border-white font-bold appearance-none p-4 rounded-xl uppercase w-full text-center cursor-pointer bg-gray-800"></select>
+                  <button id="romUploadButton" title="Upload ROM" class="rounded-sm w-20"><img src="/assets/upload.svg" /></button>
+                </div>
+	            </div>
+              <div class="flex flex-row justify-center space-x-8">
+                <div id="p0.settings" class="flex flex-col bg-slate-700 p-10 space-y-8 rounded-xl text-center justify-center items-center">
+                  <div class="text-white font-bold uppercase">Player 0</div>
+
+                  <div class="flex space-x-4 justify-center">
+                      <label for="p0.settings.joystick" class="block cursor-pointer h-20 w-20 bg-black bg-[url(/assets/joystick.svg)] bg-no-repeat bg-cover rounded-xl border-white"><input class="hidden" type="radio" name="p0.settings.controller" id="p0.settings.joystick" value="joystick" checked /></label>
+                      <label for="p0.settings.paddle" class="block cursor-pointer h-20 w-20 bg-black bg-[url(/assets/paddle.svg)] bg-no-repeat bg-cover rounded-xl border-white"><input class="hidden" type="radio" name="p0.settings.controller" value="paddle" id="p0.settings.paddle" /></label>
+                  </div>
+
+                  <div class="flex border-2 border-white rounded-sm w-fit overflow-hidden h-10">
+                    <label for="p0.settings.novice" class="flex flex-1 flex-col justify-center px-2 cursor-pointer has-[:checked]:bg-white has-[:checked]:text-black text-white font-medium">
+                      <input type="radio" name="p0.settings.difficulty" id="p0.settings.novice" value="novice" class="sr-only" checked>
+                      <span>Novice</span>
+                    </label>
+                    <label for="p0.settings.expert" class="flex flex-1 flex-col justify-center px-2 cursor-pointer has-[:checked]:bg-white has-[:checked]:text-black text-white font-medium">
+                      <input type="radio" name="p0.settings.difficulty" id="p0.settings.expert" value="expert" class="sr-only">
+                      <span>Expert</span>
+                    </label>
+                  </div>
+                </div>
+                <div id="p1.settings" class="flex flex-col bg-slate-700 p-10 space-y-8 rounded-xl justify-center items-center">
+                  <div class="text-white font-bold uppercase">Player 1</div>
+                  <div class="flex space-x-4">
+                    <label for="p1.settings.joystick" class="block cursor-pointer h-20 w-20 bg-black bg-[url(/assets/joystick.svg)] bg-no-repeat bg-cover rounded-xl"><input class="hidden" type="radio" name="p1.settings.controller" id="p1.settings.joystick" value="joystick" checked /></label>
+                    <label for="p1.settings.paddle" class="block cursor-pointer h-20 w-20 bg-black bg-[url(/assets/paddle.svg)] bg-no-repeat bg-cover rounded-xl"><input class="hidden" type="radio" name="p1.settings.controller" value="paddle" id="p1.settings.paddle" /></label>
+                  </div>
+                  <div class="flex border-2 border-white rounded-sm w-fit overflow-hidden h-10">
+                    <label for="p1.settings.novice" class="flex flex-1 flex-col justify-center px-2 cursor-pointer has-[:checked]:bg-white has-[:checked]:text-black text-white font-medium">
+                      <input type="radio" name="p1.settings.difficulty" id="p1.settings.novice" value="novice" class="sr-only" checked>
+		                  <span>Novice</span>
+                    </label>
+                    <label for="p1.settings.expert" class="flex flex-1 flex-col justify-center px-2 cursor-pointer has-[:checked]:bg-white has-[:checked]:text-black text-white font-medium">
+                      <input type="radio" name="p1.settings.difficulty" id="p1.settings.expert" value="expert" class="sr-only">
+                      <span>Expert</span>
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <div id="debugger" class="flex justify-between space-x-8 hidden">
+          <div id="debugger" class="flex justify-between space-x-8 hidden bg-black/95 p-10 bg-blend-overlay w-full justify-start">
             <div class="flex flex-col">
               <div id="source" style="scrollbar-width: none" class="overflow-y-scroll max-h-[50vh]"></div>
               <div class="flex space-x-2 mt-8 self-center">
@@ -190,6 +176,7 @@
                 </div>
               </div>
             </div>
+          </div>
         </div>
       </div>
     </div>

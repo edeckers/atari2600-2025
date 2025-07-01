@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg fill="#ffffff" width="800px" height="800px" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Circle outline matching rewind icon -->
+  <circle cx="256" cy="256" r="240" fill="none" stroke="#ffffff" stroke-width="44"/>
+
+  <!-- Upload arrow -->
+  <path d="M256 144l-80 80h48v96h64v-96h48l-80-80z" fill="#ffffff"/>
+
+  <!-- Upload base/tray -->
+  <rect x="176" y="352" width="160" height="24" rx="12" fill="#ffffff"/>
+</svg>
