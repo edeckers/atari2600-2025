@@ -65,6 +65,8 @@ export const riot = () => {
 	resetc:   () => mem[SWCHB] |= 0x01,
 	select:   () => mem[SWCHB] &= 0xfd,
 	selectc:  () => mem[SWCHB] |= 0x02,
+	color:    () => mem[SWCHB] |= 0x08,
+	bw:       () => mem[SWCHB] &= 0xf7,
 	diff00:   () => mem[SWCHB] &= 0xbf,
 	diff01:   () => mem[SWCHB] |= 0x40,
 	diff10:   () => mem[SWCHB] &= 0x7f,
