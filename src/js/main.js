@@ -219,7 +219,7 @@ const startFr = () => {
   let frc = 0;
   
   const updateFr = () => {
-    document.getElementById("fr").value = frc;
+    document.getElementById("fr").innerHTML = frc;
   
     frc = 0;
   }

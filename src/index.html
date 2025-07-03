@@ -39,11 +39,10 @@
         <div class="flex flex-row space-x-8">
           <div class="flex flex-col bg-slate-800 h-full rounded-xl drop-shadow-xl/50 w-[35vw] p-10">
             <div id="machine" class="flex flex-col rounded space-y-10">
-              <div>
-                <label for="debugmode" class="hidden 2xl:block cursor-pointer"><input type="checkbox" id="debugmode" /> Debug</label>
-                <div>FR=<input type="text" id="fr"></div>
+              <div class="flex justify-end items-center space-x-8">
+                <label for="debugmode" class="hidden 2xl:block cursor-pointer items-center"><input type="checkbox" id="debugmode" /> Debug</label>
+	        <span>FR=<span id="fr" class="text-right w-3"></span></span>
               </div>
-
               <canvas id="tehScreen" class="max-w-[50vw] border-2 border-black rounded-md" width="320" height="222"></canvas>
 
               <div class="flex flex-col items-center" id="panel">
