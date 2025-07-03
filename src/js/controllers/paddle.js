@@ -3,12 +3,12 @@ import { pot } from "../shared";
 const TICKS_PER_LINE = 228;
 
 // Determined by manual testing, adjust as you see fit
-const MIN            = 60;
-const MAX            = 152;
+const MIN            = 20;
+const MAX            = 192;
 
 const MIN_TICKS    = MIN * TICKS_PER_LINE;
 const MAX_TICKS    = MAX * TICKS_PER_LINE;
-const MIDDLE_TICKS = 100 * TICKS_PER_LINE;
+const MIDDLE_TICKS = (((MAX - MIN) / 2) + MIN) * TICKS_PER_LINE;
 
 const STEP_TICKS = 8 * TICKS_PER_LINE;
 

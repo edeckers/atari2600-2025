@@ -163,6 +163,7 @@ export const tia = (rdy) => {
   const updateCollisions = (px_, mx_, pf_, bl_) => {
     
     const wf = (a, v) => {
+      if (a === CXBLPF) { console.log("CXBLPF", v); }
       // `write` blocks writes to CX* addresses, to match
       // actual machine behavior. So circumvent by direct write
       mem[a] = v;
@@ -362,6 +363,7 @@ export const tia = (rdy) => {
      if ((x - resblx) > size) { return; }
   
      bl_ = (read(ENABL) & 0x02) === 0x02;
+
      if (bl_) {
        v = read(colup);
        HL_SPRITES && ((v > 0) && (v = 30))
@@ -399,13 +401,12 @@ export const tia = (rdy) => {
     v = 0;
    } else {
      if ((read(CTRLPF) & 0x04)) {
-       if (!pf_) {
-        dp(1, resp1x);
-        (x >= resm1x) && mssl(1, resm1x);
-        dp(0, resp0x);
-        (x >= resm0x) && mssl(0, resm0x);
-        (x >= resblx) && bl(COLUPF);
-       }
+       dp(1, resp1x);
+       (x >= resm1x) && mssl(1, resm1x);
+       dp(0, resp0x);
+       (x >= resm0x) && mssl(0, resm0x);
+       (x >= resblx) && bl(COLUPF);
+       if (pf_) { v = read(COLUPF); } // We _know_ this before drawing rest so you'd think we can skip that, but bl_ needs to be updated for collision check
      } else {
        (x >= resblx) && bl(COLUPF);
        dp(1, resp1x);
