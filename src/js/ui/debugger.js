@@ -122,11 +122,13 @@ export const listenForDebuggerEvents = (startRom, toggleEvents, info) => {
   document.getElementById("debugmode").addEventListener("change", (event) => {
     if (event.target.checked) {
       document.getElementById("debugger").classList.remove("hidden");
+      document.getElementById("instructions").classList.add("hidden");
       toggleEvents(true);
       return;
     }
 
     document.getElementById("debugger").classList.add("hidden");
+    document.getElementById("instructions").classList.remove("hidden");
     toggleEvents(false);
   });
 
