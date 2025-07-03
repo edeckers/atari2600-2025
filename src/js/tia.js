@@ -468,12 +468,14 @@ export const tia = (rdy) => {
     }
   
     const draw = (forceDraw) => {
-      if (!forceDraw && !isVSync) { return; }
+      if (!forceDraw && !isVSync) { return false; }
 
       isVSync = false;
 
       ctx.putImageData(stretchedScreen(), 0, 0);
-      document.dispatchEvent(new Event("draw")); }
+      // document.dispatchEvent(new Event("draw"));
+
+      return true; }
   
     const cross = (x, y) => {
       ctx.lineWidth = 1;

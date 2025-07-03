@@ -1,4 +1,4 @@
-import { BLK, DLY } from './consts';
+import { DLY } from './consts';
 
 import { romAsMem } from "./rom";
 import { pin, sleep } from "./shared";
@@ -56,6 +56,8 @@ export const machine = (input) => {
   const [read, write] = bus(riotRead, riotWrite, romRead, tiaRead, tiaWrite);
 
   const [step, piaState, toggleEvents] = mos6507(read, write, rdy);
+  
+  let frame = false;
 
   const tia_ = () => {
       updateScreen();
@@ -63,7 +65,8 @@ export const machine = (input) => {
       // FIXME requestAnimationFrame, renders out-of-sync, most notably visible in "All Sprites"
       /* requestAnimationFrame(draw); */
 //      requestAnimationFrame(draw);
-      draw();
+      if (draw()) { frame = true; };
+
   }
 
   const halt_ = () => {
@@ -88,13 +91,24 @@ export const machine = (input) => {
     //   tia_();
     // });
 
+    let t0 = performance.now();
+
     while (!isKilled) {
+      if (frame) {
+        document.dispatchEvent(new Event("draw"));
+	const d0 = performance.now() - t0;
+	await sleep(Math.max(0, DLY - d0));
+
+	frame = false;
+	t0 = performance.now();
+	continue;
+      }
+
       if (isHalted()) {
 	halt_();
 	await sleep(100);
-        continue; }
-
-      if (u === BLK) { u = 0; await sleep(DLY);  }
+        continue;
+      }
 
       // TIA every cycle
       tia_();
