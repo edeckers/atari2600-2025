@@ -1,7 +1,7 @@
 export const FPS = 60
 export const FRM = (228 * 262); // 228 lines, 262 scanlines per frame
 export const BLK = FRM;
-export const DLY = 1000 / FPS; // Milliseconds per frame
+export const DLY = 1_000 / FPS; // Milliseconds per frame
 
 // tia / television constants
 export const VB_AIR = 10;

@@ -520,5 +520,15 @@ export const tia = (rdy) => {
       isVSync,
   });
 
-  return [read, write, inpt0, inpt2, inpt4, inpt5, updateScreen, drawer, state];
+  return {
+    read,
+    write,
+    inpt0,
+    inpt2,
+    inpt4,
+    inpt5,
+    updateScreen,
+    drawer,
+    state
+  };
 }

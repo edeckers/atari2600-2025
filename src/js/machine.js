@@ -9,15 +9,34 @@ import { tia } from "./tia";
 import { bus } from "./bus";
 import { mos6507 } from "./mos6507";
 
-export const machine = (input) => {
-  const romRead = romAsMem(input.length === 2_048 ? input.concat(input) : input);
+const romLoader = (data) => {
+  let rom = romAsMem(data);
+
+  return [
+   (a) => rom(a),
+   (data) => { rom = romAsMem(data); }
+  ]; 
+}
+
+export const machine = (data) => {
+  const [romRead, loadRom] = romLoader(data);
 
   const [riotRead, riotWrite, swcha, switches, tickTimer, riotState] = riot();
 
   const [rdy, rdyw] = pin(1);
 
-  const [tiaRead, tiaWrite, inpt0, inpt2, inpt4, inpt5, updateScreen, drawer, tiaState] = tia(rdyw);
- 
+  const {
+    read: tiaRead,
+    write: tiaWrite,
+    inpt0,
+    inpt2,
+    inpt4,
+    inpt5,
+    updateScreen,
+    drawer,
+    state: tiaState
+  } = tia(rdyw);
+
   const port0 = (v, i0, i1) => {
    //  0   SWCHA.4
    //  1   SWCHA.5
@@ -55,8 +74,8 @@ export const machine = (input) => {
 
   const [read, write] = bus(riotRead, riotWrite, romRead, tiaRead, tiaWrite);
 
-  const [step, piaState, toggleEvents] = mos6507(read, write, rdy);
-  
+  const [step, piaState, toggleEvents, reset] = mos6507(read, write, rdy);
+
   let frame = false;
 
   const tia_ = () => {
@@ -71,7 +90,7 @@ export const machine = (input) => {
 
   const halt_ = () => {
     const {x, y} = tiaState();
-    
+
     draw(true);
     cross(x, y);
   }
@@ -80,12 +99,12 @@ export const machine = (input) => {
     let cc = 0;
     let t = 0;
     let u = 0;
-    let isKilled = false;
+    // let isKilled = false;
 
-    document.addEventListener("machine.kill", function killer() {
-      isKilled = true;
-      document.removeEventListener("machine.kill", killer);
-    });
+    // document.addEventListener("machine.kill", function killer() {
+    //   isKilled = true;
+    //   document.removeEventListener("machine.kill", killer);
+    // });
 
     // document.addEventListener("dbgr.break", () => { 
     //   tia_();
@@ -93,7 +112,7 @@ export const machine = (input) => {
 
     let t0 = performance.now();
 
-    while (!isKilled) {
+    while (true) {
       if (frame) {
         document.dispatchEvent(new Event("draw"));
 	const d0 = performance.now() - t0;
@@ -121,7 +140,7 @@ export const machine = (input) => {
       u++;
     }
 
-    console.log("Machine killed, exiting run loop");
+    // console.log("Machine killed, exiting run loop");
   }
 
   const info = () => ({
@@ -132,5 +151,16 @@ export const machine = (input) => {
       isWSync: !rdy(),
     });
 
-  return [run, port0, port1, switches, info, toggleEvents];
+  return {
+    run,
+    port0,
+    port1,
+    switches,
+    info,
+    toggleEvents,
+    loadRom: (data) => {
+      loadRom(data);
+      reset();
+    }
+  };
 }

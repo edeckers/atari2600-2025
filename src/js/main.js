@@ -86,36 +86,71 @@ const readRom = () => {
   return loadFromBase64(rom);
 }
 
+const updateControllerStatus = () => {
+  const xx = (p) => {
+    const sx = document.getElementById(`${p}.settings`);
+
+    sx.querySelectorAll("label").forEach($e => $e.classList.remove("border-2"));
+
+    document.getElementById(`${p}.settings.joystick`).checked ?
+        sx.querySelector(`label[for='${p}.settings.joystick']`).classList.add("border-2") :
+        sx.querySelector(`label[for='${p}.settings.paddle']`).classList.add("border-2");
+  }
+
+  xx("p0");
+  xx("p1");
+}
+
+
 let ctrll = undefined;
 let ctrlr = undefined;
-let switches = undefined;;
-let info = undefined;
 
-let toggleEvents = () => {};
-let connectCtrl0 = () => {}
-let connectCtrl1 = () => {}
+const createMachine = () => {
+  const {
+    run: process,
+    port0,
+    port1,
+    switches,
+    info,
+    toggleEvents,
+    loadRom
+  } = machine(readRom());
+
+  const connectCtrl0 = (c0) => { ctrll = c0(port0); updateControllerStatus(); }
+  const connectCtrl1 = (c1) => { ctrlr = c1(port1); updateControllerStatus(); }
+
+  connectCtrl0(joystick);
+  connectCtrl1(joystick);
+
+  process(isHalted);
+
+  return {
+   switches,
+   info,
+   toggleEvents,
+   connectCtrl0,
+   connectCtrl1,
+   loadRom
+  };
+}
+
+const {
+   switches,
+   info,
+   toggleEvents,
+   connectCtrl0,
+   connectCtrl1,
+   loadRom
+  } = createMachine();
 
 const startRom = () => {
-  document.dispatchEvent(new Event("machine.kill"));
+  // document.dispatchEvent(new Event("machine.kill"));
 
   const romBytes = readRom();
 
   loadSource(romBytes);
 
-  const [process, port0, port1, swch, nfo, events] = machine(romBytes);
-
-  process(isHalted);
-
-  document.removeEventListener("", process);
-
-  switches = swch;
-  info = nfo;
-  toggleEvents = events || (() => {});
-  connectCtrl0 = (c0) => { ctrll = c0(port0); updateControllerStatus(); }
-  connectCtrl1 = (c1) => { ctrlr = c1(port1); updateControllerStatus(); }
-
-  connectCtrl0(joystick);
-  connectCtrl1(joystick);
+  loadRom(romBytes);
 }
 
 const listenForControllerInputs = () => {
@@ -160,21 +195,6 @@ const listenForControllerInputs = () => {
 
     return false;
   });
-}
-
-const updateControllerStatus = () => {
-  const xx = (p) => {
-    const sx = document.getElementById(`${p}.settings`);
-
-    sx.querySelectorAll("label").forEach($e => $e.classList.remove("border-2"));
-
-    document.getElementById(`${p}.settings.joystick`).checked ?
-        sx.querySelector(`label[for='${p}.settings.joystick']`).classList.add("border-2") :
-        sx.querySelector(`label[for='${p}.settings.paddle']`).classList.add("border-2");
-  }
-
-  xx("p0");
-  xx("p1");
 }
 
 const listenForPlayerConfigInputs = () => {
@@ -247,7 +267,7 @@ const attachControlsAndEvents = () => {
     });
   
     startFr();
-    listenForDebuggerEvents(() => startRom(), (v) => toggleEvents(v), () => info());
+    listenForDebuggerEvents(startRom, toggleEvents, info);
     listenForControllerInputs();
     listenForPlayerConfigInputs();
     listenForPlayerDifficultyInputs();

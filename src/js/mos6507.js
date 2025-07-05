@@ -400,5 +400,5 @@ export const mos6507 = (read, write, rdy) => {
     fi,
   });
 
-  return [step, state, (v) => enableEvents = !!v];
+  return [step, state, (v) => enableEvents = !!v, () => { pc = word(read, 0xfffc); sp = 0xff; }];
 }
