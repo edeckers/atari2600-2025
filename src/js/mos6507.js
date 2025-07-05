@@ -298,9 +298,11 @@ export const mos6507 = (read, write, rdy) => {
     /* LDY nn, X   */ 0xb4: cmd(4, czpx((_r, _w, m)               => { ldy(m); pc += 2; })),
     /* LDA nn, X   */ 0xb5: cmd(4, czpx((_r, _w, m)               => { lda(m); pc += 2; })),
     /* LDX nn, Y   */ 0xb6: cmd(4, czpy((_r, _w, m)               => { ldx(m); pc += 2; })),
+    /* CLV         */ 0xb8: cmd(2, no(()                          => { fv = 0; pc += 1; })),
     /* LDA nnnn, Y */ 0xb9: cmd(4, cabsy((_r, _w, m)              => { lda(m); pc += 3; }), pb2y),
     /* TSX         */ 0xba: cmd(2, no(()                          => { rx = sp; fnu(rx); fzu(rx); pc += 1; })),
     /* LDA nnnn, X */ 0xbd: cmd(4, cabsx((_r, _w, m)              => { lda(m); pc += 3; }), pb2x),
+    /* LDY nnnn, X */ 0xbc: cmd(4, cabsx((_r, _w, m)              => { ldy(m); pc += 3; }), pb2x),
     /* LDX nnnn, Y */ 0xbe: cmd(4, cabsy((_r, _w, m)              => { ldx(m); pc += 3; }), pb2y),
     /* CPY #nn     */ 0xc0: cmd(2, cim((_r, _w, m)                => { cpy(m); pc += 2; })),
     /* CPY nn      */ 0xc4: cmd(3, czp((_r, _w, m)                => { cpy(m); pc += 2; })),
@@ -338,7 +340,8 @@ export const mos6507 = (read, write, rdy) => {
     /* SBC nn, X   */ 0xf5: cmd(4, czpx((_r, _w, m)               => { sbc(m); pc += 2; })),
     /* INC nn, X   */ 0xf6: cmd(5, czpx((_r, write, m, a)         => { inc(write, m, a); pc += 2; })),
     /* SED         */ 0xf8: cmd(2, no(()                          => { fd = 1; pc += 1; })),
-    /* SBC nnnn, Y */ 0xf9: cmd(4, cabsy((_r, _w, m)              => { sbc(m); pc += 3; })),
+    /* SBC nnnn, Y */ 0xf9: cmd(4, cabsy((_r, _w, m)              => { sbc(m); pc += 3; }), pb2y),
+    /* SBC nnnn, X */ 0xfd: cmd(4, cabsx((_r, _w, m)              => { sbc(m); pc += 3; }), pb2x),
     /* ISC nnnn, X */ 0xff: cmd(7, cabsx((read, write, m, a)      => {  // UNDOCUMENTED
   	  // https://www.masswerk.at/nowgobang/2021/6502-illegal-opcodes
   	  inc(write, m, a);
@@ -347,7 +350,7 @@ export const mos6507 = (read, write, rdy) => {
   
             sbc(v);
   
-  	  pc += 3; })),
+  	  pc += 3; }), pb2y),
   }
 
   pc = word(read, 0xfffc);
