@@ -102,8 +102,13 @@ const updateControllerStatus = () => {
 }
 
 
-let ctrll = undefined;
-let ctrlr = undefined;
+const controller = (port) => {
+  let c = joystick(port);
+
+  const connect = (t) => { c = t(port); updateControllerStatus(); }
+
+  return [connect, () => c];
+}
 
 const createMachine = () => {
   const {
@@ -116,13 +121,10 @@ const createMachine = () => {
     loadRom
   } = machine(readRom());
 
-  const connectCtrl0 = (c0) => { ctrll = c0(port0); updateControllerStatus(); }
-  const connectCtrl1 = (c1) => { ctrlr = c1(port1); updateControllerStatus(); }
-
-  connectCtrl0(joystick);
-  connectCtrl1(joystick);
-
   process(isHalted);
+
+  const [connectCtrl0, ctrll] = controller(port0);
+  const [connectCtrl1, ctrlr] = controller(port1);
 
   return {
    switches,
@@ -130,7 +132,9 @@ const createMachine = () => {
    toggleEvents,
    connectCtrl0,
    connectCtrl1,
-   loadRom
+   loadRom,
+   ctrll,
+   ctrlr
   };
 }
 
@@ -140,7 +144,9 @@ const {
    toggleEvents,
    connectCtrl0,
    connectCtrl1,
-   loadRom
+   loadRom,
+   ctrll,
+   ctrlr
   } = createMachine();
 
 const startRom = () => {
@@ -155,19 +161,19 @@ const startRom = () => {
 
 const listenForControllerInputs = () => {
   document.addEventListener("keydown", (event) => {
-    if (event.key === "w") { ctrll.mn(); return false; }
-    if (event.key === "d") { ctrll.me(); return false; }
-    if (event.key === "s") { ctrll.ms(); return false; }
-    if (event.key === "a") { ctrll.mw(); return false; }
+    if (event.key === "w") { ctrll().mn(); return false; }
+    if (event.key === "d") { ctrll().me(); return false; }
+    if (event.key === "s") { ctrll().ms(); return false; }
+    if (event.key === "a") { ctrll().mw(); return false; }
 
-    if (event.code === "Space") { ctrll.fire(); return false; }
+    if (event.code === "Space") { ctrll().fire(); return false; }
 
-    if (event.key === "ArrowUp") { ctrlr.mn(); return false; }
-    if (event.key === "ArrowRight") { ctrlr.me(); return false; }
-    if (event.key === "ArrowDown") { ctrlr.ms(); return false; }
-    if (event.key === "ArrowLeft") { ctrlr.mw(); return false; }
+    if (event.key === "ArrowUp") { ctrlr().mn(); return false; }
+    if (event.key === "ArrowRight") { ctrlr().me(); return false; }
+    if (event.key === "ArrowDown") { ctrlr().ms(); return false; }
+    if (event.key === "ArrowLeft") { ctrlr().mw(); return false; }
 
-    if (event.code.indexOf("Control") > -1) { ctrlr.fire(); return false; }
+    if (event.code.indexOf("Control") > -1) { ctrlr().fire(); return false; }
 
     if (event.key === "r") { switches.reset(); return false; }
     if (event.key === "q") { switches.select(); return false; }
@@ -176,19 +182,19 @@ const listenForControllerInputs = () => {
   });
 
   document.addEventListener("keyup", (event) => {
-    if (event.key === "w") { ctrll.mnc(); return false; }
-    if (event.key === "d") { ctrll.mec(); return false; }
-    if (event.key === "s") { ctrll.msc(); return false; }
-    if (event.key === "a") { ctrll.mwc(); return false; }
+    if (event.key === "w") { ctrll().mnc(); return false; }
+    if (event.key === "d") { ctrll().mec(); return false; }
+    if (event.key === "s") { ctrll().msc(); return false; }
+    if (event.key === "a") { ctrll().mwc(); return false; }
 
-    if (event.code === "Space") { ctrll.firec(); return false; }
+    if (event.code === "Space") { ctrll().firec(); return false; }
 
-    if (event.key === "ArrowUp") { ctrlr.mnc(); return false; }
-    if (event.key === "ArrowRight") { ctrlr.mec(); return false; }
-    if (event.key === "ArrowDown") { ctrlr.msc(); return false; }
-    if (event.key === "ArrowLeft") { ctrlr.mwc(); return false; }
+    if (event.key === "ArrowUp") { ctrlr().mnc(); return false; }
+    if (event.key === "ArrowRight") { ctrlr().mec(); return false; }
+    if (event.key === "ArrowDown") { ctrlr().msc(); return false; }
+    if (event.key === "ArrowLeft") { ctrlr().mwc(); return false; }
 
-    if (event.code.indexOf("Control") > -1) { ctrlr.firec(); return false; }
+    if (event.code.indexOf("Control") > -1) { ctrlr().firec(); return false; }
 
     if (event.key === "r") { switches.resetc(); return false; }
     if (event.key === "q") { switches.selectc(); return false; }
