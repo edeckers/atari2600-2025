@@ -1,5 +1,3 @@
-const toBase64 = (input) => btoa(input);
-
 export const romUploader = () => {
   const input = document.getElementById("romFile");
   const button = document.getElementById("romUploadButton");
@@ -11,7 +9,9 @@ export const romUploader = () => {
       const name = e0.target.value.split('\\').pop().split('/').pop();
       const romKey = `rom:${btoa(name)}`;
       
-      window.localStorage.setItem(romKey, JSON.stringify({ name, data: toBase64(e1.target.result) }));
+      window.localStorage.setItem(romKey, JSON.stringify({ name, data: btoa(e1.target.result) }));
+
+      document.dispatchEvent(new Event("rom.uploaded"));
     });
     
     reader.readAsBinaryString(e0.target.files[0]);

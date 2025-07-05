@@ -1,7 +1,7 @@
 import { dbgr } from "./dev/debugger";
 
 import { decode } from "./dev/assembly";
-import { loadFromBase64, listRoms, romAsMem } from "./rom";
+import { romAsMem } from "./rom";
 
 import { joystick } from "./controllers/joystick";
 import { paddle } from "./controllers/paddle";
@@ -9,36 +9,13 @@ import { paddle } from "./controllers/paddle";
 import { machine } from "./machine";
 import { romUploader } from "./ui/uploader";
 import { listenForDebuggerEvents, updateStatus } from "./ui/debugger";
+import { romSelector } from "./ui/selector";
 
 let breakpoints = [];
 
 const isHalted = dbgr();
 
-const roms = Object.fromEntries(listRoms());
-
-let romName = Object.keys(roms)[0]; // default to first rom
-
-export const changeRom = (rn) => {
-  romName = rn
-  document.dispatchEvent(new Event("chrom"));
-}
-
-const updateRomSelector = () => {
-  const romSelector = document.getElementById("romSelector");
-  romSelector.innerHTML = "";
-
-  for (const [name, _] of Object.entries(roms)) {
-    const option = document.createElement("option");
-    option.value = name;
-    option.textContent = name;
-
-    if (name === romName) {
-      option.selected = true;
-    }
-
-    romSelector.appendChild(option);
-  }
-}
+const { changeRom, updateRomSelector, readRom } = romSelector();
 
 const loadSource = (rbx) => {
   const lines = decode(romAsMem(rbx));
@@ -80,14 +57,8 @@ const loadSource = (rbx) => {
   document.getElementById("source").innerHTML = asm.join("\n");
 }
 
-const readRom = () => {
-  const rom = roms[romName];
-
-  return loadFromBase64(rom);
-}
-
-const updateControllerStatus = () => {
-  const xx = (p) => {
+const updateControllerTypeSelection = () => {
+  const updateForPlayer = (p) => {
     const sx = document.getElementById(`${p}.settings`);
 
     sx.querySelectorAll("label").forEach($e => $e.classList.remove("border-2"));
@@ -97,15 +68,15 @@ const updateControllerStatus = () => {
         sx.querySelector(`label[for='${p}.settings.paddle']`).classList.add("border-2");
   }
 
-  xx("p0");
-  xx("p1");
+  updateForPlayer("p0");
+  updateForPlayer("p1");
 }
 
 
 const controller = (port) => {
   let c = joystick(port);
 
-  const connect = (t) => { c = t(port); updateControllerStatus(); }
+  const connect = (t) => { c = t(port); updateControllerTypeSelection(); }
 
   return [connect, () => c];
 }
@@ -284,7 +255,7 @@ const attachControlsAndEvents = () => {
 }
 
 const main = () => {
-  attachControlsAndEvents();
+  attachControlsAndEvents(document.getElementById("romSelector"));
   romUploader();
   updateRomSelector();
   startRom();
