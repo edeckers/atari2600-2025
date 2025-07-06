@@ -64,3 +64,7 @@ export const d2b = (d) => {
 
  return ((h << 4) + l) & 0xff;
 }
+
+export const fb = (v) => v.toString(2).padStart(8, "0");
+export const fd = (v, d = 3) => v.toString(10).padStart(d, " ").replaceAll(" ", "&nbsp;");
+export const fh = (v) => v.toString(16).padStart(2, "0");

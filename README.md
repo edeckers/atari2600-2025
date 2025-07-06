@@ -7,13 +7,13 @@ My first interaction with a computer was way back in the 80s on an [Atari 2600](
 
 That's how I learned the hard way that it's a _terrible idea_ to start with the Atari 2600 if you just want to learn about emulation, because a lot of effort will go into getting timing, and interpeting documentation _just right_, which - to me - is not particularly fun or useful.
 
-I recommend to [consider CHIP-8 instead](https://en.wikipedia.org/wiki/CHIP-8) if you just want to dabble with emulation.
+So if you're thinkin of dabbling with emulation, [I recommend you consider CHIP-8 instead](https://en.wikipedia.org/wiki/CHIP-8), since it is way more concise and straightforward.
 
 ## Rationale
 
-It's a pet project that I wrote to gain a deeper understanding of how emulators work, not to compete with the already existing excellent implementations out there such as [Stella](https://stella-emu.github.io/) and [Javatari](https://javatari.org/).
+This emulator a pet project that I wrote to gain a deeper understanding of how emulators work, not to compete with the already existing excellent implementations out there such as [Stella](https://stella-emu.github.io/) and [Javatari](https://javatari.org/).
 
-I don't plan on ironing out the many bugs, although I will probably circle back to it every once and again to fix a thing or two when I feel the urge.
+I don't plan on ironing out the many bugs, although I will probably circle back to the project every once and again to fix a thing or two when I feel the urge.
 
 ## Requirements
 
@@ -21,7 +21,7 @@ I don't plan on ironing out the many bugs, although I will probably circle back 
 
 ## Demo
 
-You can [try out emulator here](https://bitoffun.lgtm.it).
+You can [try out the emulator here](https://atari2600.lgtm.it).
 
 ## Acknowledgements
 

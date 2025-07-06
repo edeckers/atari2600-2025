@@ -1,3 +1,5 @@
+import { fb, fd, fh } from "../shared";
+
 const fs = (f, status) => {
  const c = status ?  f.toUpperCase() : f.toLowerCase();
 
@@ -5,10 +7,6 @@ const fs = (f, status) => {
 
  return `<span class="${classes}">${c}</span>`;
 }
-
-const fb = (v) => v.toString(2).padStart(8, "0");
-const fd = (v) => v.toString(10).padStart(3, " ").replaceAll(" ", "&nbsp;");
-const fh = (v) => v.toString(16).padStart(2, "0");
 
 const fr = (r) => `$${fh(r)} ${fd(r)} ${fb(r)}`;
 
@@ -121,14 +119,14 @@ export const listenForDebuggerEvents = (startRom, toggleEvents, info) => {
 
   document.getElementsByName("emulator.mode").forEach($e => $e.addEventListener("click", (event) => {
     if (event.target.value === "debug") {
-      document.getElementById("debugger").classList.remove("hidden");
-      document.getElementById("instructions").classList.add("hidden");
+      document.getElementById("debugger").classList.remove("!hidden");
+      document.getElementById("instructions").classList.add("!hidden");
       toggleEvents(true);
       return;
     }
 
-    document.getElementById("debugger").classList.add("hidden");
-    document.getElementById("instructions").classList.remove("hidden");
+    document.getElementById("debugger").classList.add("!hidden");
+    document.getElementById("instructions").classList.remove("!hidden");
     toggleEvents(false);
   }));
 

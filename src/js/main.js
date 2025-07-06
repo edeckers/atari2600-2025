@@ -10,6 +10,7 @@ import { machine } from "./machine";
 import { romUploader } from "./ui/uploader";
 import { listenForDebuggerEvents, updateStatus } from "./ui/debugger";
 import { romSelector } from "./ui/selector";
+import { fd } from "./shared";
 
 let breakpoints = [];
 
@@ -220,7 +221,7 @@ const startFr = () => {
   let frc = 0;
   
   const updateFr = () => {
-    document.getElementById("fr").innerHTML = frc;
+    document.getElementById("fr").innerHTML = fd(frc, 2);
   
     frc = 0;
   }

@@ -5,9 +5,9 @@
 @tailwind utilities;
 
 html {
-  @apply bg-[#231F20] /*bg-slate-800 */ text-gray-200 text-xs font-mono p-10 bg-[url(/assets/bg-stripes.svg)];
+  @apply bg-[#231F20] /*bg-slate-800 */ text-gray-200 text-xs font-mono p-10 lg:bg-[url(/assets/bg-stripes.svg)] bg-no-repeat;
 
-  background-image: url(/assets/bg-stripes.svg);
+  /*background-image: url(/assets/bg-stripes.svg); */
   background-size: 100% 100%;
   -o-background-size: 100% 100%;
   -webkit-background-size: 100% 100%;
@@ -49,4 +49,8 @@ button:hover {
 
 .toggle label input {
   @apply sr-only;
+}
+
+.companion {
+  @apply flex justify-between space-x-8 space-y-8 bg-black/95 p-10 bg-blend-overlay w-full justify-start;
 }
