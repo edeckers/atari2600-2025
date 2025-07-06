@@ -59,13 +59,13 @@ const loadSource = (rbx) => {
 
 const updateControllerTypeSelection = () => {
   const updateForPlayer = (p) => {
-    const sx = document.getElementById(`${p}.settings`);
+    const $sx = document.getElementById(`${p}.settings`);
 
-    sx.querySelectorAll("label").forEach($e => $e.classList.remove("border-2"));
+    $sx.querySelectorAll("label").forEach($e => $e.classList.remove("border-2"));
 
-    document.getElementById(`${p}.settings.joystick`).checked ?
-        sx.querySelector(`label[for='${p}.settings.joystick']`).classList.add("border-2") :
-        sx.querySelector(`label[for='${p}.settings.paddle']`).classList.add("border-2");
+    document.getElementById(`${p}.controller.joystick`).checked ?
+        $sx.querySelector(`label[for='${p}.controller.joystick']`).classList.add("border-2") :
+        $sx.querySelector(`label[for='${p}.controller.paddle']`).classList.add("border-2");
   }
 
   updateForPlayer("p0");
@@ -77,6 +77,10 @@ const controller = (port) => {
   let c = joystick(port);
 
   const connect = (t) => { c = t(port); updateControllerTypeSelection(); }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    updateControllerTypeSelection();
+  });
 
   return [connect, () => c];
 }
@@ -175,19 +179,19 @@ const listenForControllerInputs = () => {
 }
 
 const listenForPlayerConfigInputs = () => {
-  document.getElementsByName("p0.settings.controller").forEach($e => $e.addEventListener(
+  document.getElementsByName("p0.controller").forEach($e => $e.addEventListener(
 	  "click",
 	  (e) => { connectCtrl0(e.target.value === "joystick" ? joystick : paddle); }));
-  document.getElementsByName("p1.settings.controller").forEach($e => $e.addEventListener(
+  document.getElementsByName("p1.controller").forEach($e => $e.addEventListener(
 	  "click",
 	  (e) => { connectCtrl1(e.target.value === "joystick" ? joystick : paddle); }));
 }
 
 const listenForPlayerDifficultyInputs = () => {
-  document.getElementsByName("p0.settings.difficulty").forEach($e => $e.addEventListener(
+  document.getElementsByName("p0.difficulty").forEach($e => $e.addEventListener(
 	  "click",
 	  (e) => { e.target.value === "novice" ? switches.diff00() : switches.diff01(); }));
-  document.getElementsByName("p1.settings.difficulty").forEach($e => $e.addEventListener(
+  document.getElementsByName("p1.difficulty").forEach($e => $e.addEventListener(
 	  "click",
 	  (e) => { e.target.value === "novice" ? switches.diff10() : switches.diff11(); }));
 }

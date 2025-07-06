@@ -47,13 +47,13 @@
 
               <div class="flex flex-col items-center" id="panel">
                 <div class="flex space-x-4 h-14">
-          	  <div class="flex border-2 border-white rounded-sm h-vh text-sm">
-                    <label for="console.color" title="Toggle Color Mode" class="flex flex-1 flex-col justify-center px-2 cursor-pointer has-[:checked]:bg-white has-[:checked]:text-black text-white font-medium">
-                      <input type="radio" name="console.color" id="console.color" value="color" class="sr-only" checked>
+          	  <div class="toggle">
+                    <label for="console.color" title="Toggle Color Mode">
+                      <input type="radio" name="console.color" id="console.color" value="color" checked>
                       <span>Color</span>
                     </label>
-                    <label for="console.bw" title="Toggle B/W Mode" class="flex flex-1 flex-col justify-center px-2 cursor-pointer has-[:checked]:bg-white has-[:checked]:text-black text-white font-medium">
-                      <input type="radio" name="console.color" id="console.bw" value="bw" class="sr-only">
+                    <label for="console.bw" title="Toggle B/W Mode">
+                      <input type="radio" name="console.color" id="console.bw" value="bw">
                       <span>B/W</span>
                     </label>
                   </div>
@@ -69,17 +69,16 @@
                   <div class="text-white font-bold uppercase">Player 0</div>
 
                   <div class="flex space-x-4 justify-center">
-                      <label for="p0.settings.joystick" class="block cursor-pointer h-20 w-20 bg-black bg-[url(/assets/joystick.svg)] bg-no-repeat bg-cover rounded-xl border-white"><input class="hidden" type="radio" name="p0.settings.controller" id="p0.settings.joystick" value="joystick" checked /></label>
-                      <label for="p0.settings.paddle" class="block cursor-pointer h-20 w-20 bg-black bg-[url(/assets/paddle.svg)] bg-no-repeat bg-cover rounded-xl border-white"><input class="hidden" type="radio" name="p0.settings.controller" value="paddle" id="p0.settings.paddle" /></label>
+                      <label for="p0.controller.joystick" class="block cursor-pointer h-20 w-20 bg-black bg-[url(/assets/joystick.svg)] bg-no-repeat bg-cover rounded-xl border-white"><input class="hidden" type="radio" name="p0.controller" id="p0.controller.joystick" value="joystick" checked /></label>
+                      <label for="p0.controller.paddle" class="block cursor-pointer h-20 w-20 bg-black bg-[url(/assets/paddle.svg)] bg-no-repeat bg-cover rounded-xl border-white"><input class="hidden" type="radio" name="p0.controller" value="paddle" id="p0.controller.paddle" /></label>
                   </div>
-
-                  <div class="flex border-2 border-white rounded-sm w-fit overflow-hidden h-10">
-                    <label for="p0.settings.novice" class="flex flex-1 flex-col justify-center px-2 cursor-pointer has-[:checked]:bg-white has-[:checked]:text-black text-white font-medium">
-                      <input type="radio" name="p0.settings.difficulty" id="p0.settings.novice" value="novice" class="sr-only" checked>
+                  <div class="toggle h-10">
+                    <label for="p0.difficulty.novice">
+                      <input type="radio" name="p0.difficulty" id="p0.difficulty.novice" value="novice" checked />
                       <span>Novice</span>
                     </label>
-                    <label for="p0.settings.expert" class="flex flex-1 flex-col justify-center px-2 cursor-pointer has-[:checked]:bg-white has-[:checked]:text-black text-white font-medium">
-                      <input type="radio" name="p0.settings.difficulty" id="p0.settings.expert" value="expert" class="sr-only">
+                    <label for="p0.difficulty.expert">
+                      <input type="radio" name="p0.difficulty" id="p0.difficulty.expert" value="expert" />
                       <span>Expert</span>
                     </label>
                   </div>
@@ -87,16 +86,16 @@
                 <div id="p1.settings" class="flex flex-col bg-slate-700 p-10 space-y-8 rounded-xl justify-center items-center">
                   <div class="text-white font-bold uppercase">Player 1</div>
                   <div class="flex space-x-4">
-                    <label for="p1.settings.joystick" class="block cursor-pointer h-20 w-20 bg-black bg-[url(/assets/joystick.svg)] bg-no-repeat bg-cover rounded-xl"><input class="hidden" type="radio" name="p1.settings.controller" id="p1.settings.joystick" value="joystick" checked /></label>
-                    <label for="p1.settings.paddle" class="block cursor-pointer h-20 w-20 bg-black bg-[url(/assets/paddle.svg)] bg-no-repeat bg-cover rounded-xl"><input class="hidden" type="radio" name="p1.settings.controller" value="paddle" id="p1.settings.paddle" /></label>
+                    <label for="p1.controller.joystick" class="block cursor-pointer h-20 w-20 bg-black bg-[url(/assets/joystick.svg)] bg-no-repeat bg-cover rounded-xl"><input class="hidden" type="radio" name="p1.controller" id="p1.controller.joystick" value="joystick" checked /></label>
+                    <label for="p1.controller.paddle" class="block cursor-pointer h-20 w-20 bg-black bg-[url(/assets/paddle.svg)] bg-no-repeat bg-cover rounded-xl"><input class="hidden" type="radio" name="p1.controller" value="paddle" id="p1.controller.paddle" /></label>
                   </div>
-                  <div class="flex border-2 border-white rounded-sm w-fit overflow-hidden h-10">
-                    <label for="p1.settings.novice" class="flex flex-1 flex-col justify-center px-2 cursor-pointer has-[:checked]:bg-white has-[:checked]:text-black text-white font-medium">
-                      <input type="radio" name="p1.settings.difficulty" id="p1.settings.novice" value="novice" class="sr-only" checked>
-		                  <span>Novice</span>
+                  <div class="toggle h-10">
+                    <label for="p1.difficulty.novice">
+                      <input type="radio" name="p1.difficulty" id="p1.difficulty.novice" value="novice" checked />
+                      <span>Novice</span>
                     </label>
-                    <label for="p1.settings.expert" class="flex flex-1 flex-col justify-center px-2 cursor-pointer has-[:checked]:bg-white has-[:checked]:text-black text-white font-medium">
-                      <input type="radio" name="p1.settings.difficulty" id="p1.settings.expert" value="expert" class="sr-only">
+                    <label for="p1.difficulty.expert">
+                      <input type="radio" name="p1.difficulty" id="p1.difficulty.expert" value="expert" />
                       <span>Expert</span>
                     </label>
                   </div>

@@ -38,3 +38,15 @@ button:hover {
 #source .address {
   @apply text-blue-400 font-bold cursor-pointer;
 }
+
+.toggle {
+  @apply flex border-2 border-white rounded-sm text-sm;
+}
+
+.toggle label {
+  @apply flex flex-1 flex-col justify-center px-2 cursor-pointer has-[:checked]:bg-white has-[:checked]:text-black text-white font-medium;
+}
+
+.toggle label input {
+  @apply sr-only;
+}
