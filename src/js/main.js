@@ -127,8 +127,8 @@ const {
 
 const startRom = () => {
   // document.dispatchEvent(new Event("machine.kill"));
-
   const romBytes = readRom();
+  if (!romBytes) { return; }
 
   loadSource(romBytes);
 
