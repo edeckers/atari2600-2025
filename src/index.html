@@ -40,8 +40,17 @@
           <div class="flex flex-col bg-slate-800 h-full rounded-xl drop-shadow-xl/50 w-[35vw] p-10">
             <div id="machine" class="flex flex-col rounded space-y-10">
               <div class="flex justify-end items-center space-x-8">
-                <label for="debugmode" class="hidden 2xl:block cursor-pointer items-center"><input type="checkbox" id="debugmode" /> Debug</label>
-	        <span>FR=<span id="fr" class="text-right w-3"></span></span>
+            	<div class="toggle h-10">
+                  <label for="emulator.mode.info">
+                    <input type="radio" name="emulator.mode" id="emulator.mode.info" value="info" checked />
+                    <span>Info</span>
+                  </label>
+                  <label for="emulator.mode.debug">
+                    <input type="radio" name="emulator.mode" id="emulator.mode.debug" value="debug" />
+                    <span>Debug</span>
+                  </label>
+                </div>
+                <span>FR=<span id="fr" class="text-right w-3"></span></span>
               </div>
               <canvas id="tehScreen" class="max-w-[50vw] border-2 border-black rounded-md" width="320" height="222"></canvas>
 

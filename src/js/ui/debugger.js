@@ -119,8 +119,8 @@ export const listenForDebuggerEvents = (startRom, toggleEvents, info) => {
     toggleBreakpoint(parseInt(event.target.innerHTML.slice(0, 4), 16));
   });
 
-  document.getElementById("debugmode").addEventListener("change", (event) => {
-    if (event.target.checked) {
+  document.getElementsByName("emulator.mode").forEach($e => $e.addEventListener("click", (event) => {
+    if (event.target.value === "debug") {
       document.getElementById("debugger").classList.remove("hidden");
       document.getElementById("instructions").classList.add("hidden");
       toggleEvents(true);
@@ -130,7 +130,7 @@ export const listenForDebuggerEvents = (startRom, toggleEvents, info) => {
     document.getElementById("debugger").classList.add("hidden");
     document.getElementById("instructions").classList.remove("hidden");
     toggleEvents(false);
-  });
+  }));
 
   document.getElementById("continue").addEventListener("click", () => {
     document.dispatchEvent(new Event("dbgr.continue"));

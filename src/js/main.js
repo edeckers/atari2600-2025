@@ -230,9 +230,8 @@ const startFr = () => {
   setInterval(() => updateFr(), 1_000);
 }
 
-const attachControlsAndEvents = () => {
+const attachControlsAndEvents = ($romSelector) => {
   document.addEventListener("DOMContentLoaded", () => {
-    const $romSelector = document.getElementById("romSelector");
     $romSelector.addEventListener("change", (e) => {
       changeRom(e.target.options[e.target.selectedIndex].value)
 
