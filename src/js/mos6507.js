@@ -253,6 +253,8 @@ export const mos6507 = (read, write, rdy) => {
     /* JMP nnnn    */ 0x4c: cmd(3, cabs((_r, _w, _m, a)           => { pc = a; })),
     /* LSR nnnn    */ 0x4e: cmd(6, cabs((_r, write, m, a)         => { lsr(m, (v) => write(a, v)); pc += 3; })),
     /* BVC dd      */ 0x50: cmd(2, cjim((_r, _w, m)               => { cj(fv === 0, m); pc += 2; }), (read) => cjt(read, fv === 0)),
+    /* EOR nn, X   */ 0x55: cmd(4, czpx((_r, _w, m)               => { eor(m); pc += 2; })),
+    /* EOR nnnn, Y */ 0x59: cmd(4, cabsy((_r, _w, m)              => { eor(m); pc += 3; }), pb2y),
     /* EOR nnnn, X */ 0x5d: cmd(4, cabsx((_r, _w, m)              => { eor(m); pc += 3; }), pb2x),
     /* RTS         */ 0x60: cmd(6, no((read)                      => { const l = popsp(read); const h = popsp(read); pc = ((h << 8) + l) & 0xffff; })),
     /* ADC nn      */ 0x65: cmd(3, czp((_r, _w, m)                => { adc(m); pc += 2; })),
