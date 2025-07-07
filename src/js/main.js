@@ -197,6 +197,23 @@ const listenForPlayerDifficultyInputs = () => {
 	  (e) => { e.target.value === "novice" ? switches.diff10() : switches.diff11(); }));
 }
 
+const listenForRomSelectorUpdates = () => {
+  const $rs = document.getElementById("romSelector");
+  const $msg = document.getElementById("norom-message");
+
+  document.addEventListener("rom.selector.updated", (event) => { 
+    if (event.detail.numberOfRoms === 0) {
+      $rs.disabled = true;
+      $rs.innerHTML = "<option value=''>No ROMs available</option>";
+      $msg.classList.remove("hidden");
+      return;
+    }
+
+    $rs.disabled = false;
+    $msg.classList.add("hidden");
+  });
+}
+
 const listenForConsoleColorToggle = () => {
   document.getElementsByName("console.color").forEach($e => $e.addEventListener(
 	  "click",
@@ -232,41 +249,44 @@ const startFr = () => {
 }
 
 const attachControlsAndEvents = ($romSelector) => {
-  document.addEventListener("DOMContentLoaded", () => {
     $romSelector.addEventListener("change", (e) => {
       changeRom(e.target.options[e.target.selectedIndex].value)
 
       $romSelector.blur();
     });
   
-    document.addEventListener("chrom", () => { startRom(); document.dispatchEvent(new Event("dbgr.breakpoint.clear")); });
+    document.addEventListener("chrom", () => {
+	   startRom();
+	   document.dispatchEvent(new Event("dbgr.breakpoint.clear")); });
   
     document.addEventListener("dbgr.breakpoint.changed", (event) => {
        breakpoints = event.detail.breakpoints;
   
        loadSource(readRom());
     });
-  
+
+    
     startFr();
     listenForDebuggerEvents(startRom, toggleEvents, info);
     listenForControllerInputs();
     listenForPlayerConfigInputs();
     listenForPlayerDifficultyInputs();
     listenForConsoleColorToggle();
-
+    listenForRomSelectorUpdates();
     listenForConsoleButtonEvents();
-  });
 }
 
 const main = () => {
-  attachControlsAndEvents(document.getElementById("romSelector"));
-  romUploader();
-  updateRomSelector();
-  startRom();
+  document.addEventListener("DOMContentLoaded", () => {
+    attachControlsAndEvents(document.getElementById("romSelector"));
+    romUploader();
+    updateRomSelector();
+    startRom();
 
-  const pstatus = Object.fromEntries(Object.entries(info()).map(([k, _]) => [k, 0])); // updateStatus(pstatus);
+    const pstatus = Object.fromEntries(Object.entries(info()).map(([k, _]) => [k, 0])); // updateStatus(pstatus);
 
-  updateStatus(pstatus);
+    updateStatus(pstatus);
+  });
 }
 
 main();

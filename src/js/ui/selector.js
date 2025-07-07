@@ -70,6 +70,9 @@ export const romSelector = () => {
   
       $rs.appendChild(option);
     }
+
+    document.dispatchEvent(
+	    new CustomEvent("rom.selector.updated", { detail: { numberOfRoms: Object.keys(roms).length } }));
   }
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -79,7 +82,6 @@ export const romSelector = () => {
       updateRomSelector();
 
       if (Object.entries(roms).length === 1) { changeRom(Object.keys(roms)[0]); }
-
     });
   });
 

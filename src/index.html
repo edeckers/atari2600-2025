@@ -28,7 +28,7 @@
   <body>
     <div class="flex h-screen">
       <input type="file" id="romFile" class="hidden" />
-      <div class="flex flex-col space-y-8 h-full p-10">
+      <div class="flex flex-col space-y-8 h-full p-10 w-full">
         <div class="flex justify-between flex-none">
           <div>
             <h1 class="text-4xl font-bold">Atari 2600</h1>
@@ -58,8 +58,10 @@
                 </div>
                 <span>FR=<span id="fr" class="text-right w-3">&nbsp;0</span></span>
               </div>
-              <canvas id="tehScreen" class="max-w-[50vw] border-2 border-black rounded-md" width="320" height="222"></canvas>
-
+	      <div class="relative z-0 w-full">
+                <canvas id="tehScreen" class="w-full border-2 border-black rounded-md" width="320" height="222"></canvas>
+		<div id="norom-message" class="absolute inset-0 flex justify-center items-center z-10 bg-black"><p class="text-lg">Upload a rom using the <button class="w-16 !inline"><img src="/assets/upload.svg"></button> button next to the ROM selector</p></div>
+              </div>
               <div class="flex flex-col items-center" id="panel">
                 <div class="flex space-x-4 h-14">
           	  <div class="toggle">

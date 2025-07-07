@@ -142,5 +142,3 @@ export const listenForDebuggerEvents = (startRom, toggleEvents, info) => {
 
   document.addEventListener("dbgr.break", () => { const pstatus = info(); updateStatus(pstatus); });
 }
-
-
