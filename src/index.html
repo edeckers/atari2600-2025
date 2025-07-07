@@ -26,13 +26,10 @@
     <script type="module" src="js/main.js"></script>
   </head>
   <body>
-    <div class="lg:hidden text-4xl">
-	Alas, this emulator only supports larger screens at the moment. Give it a whirl on a desktop or tablet!
-    </div>
-    <div class="hidden lg:block">
+    <div class="flex h-screen">
       <input type="file" id="romFile" class="hidden" />
-      <div class="flex flex-col space-y-8">
-	<div class="flex justify-between">
+      <div class="flex flex-col space-y-8 h-full p-10">
+        <div class="flex justify-between flex-none">
           <div>
             <h1 class="text-4xl font-bold">Atari 2600</h1>
             <h2 class="text-2xl font-bold">VCS Emulator</h2>
@@ -40,8 +37,12 @@
           <div>
             <a title="Fork me on GitHub" href="https://github.com/edeckers/atari2600-2025"><img class="h-14" alt="GitHub logo" src="/assets/github-mark-white.svg" /></a>
           </div>
-	</div>
-        <div class="flex flex-row space-x-8">
+        </div>
+        <div class="lg:hidden text-4xl justify-center flex flex-col space-y-8 grow">
+          <p>Alas, this emulator only supports larger screens at the moment. Give it a whirl on a desktop or tablet!</p>
+          <p>Ely - <a class="underline" href="https://branie.it">BRANIE IT</a></p>
+        </div>
+        <div class="flex flex-row space-x-8 hidden lg:flex">
           <div class="flex flex-col bg-slate-800 h-full rounded-xl drop-shadow-xl/50 w-[35vw] p-10">
             <div id="machine" class="flex flex-col rounded space-y-10">
               <div class="flex justify-end items-center space-x-8">
@@ -71,13 +72,13 @@
                       <span>B/W</span>
                     </label>
                   </div>
-		  <button id="console.select" title="Game Select" class="flex justify-center w-20 rounded-sm"><img src="/assets/select.svg" /></button>
-		  <button id="console.reset" title="Reset" class="flex justify-center w-20 rounded-sm"><img src="/assets/rewind.svg" /></button>
+        	  <button id="console.select" title="Game Select" class="flex justify-center w-20 rounded-sm"><img src="/assets/select.svg" /></button>
+        	  <button id="console.reset" title="Reset" class="flex justify-center w-20 rounded-sm"><img src="/assets/rewind.svg" /></button>
 
                   <select id="romSelector" class="border-2 border-white font-bold appearance-none p-4 rounded-xl uppercase w-full min-w-100 text-center cursor-pointer bg-gray-800"></select>
                   <button id="romUploadButton" title="Upload ROM" class="rounded-sm w-20"><img src="/assets/upload.svg" /></button>
                 </div>
-	            </div>
+                    </div>
               <div class="flex flex-row justify-center space-x-8">
                 <div id="p0.settings" class="flex flex-col bg-slate-700 p-10 space-y-8 rounded-xl text-center justify-center items-center">
                   <div class="text-white font-bold uppercase">Player 0</div>
@@ -117,17 +118,17 @@
               </div>
             </div>
           </div>
-	  <div class="flex w-full">
-	    <div id="instructions" class="companion flex-col">
+          <div class="flex w-full">
+            <div id="instructions" class="companion flex-col text-xl">
               <h1 class="text-xl font-bold">Welcome to my JavaScript Atari 2600 emulator!</h1>
-              <p>This is a pet project I built for fun while learning how the original console worked; read more about building this emulator in my detailed blog post.</p>
+              <p>This is a pet project I built for fun while learning how the original console worked; read more about building this emulator in my blog post.</p>
               
-	      <p><span class="font-bold">Currently supported games</span> include Bowling, Combat, Frogger, Moon Patrol, Ms. Pacman, Pong Sports, Tennis, Tic Tac Toe 3D, and Super Breakout. <span class="italic">The emulator is a work in progress - I'm planning to add audio and additional games over time.</span></p>
+              <p><span class="font-bold">Currently supported games</span> include Bowling, Combat, Frogger, Moon Patrol, Ms. Pacman, Pong Sports, Tennis, Tic Tac Toe 3D, and Super Breakout. <span class="italic">The emulator is a work in progress - I'm planning to add audio and additional games over time.</span></p>
               
               <p><span class="font-bold">Want to try your own games?</span> Use the upload button next to the ROM selector to load your own Atari 2600 ROMs. There are many complete Atari 2600 ROM archives available online, but I won't link to them here due to unclear copyright status. Please ensure you own any games you're emulating.</p>
               
-              <p>Ely - <a href="https://branie.it">BRANIE IT</a></p>
-	    </div>
+              <p>Ely - <a class="underline" href="https://branie.it">BRANIE IT</a></p>
+            </div>
             <div id="debugger" class="companion !hidden">
               <div class="flex flex-col">
                 <div id="source" style="scrollbar-width: none" class="overflow-y-scroll max-h-[50vh]"></div>

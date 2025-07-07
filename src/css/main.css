@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 html {
-  @apply bg-[#231F20] /*bg-slate-800 */ text-gray-200 text-xs font-mono p-10 lg:bg-[url(/assets/bg-stripes.svg)] bg-no-repeat;
+  @apply bg-[#231F20] /*bg-slate-800 */ text-gray-200 text-xs font-mono lg:bg-[url(/assets/bg-stripes.svg)] bg-no-repeat;
 
   /*background-image: url(/assets/bg-stripes.svg); */
   background-size: 100% 100%;
