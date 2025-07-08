@@ -12,6 +12,9 @@ import { listenForDebuggerEvents, updateStatus } from "./ui/debugger";
 import { romSelector } from "./ui/selector";
 import { fd } from "./shared";
 
+import "./analytics/matomo";
+import "./analytics/cookie-bar";
+
 let breakpoints = [];
 
 const isHalted = dbgr();

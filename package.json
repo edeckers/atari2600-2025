@@ -8,14 +8,15 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.10",
+    "@tailwindcss/vite": "^4.1.10",
+    "postcss": "^8.5.6",
     "prettier": "*",
     "vite": "*"
   },
   "private": true,
   "dependencies": {
-    "@tailwindcss/postcss": "^4.1.10",
-    "@tailwindcss/vite": "^4.1.10",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^4.1.10"
+    "tailwindcss": "^4.1.10",
+    "vanilla-cookieconsent": "^3.0.0"
   }
 }
