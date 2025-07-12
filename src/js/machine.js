@@ -98,7 +98,7 @@ export const machine = (data) => {
   const run = async (isHalted) => {
     let cc = 0;
     let t = 0;
-    let u = 0;
+    // let u = 0;
     // let isKilled = false;
 
     // document.addEventListener("machine.kill", function killer() {
@@ -137,7 +137,7 @@ export const machine = (data) => {
 
       t = (t + 1) % 3;
 
-      u++;
+      // u++;
     }
 
     // console.log("Machine killed, exiting run loop");

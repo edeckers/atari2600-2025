@@ -106,6 +106,8 @@ const updateHighlights = (pstatus) => {
   }
 }
 
+const clearHighlights = () => { document.querySelectorAll("#source div[id^='line-'].hl").forEach($e => $e.classList.remove("hl")); }
+
 export const updateStatus = (pstatus) => {
   loadDebugInfo(pstatus);
   loadMemory(pstatus);
@@ -132,6 +134,8 @@ export const listenForDebuggerEvents = (startRom, toggleEvents, info) => {
 
   document.getElementById("continue").addEventListener("click", () => {
     document.dispatchEvent(new Event("dbgr.continue"));
+
+    clearHighlights();
   });
   document.getElementById("step").addEventListener("click", () => {
     document.dispatchEvent(new Event("dbgr.step"));
