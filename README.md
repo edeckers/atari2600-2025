@@ -15,6 +15,10 @@ This emulator a pet project that I wrote to gain a deeper understanding of how e
 
 I don't plan on ironing out the many bugs, although I will probably circle back to the project every once and again to fix a thing or two when I feel the urge.
 
+## Blogpost
+
+You can [read more about the journey of writing this emulator here](https://medium.com/@edeckers/recreating-my-first-computer-an-atari-2600-emulator-7b72279a4afd)
+
 ## Requirements
 
 - A modern browser that supports JavaScript
