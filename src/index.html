@@ -1,7 +1,69 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="utf-8">
+    <meta name="theme-color" content="#231F20">
+    <meta name="geo.region" content="NL">
+    <meta name="geo.placename" content="Utrecht">
+    <meta name="geo.position" content="52.0930;5.1122">
+    <meta name="viewport" content="width=device-width">
+    
+    <title>Atari 2600 JavaScript Emulator - Play Classic Games Online | BRANIE IT</title>
+    <meta property="og:title" content="Atari 2600 JavaScript Emulator - Play Classic Games Online" />
+    <meta name="author" content="Ely Deckers - BRANIE IT" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="description" content="Play classic Atari 2600 games in your browser! JavaScript emulator with built-in games and ROM upload support. A nostalgic tribute to retro gaming by BRANIE IT." />
+    <meta property="og:description" content="Play classic Atari 2600 games in your browser! JavaScript emulator with built-in games and ROM upload support. A nostalgic tribute to retro gaming by BRANIE IT." />
+    <link rel="canonical" href="https://atari2600.branie.it/" />
+    <meta property="og:url" content="https://atari2600.branie.it/" />
+    <meta property="og:site_name" content="Atari 2600 JavaScript Emulator" />
+    <meta property="og:image" content="https://branie.it/assets/media/branie-og-card.png" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta property="twitter:image" content="https://branie.it/assets/media/branie-og-card.png" />
+    <meta property="twitter:title" content="Atari 2600 JavaScript Emulator - Play Classic Games Online" />
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Atari 2600 JavaScript Emulator",
+      "description": "Play classic Atari 2600 games in your browser! JavaScript emulator with built-in games and ROM upload support. A nostalgic tribute to retro gaming.",
+      "url": "https://atari2600.branie.it/",
+      "author": {
+        "@type": "Person",
+        "name": "Ely Deckers",
+        "url": "https://branie.it/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "BRANIE IT",
+        "url": "https://branie.it/"
+      },
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Web Browser",
+      "browserRequirements": "Modern web browser with JavaScript support",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR"
+      },
+      "keywords": ["Atari 2600", "emulator", "retro gaming", "JavaScript", "browser games", "classic games"],
+      "genre": ["Retro Gaming", "Emulation"],
+      "dateCreated": "2025",
+      "inLanguage": "en",
+      "isAccessibleForFree": true,
+      "interactionStatistic": {
+        "@type": "InteractionCounter",
+        "interactionType": "https://schema.org/PlayAction",
+        "userInteractionCount": "0"
+      }
+    }
+    </script>
+
+
     <link
       rel="icon"
       type="image/png"
@@ -22,7 +84,7 @@
     >
     <link rel="shortcut icon" href="https://branie.it/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="css/main.css" />    
+    <link rel="stylesheet" href="css/main.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@v3.0.0/dist/cookieconsent.css">
     <script type="module" src="js/main.js"></script>
   </head>
@@ -125,11 +187,11 @@
             <div id="instructions" class="companion flex-col text-xl">
               <h1 class="text-xl font-bold">Welcome to my JavaScript Atari 2600 emulator!</h1>
 	      <p>This is a pet project I built for fun while learning how the original console worked; <a class="underline" href="https://medium.com/@edeckers/recreating-my-first-computer-an-atari-2600-emulator-7b72279a4afd">read more about building this emulator in my blog post</a>.</p>
-              
+
               <p><span class="font-bold">Currently supported games</span> include Bowling, Combat, Frogger, Moon Patrol, Ms. Pacman, Pong Sports, Tennis, Tic Tac Toe 3D, and Super Breakout. <span class="italic">The emulator is a work in progress - I'm planning to add audio and additional games over time.</span></p>
-              
+
               <p><span class="font-bold">Want to try your own games?</span> Use the upload button next to the ROM selector to load your own Atari 2600 ROMs. There are many complete Atari 2600 ROM archives available online, but I won't link to them here due to unclear copyright status. Please ensure you own any games you're emulating.</p>
-              
+
               <p>Ely - <a class="underline" href="https://branie.it">BRANIE IT</a></p>
             </div>
             <div id="debugger" class="companion !hidden">
