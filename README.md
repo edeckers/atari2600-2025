@@ -1,7 +1,11 @@
-# Atari 2600 Emulator
+# JavaScript Atari 2600 Emulator
 
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Build](https://github.com/edeckers/atari2600-2025/actions/workflows/deploy.yml/badge.svg?branch=develop)](https://github.com/edeckers/atari2600-2025/actions/workflows/deploy.yml)
+
+Welcome to the repository containing the code for my JavaScript Atari 2600 Emulator pet project!
+
+![Drawing of Atari 2600 console on a retro 80s background with the text 'Atari 2600 emulator' on it](src/static/assets/atari-emulator-card.webp)
 
 My first interaction with a computer was way back in the 80s on an [Atari 2600](https://en.wikipedia.org/wiki/Atari_2600), so when I decided to write an emulator in JavaScript, it seemed only natural to start with this magnificent piece of hardware.
 
